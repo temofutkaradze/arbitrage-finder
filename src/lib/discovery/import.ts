@@ -1,8 +1,12 @@
+import type { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../db/prisma";
 import type { ListingInput } from "./schema";
 
 export async function importListings(rows: ListingInput[], source: string) {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction((tx) => importListingsInTransaction(tx, rows, source), { timeout: 20_000 });
+}
+
+export async function importListingsInTransaction(tx: Prisma.TransactionClient, rows: ListingInput[], source: string, auditSource = source) {
     // Serialize imports/promotions across requests, including separate workers.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340921)`;
     const importedVia = source === "cj" ? "CJ_API" : "MANUAL_IMPORT";
@@ -28,9 +32,8 @@ export async function importListings(rows: ListingInput[], source: string) {
       } });
       if (changed) counts.updated++; else counts.unchanged++;
     }
-    await tx.importRun.create({ data: { source, ...counts } });
+    await tx.importRun.create({ data: { source: auditSource, ...counts } });
     return counts;
-  }, { timeout: 20_000 });
 }
 
 export async function promoteListing(listingId: number) {

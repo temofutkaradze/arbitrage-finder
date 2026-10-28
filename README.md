@@ -141,3 +141,51 @@ npx tsx scripts/check-research-http.ts
 ```
 
 The check creates/removes only its own temporary products, markets and research.
+
+## Bounded recurring CJ discovery
+
+Open **Automation** and create a product-phrase schedule. It is paused by default;
+explicit confirmation is required to enable recurring external requests. No
+schedule, category or destination is selected on your behalf.
+
+```sh
+npm run discovery:worker -- --dry-run  # Read-only due-job inspection
+npm run discovery:worker -- --once     # At most one due attempt
+npm run discovery:worker               # Poll every 30 seconds, until stopped
+```
+
+Run the worker separately from the web server, using the same prepared Node 24,
+proxy, database and credential environment. Publication/restoration does not
+preserve processes; restart the worker in future runtimes. A last-check timestamp
+on Automation is evidence of a tick, not a guarantee a process is still alive.
+Keep development bound to loopback; public/multi-user deployment needs auth.
+
+Limits: at most five enabled schedules, every 6–168 hours, one page of up to 20
+newest matching products per attempt, at most 20 scheduled attempts per UTC day.
+Failures/cancellations/interrupted attempts count toward that limit; cooldown-only
+deferrals do not. Manual searches have separate controls. Auth may add two HTTP
+requests per attempt. These application limits do not establish provider fees or
+account entitlement. New products beyond the first page can be missed; this is
+not an exhaustive catalogue crawl. No shipping or demand enrichment runs in the
+background.
+
+Workers claim a two-minute database lease; imports and execution completion are
+atomic and fenced by that lease. A paused schedule invalidates an in-flight
+result. Expired workers are recovered with delayed retry. Network/validation
+errors back off from 15 minutes up to 24 hours; rate limits wait at least an hour.
+Authentication errors pause immediately; five consecutive other failures pause
+until explicit re-enabling. Provider response bodies and credentials are not
+stored in execution logs. Provider account costs are not calculated by this worker; confirm current CJ
+fees and credits before enabling a schedule. Shutdown signals finish an active
+attempt gracefully; use Pause to prevent an in-flight result from importing.
+
+```sh
+npx tsx scripts/check-automation.ts
+# Web server running, worker stopped:
+npx tsx scripts/check-automation-http.ts
+```
+
+The database check refuses to run with enabled operator schedules, uses mocked
+provider data and cleans its jobs/candidates/audit fixtures. The HTTP check
+briefly enables a temporary test schedule, so workers must be stopped. Neither
+check calls CJ. Keep the ordinary unit suite independent from live credentials.

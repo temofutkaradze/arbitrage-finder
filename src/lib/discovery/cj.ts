@@ -84,7 +84,9 @@ export async function requestCj(resource: CjResource, query: Record<string, stri
   return data;
 }
 
-export async function discoverCj(keyword: string, credential = process.env.CJ_ACCESS_TOKEN) {
-  const data = await requestCj("product/listV2", { page: "1", size: "20", keyWord: keyword }, undefined, credential);
+export async function discoverCj(keyword: string, credential = process.env.CJ_ACCESS_TOKEN, mode: "relevance" | "newest" = "relevance") {
+  const query: Record<string, string> = { page: "1", size: "20", keyWord: keyword };
+  if (mode === "newest") { query.orderBy = "3"; query.sort = "desc"; }
+  const data = await requestCj("product/listV2", query, undefined, credential);
   return normalizeCjPage(data, new Date());
 }

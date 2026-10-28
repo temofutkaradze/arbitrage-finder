@@ -79,6 +79,14 @@ describe("CJ access errors and API-key exchange", () => {
     expect(mock.mock.calls[0][1].method).toBe("POST");
     expect(JSON.parse(mock.mock.calls[0][1].body)).toEqual(payload);
   });
+  it("bounds scheduled discovery to one newest-products page", async () => {
+    const mock=vi.fn().mockResolvedValue(new Response(JSON.stringify({code:200,result:true,data:{content:[]}})));
+    vi.stubGlobal("fetch",mock);
+    await discoverCj("fixture","test-newest-token","newest");
+    const url=new URL(String(mock.mock.calls[0][0]));
+    expect(url.searchParams.get("orderBy")).toBe("3");expect(url.searchParams.get("sort")).toBe("desc");
+    expect(url.searchParams.get("page")).toBe("1");expect(url.searchParams.get("size")).toBe("20");
+  });
   it("does not exchange credentials on rate limiting", async () => {
     const mock=vi.fn().mockResolvedValue(new Response("", {status:429}));vi.stubGlobal("fetch",mock);
     await expect(discoverCj("fixture", "test-only-quota-credential")).rejects.toThrow(/rate limit/);

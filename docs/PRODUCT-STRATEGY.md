@@ -115,3 +115,28 @@ Evidence can be retired with a reason, preserving its claim and source. Retired 
 Demand review should record query, country, time window, comparison baseline and limitations; trend direction must remain unknown without sufficient evidence. Reviews reveal possible problems, not unit sales. Ad examples reveal messaging, not CAC, spend, conversions or profitable demand. Competitor prices are deliberately never copied into selling-price inputs automatically.
 
 Verification includes 60 unit tests and a production-form check (`scripts/check-research-http.ts`) covering currency mismatch, unknown shipping, duplicate prevention and evidence retirement. Fixtures are clearly labelled and removed; no business markets or invented competitor data are retained.
+
+## Recurring discovery extension
+
+Automation now supports explicitly enabled keyword schedules; none are created
+automatically. A separate worker processes one newest-products page (maximum 20
+records) per due schedule. First-page coverage is incomplete and cannot establish
+market demand. Five enabled jobs, six-hour minimum interval and a shared limit of
+20 scheduled attempts per UTC day bound activity. Failed/interrupted/cancelled
+attempts consume budget; cooldown deferrals do not. Manual requests are separate.
+Account credits/fees still require confirmation with CJ.
+
+Database leases and fencing prevent parallel duplicates and import-after-pause.
+Candidate import, audit and execution completion commit together. Crashes trigger
+lease recovery and delayed retry; authentication errors or five consecutive other
+failures pause for operator review. Each scheduled import audit is linked by its
+execution ID. Only fixed error categories are retained. No arbitrary URL fetch,
+store mutation, order placement, ad spend, shipping loop or demand inference is
+performed by the worker.
+
+Runbook and validation commands are in README.md. Keep the worker stopped while
+running schedule form integration tests, which temporarily enable a fixture.
+Validation covers concurrent claims, budget/cap boundaries, idempotent import,
+backoff, expired leases, authentication pause and cancellation fencing. Production
+live CJ discovery is separately validated; scheduler checks use mocked provider
+data rather than repeatedly consuming account quota.
