@@ -218,3 +218,14 @@ model DiscoveryWorkerStatus {
   id          String @id
   lastSeenAt  DateTime
 }
+
+model FxSnapshot {
+  id           Int @id @default(autoincrement())
+  provider     String
+  currency     String
+  rate         String
+  rateDate     DateTime
+  retrievedAt  DateTime @default(now())
+  sourceUrl    String
+  @@unique([provider, currency, rateDate, rate])
+}

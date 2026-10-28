@@ -189,3 +189,39 @@ The database check refuses to run with enabled operator schedules, uses mocked
 provider data and cleans its jobs/candidates/audit fixtures. The HTTP check
 briefly enables a temporary test schedule, so workers must be stopped. Neither
 check calls CJ. Keep the ordinary unit suite independent from live credentials.
+
+## Official reference currency rates
+
+In **Markets**, use **Fetch current official rates**. The app requests the National
+Bank of Georgia's date-scoped public JSON feed for the current Georgian calendar
+date. No new API key or paid provider is needed for the verified request. One
+refresh attempt is allowed per ten minutes; failed refreshes preserve existing
+snapshots. There is no background FX polling and no HTTP fetch inside the quote
+application transaction.
+
+The feed expresses GEL per currency quantity. The app honours each quantity and
+derives target-currency units per USD using exact decimal arithmetic, rounded to
+eight decimal places. Supported targets are USD/EUR/GBP/CAD/AUD/GEL. This choice
+of rate source does not select Georgia, or any country, as a business market.
+Future-effective, stale, inconsistent or incomplete feeds are rejected; future
+published rates are not treated as effective today. Rates are reference estimates,
+not executable bank prices; add payment conversion fees/spread separately.
+
+When applying a non-USD sourcing quote, select a saved official reference, or
+complete the manual rate/source/date fields. Snapshot currency, provider and
+seven-day effective-date window are checked server-side. The input notes preserve
+the snapshot identifier, rate, effective date and official URL. Existing
+calculations do not change automatically when new rates arrive. Manual FX remains
+available when the source is unavailable. No financial inputs become VERIFIED
+merely by using an official reference.
+
+```sh
+# Production server running; requires already saved current reference snapshots:
+npx tsx scripts/check-fx-http.ts
+# Optional ONE live public feed request plus cooldown check:
+npx tsx scripts/check-fx-http.ts --refresh
+```
+
+The FX HTTP check removes its own temporary products/quotes/market, retaining
+only real official rate snapshots. The existing sourcing integration check also
+covers wrong-currency and stale snapshot rejection and manual fallback.

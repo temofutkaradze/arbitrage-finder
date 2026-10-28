@@ -3,6 +3,7 @@ import { prisma } from "../db/prisma";
 import { requestCj } from "../discovery/cj";
 import { originsSchema, normalizeVariants, normalizeFreight, quoteRequestSchema } from "./schema";
 import { convertUsdMinor } from "./convert";
+import { validRateDate } from "../fx/reference";
 import { sourceUrl } from "../discovery/schema";
 
 export const FRESH_FOR_MS = 24 * 3600_000;
@@ -57,6 +58,7 @@ export async function fetchFreight(input: z.infer<typeof quoteRequestSchema>) {
 }
 const applySchema = z.object({
   quoteId: z.coerce.number().int().positive(), evaluationId: z.coerce.number().int().positive(),
+  fxSnapshotId: z.number().int().positive().optional(),
   confirmed: z.boolean().refine((value) => value, "Confirm before applying"), fxRate: z.string().max(20), fxSource: z.string().max(1000), fxDate: z.string().max(30),
 });
 export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
@@ -70,11 +72,18 @@ export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
     if (quote.productPriceMinor === null) throw new Error("This variant has no exact product price; confirm it before applying.");
     let rate = "1", fxNote = "USD; no currency conversion";
     if (quote.market.currency !== "USD") {
-      rate = args.fxRate;
-      const url = sourceUrl.parse(args.fxSource);
-      const dateText = z.iso.date().parse(args.fxDate), date = new Date(`${dateText}T00:00:00Z`);
-      if (date > new Date() || Date.now() - date.getTime() > 7 * 86400000) throw new Error("Use an FX observation from the last seven days.");
-      fxNote = `1 USD = ${rate} ${quote.market.currency}; manually supplied rate, ${dateText}, ${url}`;
+      if (args.fxSnapshotId) {
+        const snapshot = await tx.fxSnapshot.findUniqueOrThrow({ where: { id: args.fxSnapshotId } });
+        if (snapshot.provider !== "NBG" || snapshot.currency !== quote.market.currency || !validRateDate(snapshot.rateDate)) throw new Error("FX snapshot currency or effective date is not valid for this evaluation.");
+        rate = snapshot.rate;
+        fxNote = `1 USD = ${rate} ${quote.market.currency}; official reference snapshot #${snapshot.id}, ${snapshot.provider}, effective ${snapshot.rateDate.toISOString().slice(0,10)}, ${snapshot.sourceUrl}; bank spread/fees not included`;
+      } else {
+        rate = args.fxRate;
+        const url = sourceUrl.parse(args.fxSource);
+        const dateText = z.iso.date().parse(args.fxDate), date = new Date(`${dateText}T00:00:00Z`);
+        if (date > new Date() || Date.now() - date.getTime() > 7 * 86400000) throw new Error("Use an FX observation from the last seven days.");
+        fxNote = `1 USD = ${rate} ${quote.market.currency}; manually supplied rate, ${dateText}, ${url}`;
+      }
     }
     const supplier = convertUsdMinor(quote.productPriceMinor, rate), shipping = convertUsdMinor(quote.shippingMinor, rate);
     const note = `CJ estimate #${quote.id}, variant ${quote.variant.externalId}, one unit, ${quote.originCountry} to ${quote.destinationCountry} ${quote.postalCode}, ${quote.method}, shipping observed ${quote.observedAt.toISOString()}, product observed ${quote.productObservedAt.toISOString()}. ${fxNote}. Taxes/clearance must be reviewed separately.`;

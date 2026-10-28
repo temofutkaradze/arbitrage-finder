@@ -1,3 +1,7 @@
+import { prisma } from "@/lib/db/prisma";
+import { ActionForm } from "@/components/ActionForm";
+import { refreshFx } from "./fx-actions";
+import { validRateDate } from "@/lib/fx/reference";
 import { createMarket, saveMarket } from "../actions";
 import { getMarkets } from "@/lib/data/queries";
 import { InputFields } from "@/components/InputFields";
@@ -8,11 +12,12 @@ import type { Inputs } from "@/lib/profit/types";
 export const dynamic = "force-dynamic";
 
 export default async function Markets() {
-  const markets = await getMarkets();
+  const [markets,rates] = await Promise.all([getMarkets(),prisma.fxSnapshot.findMany({where:{provider:"NBG"},orderBy:[{rateDate:"desc"},{retrievedAt:"desc"}],take:30})]);
   return (
     <>
       <h1>Target markets</h1>
       <p className="mut">A market is where you sell and ship to. Its assumptions (tax, duty, fees, returns, ad cost) pre-fill new evaluations. Every value starts as Unknown. Nothing is assumed for you. Supported two-decimal currencies: USD, EUR, GBP, CAD, AUD, GEL. Tax and duty defaults need product-specific confirmation.</p>
+      <section className="card"><h2>Official reference FX</h2><p className="mut">National Bank of Georgia reference rates, expressed as target currency per 1 USD. This source does not select your target market. Published future-effective rates are excluded. Reference prices do not include your bank spread or conversion fees.</p><ActionForm action={refreshFx} label="Fetch current official rates" ><span>One date-scoped request, ten-minute refresh cooldown. No API key needed.</span></ActionForm><ul>{rates.map(r=><li key={r.id}>{r.currency}: {r.rate} per USD · effective {r.rateDate.toISOString().slice(0,10)} · {validRateDate(r.rateDate)?"Within 7-day reference window":"Stale / not effective"} · <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">Source</a></li>)}</ul></section>
       <section className="card">
         <h2 style={{ marginTop: 0 }}>Add a market</h2>
         <form action={createMarket} className="bar">

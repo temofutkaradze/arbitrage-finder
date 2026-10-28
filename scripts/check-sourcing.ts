@@ -5,7 +5,7 @@ import { prisma } from "../src/lib/db/prisma";
 import { applySourcingQuote } from "../src/lib/sourcing/service";
 async function main() {
   const tag=randomUUID(), code=`T${tag.slice(0,8)}`;
-  let listingId:number|undefined,opportunityId:number|undefined,marketId:number|undefined,otherMarketId:number|undefined;
+  let snapshotId:number|undefined,listingId:number|undefined,opportunityId:number|undefined,marketId:number|undefined,otherMarketId:number|undefined;
   try {
     const opportunity=await prisma.opportunity.create({data:{name:`TEST FIXTURE ${tag}`,isSample:true}});opportunityId=opportunity.id;
     const listing=await prisma.sourceListing.create({data:{provider:"integration-test",externalId:tag,name:"TEST FIXTURE",url:"https://example.com/test",currency:"USD",priceMinor:123,observedAt:new Date(),opportunityId}});listingId=listing.id;
@@ -22,6 +22,14 @@ async function main() {
     await assert.rejects(applySourcingQuote({...args,fxDate:"2020-01-01"}),/seven days/);
     assert.equal((await prisma.costInput.findUniqueOrThrow({where:{evaluationId_key:{evaluationId:evaluation.id,key:"supplierPrice"}}})).value,999);
     await assert.rejects(applySourcingQuote({...args,evaluationId:otherEvaluation.id}),/do not match/);
+    const snapshot=await prisma.fxSnapshot.create({data:{provider:"NBG",currency:"GBP",rate:"0.80000001",rateDate:new Date(new Date().toISOString().slice(0,10)),sourceUrl:"https://example.com/fixture-fx"}});snapshotId=snapshot.id;
+    await applySourcingQuote({...args,fxRate:"",fxSource:"",fxDate:"",fxSnapshotId:snapshot.id});
+    assert.ok((await prisma.costInput.findUniqueOrThrow({where:{evaluationId_key:{evaluationId:evaluation.id,key:"supplierPrice"}}})).note?.includes(`snapshot #${snapshot.id}`));
+    await prisma.fxSnapshot.update({where:{id:snapshot.id},data:{currency:"EUR"}});
+    await assert.rejects(applySourcingQuote({...args,fxSnapshotId:snapshot.id}),/currency/);
+    await prisma.fxSnapshot.update({where:{id:snapshot.id},data:{currency:"GBP",rateDate:new Date("2000-01-01")}});
+    await assert.rejects(applySourcingQuote({...args,fxSnapshotId:snapshot.id}),/effective date/);
+    await prisma.evidence.deleteMany({where:{opportunityId}});
     await applySourcingQuote(args);await applySourcingQuote(args);
     const inputs=await prisma.costInput.findMany({where:{evaluationId:evaluation.id}});
     assert.equal(inputs.find(i=>i.key==="supplierPrice")?.value,98);
@@ -43,6 +51,7 @@ async function main() {
     await assert.rejects(applySourcingQuote(args),/no longer active/);
     console.log("PASS: quote confirmation, atomic validation, FX direction, market/route identity, duty reset, preserved unknown CAC, idempotent evidence and stale-quote protection");
   } finally {
+    if(snapshotId)await prisma.fxSnapshot.delete({where:{id:snapshotId}});
     if(listingId)await prisma.sourceListing.delete({where:{id:listingId}});
     if(opportunityId)await prisma.opportunity.delete({where:{id:opportunityId}});
     if(marketId)await prisma.market.delete({where:{id:marketId}});

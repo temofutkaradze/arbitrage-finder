@@ -3,7 +3,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { refreshVariants, reserveCjOperation, fetchFreight, applySourcingQuote } from "@/lib/sourcing/service";
 import { quoteRequestSchema } from "@/lib/sourcing/schema";
-const messages = ["CJ ", "Wait ", "Select ", "Set ", "Refresh ", "The selected ", "This ", "Quote,", "Use an FX"];
+const messages = ["CJ ", "Wait ", "Select ", "Set ", "Refresh ", "The selected ", "This ", "Quote,", "Use an FX", "FX "];
 function safeError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   return messages.some((prefix) => message.startsWith(prefix)) ? message : "Nothing was applied. Check the input fields and database availability.";
@@ -29,6 +29,7 @@ export async function requestShipping(_: string, data: FormData) {
 export async function applyQuote(_: string, data: FormData) {
   try {
     const opportunityId = await applySourcingQuote({
+      fxSnapshotId: data.get("fxSnapshotId") ? Number(data.get("fxSnapshotId")) : undefined,
       quoteId: Number(data.get("quoteId")), evaluationId: Number(data.get("evaluationId")), confirmed: data.get("confirmed") === "on",
       fxRate: String(data.get("fxRate") ?? ""), fxSource: String(data.get("fxSource") ?? ""), fxDate: String(data.get("fxDate") ?? ""),
     });

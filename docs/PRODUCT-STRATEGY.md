@@ -140,3 +140,35 @@ Validation covers concurrent claims, budget/cap boundaries, idempotent import,
 backoff, expired leases, authentication pause and cancellation fencing. Production
 live CJ discovery is separately validated; scheduler checks use mocked provider
 data rather than repeatedly consuming account quota.
+
+## Official reference FX extension
+
+National Bank of Georgia's [public date-scoped JSON source](https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json/?date=2026-10-28)
+was verified on 2026-10-28. The default feed returned rates effective 2026-10-29,
+while an explicit date=2026-10-28 returned that day's effective rates. This is why
+the application scopes requests to the Georgian calendar date and rejects future
+effective dates. The [ECB daily reference feed](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml)
+was also reachable, but is not used in this implementation; NBG covers the six
+supported currencies including GEL without a second integration.
+
+Reference-rate retrieval is on demand from Markets, with a ten-minute cooldown
+and fixed official HTTPS destination. No new credential is needed for the tested
+public request. FxSnapshot preserves provider/currency/rate/effective date/source;
+identical values deduplicate, corrections with different values can coexist for
+historical review. Non-USD quote applications explicitly choose a snapshot or a
+manual rate. Values remain estimates/assumptions because bank spread, conversion
+fees and actual settlement timing are not represented by a reference price.
+
+Cross rates use GEL-per-quantity source amounts and exact rational arithmetic,
+rounded to eight decimal places; conversion to monetary minor units remains
+half-up. Missing currencies, duplicate source currencies, mismatched effective
+dates and nonpositive values fail closed. A seven-day calendar freshness window
+allows weekends without silently accepting indefinitely stale data. No previous
+cost input is silently revalued, no country is selected and no scheduled FX
+network requests run by default.
+
+Validation: 68 unit tests, lint/type/build checks, real NBG retrieval through the
+production Markets form, cooldown enforcement, official snapshot application,
+wrong-currency rejection, manual fallback and dated source provenance. Temporary
+technical markets/products are removed. This validates reference calculations,
+not actual payment-provider settlement rates or commercial profitability.

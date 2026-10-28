@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { validRateDate } from "@/lib/fx/reference";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { formatMoney } from "@/lib/profit/format";
@@ -16,9 +17,10 @@ export default async function Sourcing({ params }: { params: Promise<{ id: strin
     opportunity: { include: { evaluations: { include: { market: true } } } },
   } }) : null;
   if (!listing || listing.provider !== "cj" || listing.importedVia !== "CJ_API") notFound();
-  const [markets, quotes] = await Promise.all([
+  const [markets, quotes, rates] = await Promise.all([
     prisma.market.findMany({ where: { countryCode: { not: null } }, orderBy: { code: "asc" } }),
     prisma.shippingQuote.findMany({ where: { variant: { listingId: listing.id } }, include: { variant: true, market: true }, orderBy: { observedAt: "desc" }, take: 30 }),
+    prisma.fxSnapshot.findMany({where:{provider:"NBG"},orderBy:[{rateDate:"desc"},{retrievedAt:"desc"}],take:60}),
   ]);
   return <>
     <Link href="/discovery">← Discovery</Link><h1>{listing.name}</h1>
@@ -62,9 +64,11 @@ export default async function Sourcing({ params }: { params: Promise<{ id: strin
         {!listing.opportunityId ? <p>Select this candidate for investigation from <Link href="/discovery">Discovery</Link>, then add a market evaluation to use an estimate.</p> : !evaluations.length ? <p><Link href={`/opportunities/${listing.opportunityId}`}>Add this market to the product evaluation</Link> to use the estimate.</p> : !stale && q.productPriceMinor !== null && <ActionForm action={applyQuote} label="Apply sourcing estimate">
           <input type="hidden" name="quoteId" value={q.id}/><input type="hidden" name="evaluationId" value={evaluations[0].id}/>
           {q.market.currency !== "USD" && <div className="grid">
-            <label>FX: {q.market.currency} per 1 USD<input name="fxRate" required inputMode="decimal" pattern="[0-9]+(\.[0-9]{1,8})?" /></label>
-            <label>FX source URL<input name="fxSource" type="url" required maxLength={1000}/></label>
-            <label>FX observation date (UTC, last 7 days)<input name="fxDate" type="date" required max={new Date().toISOString().slice(0,10)}/></label>
+            <label>FX source<select name="fxSnapshotId"><option value="">Manual rate below</option>{rates.filter(r=>r.currency===q.market.currency&&validRateDate(r.rateDate)).map(r=><option key={r.id} value={r.id}>{r.provider}: {r.rate} · {r.rateDate.toISOString().slice(0,10)}</option>)}</select></label>
+            <p className="mut">Fetch official references in <Link href="/markets">Markets</Link>. Select a reference, or fill all manual fields below. Bank fees and spread remain separate costs.</p>
+            <label>Manual FX: {q.market.currency} per 1 USD<input name="fxRate" inputMode="decimal" pattern="[0-9]+(\.[0-9]{1,8})?" /></label>
+            <label>FX source URL<input name="fxSource" type="url" maxLength={1000}/></label>
+            <label>FX observation date (UTC, last 7 days)<input name="fxDate" type="date" max={new Date().toISOString().slice(0,10)}/></label>
           </div>}
           <label><input type="checkbox" name="confirmed" required style={{width:"auto"}}/> Replace product and shipping inputs with these estimates, and clear duty/handling inputs for a fresh tax review. I will separately account for all taxes, clearance and other charges.</label>
           <p className="mut">Selling price, payment fees, returns and CAC stay as currently entered. Unknown costs must still be researched.</p>
