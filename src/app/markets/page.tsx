@@ -1,6 +1,7 @@
 import { createMarket, saveMarket } from "../actions";
 import { getMarkets } from "@/lib/data/queries";
 import { InputFields } from "@/components/InputFields";
+import { CURRENCIES } from "@/lib/discovery/schema";
 import { MARKET_KEYS } from "@/lib/profit/markets";
 import type { Inputs } from "@/lib/profit/types";
 
@@ -11,13 +12,14 @@ export default async function Markets() {
   return (
     <>
       <h1>Target markets</h1>
-      <p className="mut">A market is where you sell and ship to. Its assumptions (tax, duty, fees, returns, ad cost) pre-fill new evaluations. Every value starts as Unknown. Nothing is assumed for you. Currencies with 2 decimals only.</p>
+      <p className="mut">A market is where you sell and ship to. Its assumptions (tax, duty, fees, returns, ad cost) pre-fill new evaluations. Every value starts as Unknown. Nothing is assumed for you. Supported two-decimal currencies: USD, EUR, GBP, CAD, AUD, GEL. Tax and duty defaults need product-specific confirmation.</p>
       <section className="card">
         <h2 style={{ marginTop: 0 }}>Add a market</h2>
         <form action={createMarket} className="bar">
           <input name="code" placeholder="Code, e.g. US" required size={8} />
           <input name="name" placeholder="Name, e.g. United States" required />
-          <input name="currency" placeholder="USD" required size={5} />
+          <input name="countryCode" placeholder="Destination country, e.g. GB" maxLength={2} pattern="[A-Za-z]{2}" aria-label="Destination country code" />
+          <select name="currency" aria-label="Currency" required>{CURRENCIES.map((currency) => <option key={currency}>{currency}</option>)}</select>
           <label style={{ display: "inline" }}><input type="checkbox" name="pricesIncludeTax" style={{ width: "auto" }} /> Prices shown to customers include VAT/tax</label>
           <button className="primary">Add market</button>
         </form>
@@ -29,9 +31,10 @@ export default async function Markets() {
             <summary><b>{m.code}</b> · {m.name} · {m.currency}</summary>
             <form action={saveMarket}>
               <input type="hidden" name="marketId" value={m.id} />
+              <label>Destination country code (needed for shipping estimates)<input name="countryCode" defaultValue={m.countryCode ?? ""} maxLength={2} pattern="[A-Za-z]{2}" /></label>
               <label style={{ display: "inline" }}><input type="checkbox" name="pricesIncludeTax" defaultChecked={m.pricesIncludeTax} style={{ width: "auto" }} /> Prices include VAT/tax</label>
               <InputFields keys={MARKET_KEYS} values={(m.assumptions ?? {}) as unknown as Inputs} currency={m.currency} />
-              <div className="bar"><button className="primary">Save market assumptions</button><span className="mut">Applies to evaluations created afterwards, not existing ones.</span></div>
+              <div className="bar"><button className="primary">Save market assumptions</button><span className="mut">Cost assumptions apply to new evaluations. Changing the destination clears applied CJ sourcing estimates for review.</span></div>
             </form>
           </details>
         </section>

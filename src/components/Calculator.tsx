@@ -30,7 +30,7 @@ export function Calculator({ initial, pricesIncludeTax, currency }: { initial: R
         <p className="warn">No profit shown: required inputs are missing ({result.missing.map((k) => INPUT_DEFS.find((d) => d.key === k)!.label).join(", ")}).</p>
       ) : (
         <div className="cards">
-          <div><span className="mut">Net profit / order</span><b className={result.netProfit >= 0 ? "pos" : "neg"}>{m(result.netProfit)}</b></div>
+          <div><span className="mut">Contribution after ads / order</span><b className={result.netProfit >= 0 ? "pos" : "neg"}>{m(result.netProfit)}</b></div>
           <div><span className="mut">Margin</span><b>{formatPct(result.margin)}</b></div>
           <div><span className="mut">Return on capital</span><b>{formatPct(result.roi)}</b></div>
           <div><span className="mut">Max affordable CAC</span><b>{m(result.maxAffordableCac)}</b></div>

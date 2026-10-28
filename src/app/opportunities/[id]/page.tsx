@@ -6,6 +6,10 @@ import { formatMoney, formatPct, toDisplay } from "@/lib/profit/format";
 import { INPUT_DEFS, INPUT_KEYS, type InputKey } from "@/lib/profit/types";
 import { Badge, Quality } from "@/components/Badge";
 import { InputFields } from "@/components/InputFields";
+import { ActionForm } from "@/components/ActionForm";
+import { addEvidence } from "../evidence-actions";
+import { EVIDENCE_KINDS, PROVENANCE, researchReadiness } from "@/lib/research/readiness";
+import { calculateBeforeAds } from "@/lib/profit/before-ads";
 import { Calculator } from "@/components/Calculator";
 
 export const dynamic = "force-dynamic";
@@ -23,20 +27,23 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <p className="mut">{[opp.category, opp.sourceName].filter(Boolean).join(" · ")}
         {opp.sourceUrl && <> · <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">Source listing</a></>}</p>
       {opp.notes && <p>{opp.notes}</p>}
-      <p className="mut">Not collected yet (later milestones): price history, competing listings, demand evidence, match confidence, risk assessment, AI analysis.</p>
+      <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Cross-source matching and automated demand research are not connected yet.</p>
 
       {opp.evaluations.map((e) => {
-        const c = e.result; const cur = e.market.currency; const m = (n: number) => formatMoney(n, cur);
+        const c = e.result; const research = researchReadiness(opp.evidence, e.market.id); const beforeAds = calculateBeforeAds(e.inputs, { pricesIncludeTax: e.market.pricesIncludeTax }); const cur = e.market.currency; const m = (n: number) => formatMoney(n, cur);
         const initial = Object.fromEntries(INPUT_DEFS.map((d) => [d.key, toDisplay(d.unit, e.inputs[d.key]?.value)])) as Record<InputKey, string>;
         return (
           <section className="card" key={e.id}>
             <h2 style={{ marginTop: 0 }}>{e.market.code} · {e.market.name} <Quality q={c.quality} /></h2>
+            <p><b>{research.label}</b> · {research.next}</p>
+            {research.missing.length > 0 && <p className="mut">Evidence still needed: {research.missing.join(", ").toLowerCase().replaceAll("_", " ")}</p>}
+            {!c.complete && beforeAds && <div className="warn">Before advertising: {m(beforeAds.contribution)} / order. Break-even CAC: {beforeAds.contribution > 0 ? m(beforeAds.contribution) : "No positive ad budget"}. Advertising profit remains unknown. {beforeAds.assumedZero.length} optional inputs assumed zero; {beforeAds.estimatedKeys.length} inputs estimated.</div>}
             {!c.complete ? (
               <p className="warn">No profit figure: missing required inputs: {c.missing.map(label).join("; ")}. Fill them in below (mark as Estimate or Verified).</p>
             ) : (
               <>
                 <div className="cards">
-                  <div><span className="mut">Net profit / order</span><b className={c.netProfit >= 0 ? "pos" : "neg"}>{m(c.netProfit)}</b></div>
+                  <div><span className="mut">Contribution after ads / order</span><b className={c.netProfit >= 0 ? "pos" : "neg"}>{m(c.netProfit)}</b></div>
                   <div><span className="mut">Margin</span><b>{formatPct(c.margin)}</b></div>
                   <div><span className="mut">Return on capital</span><b>{formatPct(c.roi)}</b></div>
                   <div><span className="mut">Capital per order</span><b>{m(c.capitalPerOrder)}</b></div>
@@ -50,12 +57,12 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
                   <thead><tr><th>Profit breakdown (per order)</th><th>Amount</th><th>Data</th></tr></thead>
                   <tbody>
                     {c.lines.map((l) => <tr key={l.label}><td className="l">{l.label}</td><td className={l.amount > 0 ? "pos" : ""}>{m(l.amount)}</td><td><Badge status={l.status} /></td></tr>)}
-                    <tr><td className="l"><b>Net profit</b></td><td><b>{m(c.netProfit)}</b></td><td><Badge status="CALCULATED" /></td></tr>
+                    <tr><td className="l"><b>Contribution after ads</b></td><td><b>{m(c.netProfit)}</b></td><td><Badge status="CALCULATED" /></td></tr>
                   </tbody>
                 </table></div>
                 <h3>Advertising-cost scenarios</h3>
                 <div className="wrap"><table>
-                  <thead><tr><th>Scenario</th><th>Ad cost / order</th><th>Net profit</th><th>Margin</th></tr></thead>
+                  <thead><tr><th>Scenario</th><th>Ad cost / order</th><th>Contribution after ads</th><th>Margin</th></tr></thead>
                   <tbody>{c.scenarios.map((s) => <tr key={s.label}><td className="l">{s.label}</td><td>{m(s.cac)}</td><td className={s.netProfit >= 0 ? "pos" : "neg"}>{m(s.netProfit)}</td><td>{formatPct(s.margin)}</td></tr>)}</tbody>
                 </table></div>
                 <p className="mut">Simplifications: import VAT is not modeled separately; duty is charged on supplier price + shipping; “unrecovered cost per return” should include everything lost per return.</p>
@@ -74,6 +81,28 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
         );
       })}
 
+      <section className="card"><h2>Research evidence</h2>
+        <p className="mut">A record is a claim with a source, not a guarantee. Scope demand, competition and shipping to a market. Choose an expiry appropriate to how quickly the claim can change. Dates are UTC.</p>
+        {opp.evidence.length === 0 && <p>No evidence recorded yet.</p>}
+        {opp.evidence.map((item) => <article key={item.id} style={{ borderBottom: "1px solid var(--line)", padding: "10px 0" }}>
+          <b>{item.kind.replaceAll("_", " ")}</b>{item.resolvedAt && <span className="mut"> · RETIRED: {item.resolutionNote}</span>} · {item.provenance} · {item.outcome} · {item.marketId ? markets.find((m) => m.id === item.marketId)?.code : "Global"}
+          <p>{item.summary}</p><a href={item.url} target="_blank" rel="noopener noreferrer">Source</a>
+          <span className="mut"> · Observed {item.observedAt.toISOString().slice(0,10)} · Expires {item.expiresAt.toISOString().slice(0,10)}{item.expiresAt < new Date() ? " · EXPIRED" : ""}</span>
+        </article>)}
+        <details><summary>Record evidence or an assumption</summary><ActionForm action={addEvidence} label="Save research record">
+          <input type="hidden" name="opportunityId" value={opp.id}/>
+          <div className="grid">
+            <label>Topic<select name="kind">{EVIDENCE_KINDS.map((k) => <option key={k}>{k}</option>)}</select></label>
+            <label>Origin<select name="provenance">{PROVENANCE.map((k) => <option key={k}>{k}</option>)}</select></label>
+            <label>Outcome<select name="outcome"><option>INCONCLUSIVE</option><option>SUPPORTS</option><option>CONCERN</option></select></label>
+            <label>Market<select name="marketId"><option value="">Global / not market-specific</option>{markets.map((m) => <option key={m.id} value={m.id}>{m.code}</option>)}</select></label>
+            <label>Observed date (UTC)<input type="date" name="observedAt" required max={new Date().toISOString().slice(0,10)}/></label>
+            <label>Expiry date (UTC)<input type="date" name="expiresAt" required/></label>
+          </div>
+          <label>Source or internal assumption document URL<input type="url" name="url" required maxLength={1000}/></label>
+          <label>What the source supports, and what remains unknown<textarea name="summary" required minLength={10} maxLength={2000} rows={3} style={{width:"100%"}}/></label>
+        </ActionForm></details>
+      </section>
       {unused.length > 0 && (
         <form action={addEvaluation} className="bar">
           <input type="hidden" name="opportunityId" value={opp.id} />

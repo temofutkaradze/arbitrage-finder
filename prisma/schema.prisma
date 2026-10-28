@@ -18,12 +18,16 @@ model Market {
   code             String       @unique
   name             String
   currency         String       @default("USD")
+  countryCode      String?
   pricesIncludeTax Boolean      @default(false)
   // Default assumptions for this market: { [inputKey]: { value, status, note } }
   assumptions      Json         @default("{}")
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   evaluations      Evaluation[]
+  evidence         Evidence[]
+  shippingQuotes   ShippingQuote[]
+  competitors      CompetitorObservation[]
 }
 
 model Opportunity {
@@ -37,6 +41,9 @@ model Opportunity {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   evaluations Evaluation[]
+  listings    SourceListing[]
+  competitors CompetitorObservation[]
+  evidence    Evidence[]
 }
 
 model Evaluation {
@@ -64,4 +71,118 @@ model CostInput {
   evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
 
   @@unique([evaluationId, key])
+}
+
+// A catalogue record is a candidate, not proof of demand or profit.
+model SourceListing {
+  id            Int      @id @default(autoincrement())
+  provider      String
+  externalId    String
+  variantId     String   @default("")
+  name          String
+  url           String
+  currency      String
+  priceMinor    Int?
+  observedAt    DateTime
+  importedVia   String @default("MANUAL_IMPORT")
+  opportunityId Int?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  observations  ListingObservation[]
+  variants      SupplierVariant[]
+  @@unique([provider, externalId, variantId])
+}
+
+model ListingObservation {
+  id         Int @id @default(autoincrement())
+  listingId  Int
+  listing    SourceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  priceMinor Int?
+  currency   String
+  observedAt DateTime
+  importedVia String @default("MANUAL_IMPORT")
+  @@unique([listingId, observedAt])
+}
+
+model ImportRun {
+  id          Int @id @default(autoincrement())
+  source      String
+  created     Int
+  updated     Int
+  unchanged   Int
+  completedAt DateTime @default(now())
+}
+
+model Evidence {
+  resolvedAt    DateTime?
+  resolutionNote String?
+  id            Int @id @default(autoincrement())
+  opportunityId Int
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  marketId      Int?
+  market        Market? @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  kind          String
+  provenance    String
+  summary       String
+  url           String
+  observedAt    DateTime
+  expiresAt     DateTime
+  outcome       String
+  createdAt     DateTime @default(now())
+}
+
+model SupplierVariant {
+  id          Int @id @default(autoincrement())
+  listingId   Int
+  listing     SourceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  externalId  String
+  name        String
+  sku         String?
+  priceMinor  Int?
+  origins     Json
+  observedAt  DateTime
+  active      Boolean @default(true)
+  quotes      ShippingQuote[]
+  @@unique([listingId, externalId])
+}
+
+// Quotes are immutable snapshots of one variant, one unit and one route.
+model ShippingQuote {
+  id                  Int @id @default(autoincrement())
+  variantId           Int
+  variant             SupplierVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  marketId            Int
+  market              Market @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  originCountry       String
+  destinationCountry  String
+  postalCode          String
+  method              String
+  deliveryEstimate    String?
+  productPriceMinor   Int?
+  productObservedAt   DateTime?
+  shippingMinor       Int
+  taxesMinor          Int?
+  clearanceMinor      Int?
+  totalPostageMinor   Int?
+  observedAt          DateTime
+  expiresAt           DateTime
+  @@index([variantId, observedAt])
+}
+
+model CompetitorObservation {
+  id            Int @id @default(autoincrement())
+  opportunityId Int
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  marketId      Int
+  market        Market @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  merchant      String
+  url           String
+  match         String
+  comparison    String
+  priceMinor    Int
+  shippingMinor Int?
+  currency      String
+  taxBasis      String
+  observedAt    DateTime
+  expiresAt     DateTime
+  @@unique([opportunityId, marketId, url, observedAt])
 }

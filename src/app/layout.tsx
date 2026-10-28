@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <header className="top">
           <b>Arbitrage Finder</b>
-          <nav><Link href="/">Overview</Link><Link href="/opportunities">Opportunities</Link><Link href="/markets">Markets</Link></nav>
+          <nav><Link href="/">Overview</Link><Link href="/discovery">Discovery</Link><Link href="/research">Research</Link><Link href="/opportunities">Opportunities</Link><Link href="/markets">Markets</Link></nav>
         </header>
         <main>{children}</main>
       </body>

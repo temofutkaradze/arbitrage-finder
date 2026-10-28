@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { parseInput } from "@/lib/profit/format";
+import { countryCode } from "@/lib/sourcing/schema";
+import { CURRENCIES } from "@/lib/discovery/schema";
 import { MARKET_KEYS } from "@/lib/profit/markets";
 import { INPUT_DEFS, INPUT_KEYS, type DataStatus, type InputKey } from "@/lib/profit/types";
 import type { StoredInput } from "@/lib/data/queries";
@@ -29,8 +31,9 @@ export async function createMarket(fd: FormData) {
   const m = z.object({
     code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{2,10}$/, "Code: 2-10 letters/digits"),
     name: z.string().trim().min(1).max(80),
-    currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Currency: 3-letter code"),
-  }).parse({ code: text(fd, "code"), name: text(fd, "name"), currency: text(fd, "currency") });
+    currency: z.enum(CURRENCIES),
+    countryCode: countryCode.nullable(),
+  }).parse({ code: text(fd, "code"), name: text(fd, "name"), currency: text(fd, "currency"), countryCode: text(fd, "countryCode") || null });
   await prisma.market.create({ data: { ...m, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
   revalidatePath("/markets");
 }
@@ -39,11 +42,22 @@ export async function saveMarket(fd: FormData) {
   const marketId = id(fd, "marketId");
   const assumptions: Record<string, StoredInput> = {};
   for (const i of readInputs(fd, MARKET_KEYS)) assumptions[i.key] = { value: i.value, status: i.status, note: i.note };
-  await prisma.market.update({
-    where: { id: marketId },
-    data: { assumptions, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" },
+  const destination = countryCode.nullable().parse(text(fd, "countryCode") || null);
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+    const previous = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
+    await tx.market.update({ where: { id: marketId }, data: { assumptions, countryCode: destination, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
+    if (previous.countryCode !== destination) {
+      // A route change invalidates copied CJ estimates, while preserving manually
+      // entered costs and the immutable original quote for historical review.
+      await tx.costInput.updateMany({ where: {
+        evaluation: { marketId }, key: { in: ["supplierPrice", "shippingToCustomer", "importDutyPct", "importDutyFixed"] }, note: { startsWith: "CJ estimate #" },
+      }, data: { value: null, status: "UNKNOWN", note: "CJ sourcing estimate invalidated: destination country changed. Request a new quote." } });
+      await tx.evidence.updateMany({ where: { marketId, kind: { in: ["SOURCING", "SHIPPING"] }, summary: { startsWith: "CJ estimate #" } }, data: { expiresAt: new Date() } });
+      await tx.evaluation.updateMany({ where: { marketId }, data: { updatedAt: new Date() } });
+    }
   });
-  revalidatePath("/markets");
+  revalidatePath("/", "layout");
 }
 
 async function createEvaluation(opportunityId: number, marketId: number) {

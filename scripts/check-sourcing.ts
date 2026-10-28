@@ -1,0 +1,52 @@
+import "dotenv/config";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { prisma } from "../src/lib/db/prisma";
+import { applySourcingQuote } from "../src/lib/sourcing/service";
+async function main() {
+  const tag=randomUUID(), code=`T${tag.slice(0,8)}`;
+  let listingId:number|undefined,opportunityId:number|undefined,marketId:number|undefined,otherMarketId:number|undefined;
+  try {
+    const opportunity=await prisma.opportunity.create({data:{name:`TEST FIXTURE ${tag}`,isSample:true}});opportunityId=opportunity.id;
+    const listing=await prisma.sourceListing.create({data:{provider:"integration-test",externalId:tag,name:"TEST FIXTURE",url:"https://example.com/test",currency:"USD",priceMinor:123,observedAt:new Date(),opportunityId}});listingId=listing.id;
+    const market=await prisma.market.create({data:{code,name:"TEST FIXTURE — not a selected market",countryCode:"GB",currency:"GBP"}});marketId=market.id;
+    const otherMarket=await prisma.market.create({data:{code:`Q${tag.slice(0,8)}`,name:"TEST FIXTURE — not a selected market",countryCode:"US",currency:"USD"}});otherMarketId=otherMarket.id;
+    const evaluation=await prisma.evaluation.create({data:{opportunityId,marketId}});
+    const otherEvaluation=await prisma.evaluation.create({data:{opportunityId,marketId:otherMarketId}});
+    const variant=await prisma.supplierVariant.create({data:{listingId,externalId:tag,name:"TEST FIXTURE",priceMinor:123,origins:[{countryCode:"CN",totalInventory:5,cjInventory:0,factoryInventory:5}],observedAt:new Date()}});
+    const quote=await prisma.shippingQuote.create({data:{variantId:variant.id,marketId,originCountry:"CN",destinationCountry:"GB",postalCode:"SW1A 1AA",method:"TEST FIXTURE",productPriceMinor:123,productObservedAt:new Date(),shippingMinor:456,taxesMinor:null,clearanceMinor:null,observedAt:new Date(),expiresAt:new Date(Date.now()+86400000)}});
+    await prisma.costInput.createMany({data:[{evaluationId:evaluation.id,key:"supplierPrice",value:999,status:"VERIFIED"},{evaluationId:evaluation.id,key:"sellingPrice",value:3000,status:"ESTIMATED"},{evaluationId:evaluation.id,key:"importDutyPct",value:0,status:"VERIFIED"}]});
+    const args={quoteId:quote.id,evaluationId:evaluation.id,confirmed:true,fxRate:"0.8",fxSource:"https://example.com/fixture-fx",fxDate:new Date().toISOString().slice(0,10)};
+    await assert.rejects(applySourcingQuote({...args,confirmed:false}));
+    await assert.rejects(applySourcingQuote({...args,fxRate:"0"}));
+    await assert.rejects(applySourcingQuote({...args,fxDate:"2020-01-01"}),/seven days/);
+    assert.equal((await prisma.costInput.findUniqueOrThrow({where:{evaluationId_key:{evaluationId:evaluation.id,key:"supplierPrice"}}})).value,999);
+    await assert.rejects(applySourcingQuote({...args,evaluationId:otherEvaluation.id}),/do not match/);
+    await applySourcingQuote(args);await applySourcingQuote(args);
+    const inputs=await prisma.costInput.findMany({where:{evaluationId:evaluation.id}});
+    assert.equal(inputs.find(i=>i.key==="supplierPrice")?.value,98);
+    assert.equal(inputs.find(i=>i.key==="shippingToCustomer")?.value,365);
+    assert.equal(inputs.find(i=>i.key==="supplierPrice")?.status,"ESTIMATED");
+    assert.equal(inputs.find(i=>i.key==="importDutyPct")?.status,"UNKNOWN");
+    assert.equal(inputs.find(i=>i.key==="importDutyFixed")?.value,null);
+    assert.equal(inputs.find(i=>i.key==="sellingPrice")?.value,3000);
+    assert.equal(inputs.find(i=>i.key==="cac"),undefined);
+    const evidence=await prisma.evidence.findMany({where:{opportunityId}});
+    assert.equal(evidence.length,2);assert.ok(evidence.every(e=>e.provenance==="ASSUMPTION"&&e.outcome==="INCONCLUSIVE"));
+    await prisma.market.update({where:{id:marketId},data:{countryCode:"US"}});
+    await assert.rejects(applySourcingQuote(args),/do not match/);
+    await prisma.market.update({where:{id:marketId},data:{countryCode:"GB"}});
+    await prisma.shippingQuote.update({where:{id:quote.id},data:{expiresAt:new Date(Date.now()-1000)}});
+    await assert.rejects(applySourcingQuote(args),/stale/);
+    await prisma.shippingQuote.update({where:{id:quote.id},data:{expiresAt:new Date(Date.now()+86400000)}});
+    await prisma.supplierVariant.update({where:{id:variant.id},data:{active:false}});
+    await assert.rejects(applySourcingQuote(args),/no longer active/);
+    console.log("PASS: quote confirmation, atomic validation, FX direction, market/route identity, duty reset, preserved unknown CAC, idempotent evidence and stale-quote protection");
+  } finally {
+    if(listingId)await prisma.sourceListing.delete({where:{id:listingId}});
+    if(opportunityId)await prisma.opportunity.delete({where:{id:opportunityId}});
+    if(marketId)await prisma.market.delete({where:{id:marketId}});
+    if(otherMarketId)await prisma.market.delete({where:{id:otherMarketId}});
+  }
+}
+main().catch(e=>{console.error(e instanceof Error ? e.message : "Sourcing check failed");process.exitCode=1;}).finally(()=>prisma.$disconnect());
