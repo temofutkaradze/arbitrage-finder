@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DataStatus {
+  VERIFIED
+  ESTIMATED
+  UNKNOWN
+}
+
+model Market {
+  id               Int          @id @default(autoincrement())
+  code             String       @unique
+  name             String
+  currency         String       @default("USD")
+  pricesIncludeTax Boolean      @default(false)
+  // Default assumptions for this market: { [inputKey]: { value, status, note } }
+  assumptions      Json         @default("{}")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  evaluations      Evaluation[]
+}
+
+model Opportunity {
+  id          Int          @id @default(autoincrement())
+  name        String
+  category    String?
+  sourceName  String?
+  sourceUrl   String?
+  notes       String?
+  isSample    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evaluations Evaluation[]
+}
+
+model Evaluation {
+  id            Int         @id @default(autoincrement())
+  opportunityId Int
+  marketId      Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  market        Market      @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  inputs        CostInput[]
+
+  @@unique([opportunityId, marketId])
+}
+
+// value: money = minor units (cents), percent = basis points, count = whole number
+model CostInput {
+  id           Int        @id @default(autoincrement())
+  evaluationId Int
+  key          String
+  value        Int?
+  status       DataStatus @default(UNKNOWN)
+  note         String?
+  updatedAt    DateTime   @updatedAt
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, key])
+}
