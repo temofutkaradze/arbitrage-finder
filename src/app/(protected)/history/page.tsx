@@ -17,7 +17,7 @@ export default async function History({searchParams}:{searchParams:Promise<{eval
  return <><h1>ფინანსური ცვლილებების ისტორია</h1><p>შენახვის დრო, მოქმედების წყარო და ძველი/ახალი მონაცემები. ისტორია იწყება ფუნქციის დამატებიდან; მანამდე მომხდარ ცვლილებებს არ ვიგონებთ.</p>
  <p className="mut">ისტორია ეკუთვნის შესაბამის შეფასებას/ბაზარს: მათი წაშლა მათ ისტორიასაც შლის. გრძელვადიანი შენახვისთვის გამოიყენე ბაზის backup. ეს არ არის აღდგენის ღილაკი ან დამოუკიდებელი აუდიტის დასკვნა. VERIFIED მომხმარებლის მინიჭებული სტატუსია და არა დამოუკიდებელი სერტიფიცირება.</p>
  {(evaluationId!==undefined||marketId!==undefined)&&<p>ფილტრი: {evaluationId!==undefined?`შეფასება #${evaluationId}`:`ბაზარი #${marketId}`} · <Link href="/history">ყველა ჩანაწერი</Link></p>}
- {!page.length&&<p>ამ ფილტრით ცვლილებები ჯერ არ არის აღრიცხული.</p>}
+ {!page.length&&<section className="card"><p>ამ ფილტრით ცვლილებები ჯერ არ არის აღრიცხული.</p><p>პროდუქტის ძიება და კვლევის გვერდის ნახვა ფინანსურ ცვლილებას არ ქმნის. ჩანაწერი ჩნდება ბაზრის ან შეფასების შექმნისა და ფინანსური მონაცემების შენახვისას.</p><Link href="/products">გახსენი პროდუქტი და მისი შეფასება</Link>{(evaluationId!==undefined||marketId!==undefined||beforeId!==undefined)&&<p><Link href="/history">ყველა ფინანსური ცვლილება</Link></p>}</section>}
  {page.map(r=>{const before=readSnapshot(r.before),after=readSnapshot(r.after),changes=after?snapshotChanges(before,after):[];return <section className="card" key={r.id}>
   <h2>{kindLabels[r.kind]??r.kind} · {after?.product?.name??after?.market.name??`ჩანაწერი #${r.recordId}`}</h2>
   <p>{date(r.createdAt)} — თბილისის დრო · <span className="mut">UTC {r.createdAt.toISOString()} · #{r.id} · ვერსია {before?.version??"შექმნამდე"} → {r.version}</span></p>

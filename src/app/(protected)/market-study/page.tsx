@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOwner } from "@/lib/auth/server";
 import snapshot from "@/lib/market-study/snapshot.json";
 import { Followup } from "./Followup";
@@ -5,7 +6,8 @@ import { routeSummary } from "@/lib/market-study/summary";
 export const dynamic = "force-dynamic";
 export default async function MarketStudy() {
  await requireOwner(false);
- return <><h1>საქართველო და აშშ — პირველი კვლევა</h1><p>შემოწმების თარიღი: {snapshot.checkedDateGeorgia}. ეს თარიღიანი კვლევის სურათია; გვერდის გახსნა ახალ API მოთხოვნას არ აგზავნის.</p>
+ return <><h1>საქართველო და აშშ — საწყისი კვლევის მაგალითი</h1>
+ <section className="card"><h2>წინასწარ მომზადებული კვლევა</h2><p>ეს კვლევა AI ასისტენტმა მოამზადა პროექტზე მუშაობისას, ქვემოთ მითითებული წყაროებითა და თარიღებით. ეს არ არის საიტის ავტომატური კვლევის შედეგების სია და გვერდის გახსნისას არ ახლდება.</p><p>შენი ახალი პროდუქტები და მათი კვლევები აქ არ ემატება. თითოეულ შენახულ პროდუქტს თავისი გვერდი, შეფასებები და მტკიცებულებები აქვს.</p><div className="bar"><Link href="/discovery">მოძებნე კანდიდატები</Link><Link href="/products">ჩემი პროდუქტები და კვლევები</Link></div></section><p>შემოწმების თარიღი: {snapshot.checkedDateGeorgia}. ეს თარიღიანი კვლევის სურათია; გვერდის გახსნა ახალ API მოთხოვნას არ აგზავნის.</p>
  <p className="warn">გაყიდვის დაწყება ჯერ დასაბუთებული არ არის: მერჩანტად მიღება, ზუსტად შესადარებელი კონკურენტები, საგადასახადო კლასიფიკაცია და სრული ეკონომიკა დაუზუსტებელია. ქვემოთ ნაჩვენებია პროდუქტი + მიწოდება და არა სრული თვითღირებულება ან მოგება.</p>
  <Followup/>
  <h2>პირველი ეტაპის მონაცემები — იგივე ზუსტი ვარიანტი — ორი მარშრუტი</h2>

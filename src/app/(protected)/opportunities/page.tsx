@@ -23,7 +23,7 @@ export default async function Opportunities({ searchParams }: { searchParams: Pr
     .sort((a, b) => compareOpportunities(a, b, sort));
   return (
     <>
-      <h1>Opportunities</h1>
+      <h1>პროდუქტების შეფასებები</h1><p><Link href="/products">ყველა შენახული პროდუქტი, მათ შორის ჯერ შეუფასებელი →</Link></p>
       <p className="mut">Grouped by currency, then research readiness and the selected metric. Contribution after ads excludes fixed business overhead and income tax. Incomplete evaluations are marked missing economics. Minimum contribution uses each row’s local currency. Research evidence is recorded on each product.</p>
       <form className="bar" method="get">
         <select name="market" defaultValue={sp.market ?? ""}><option value="">All markets</option>{markets.map((m) => <option key={m.id} value={m.code}>{m.code}</option>)}</select>

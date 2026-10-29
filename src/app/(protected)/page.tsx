@@ -23,6 +23,7 @@ export default async function Overview() {
   return (
     <>
       <h1>Overview</h1>
+      <section className="card"><h2>პროდუქტის კვლევის გზა</h2><ol><li><Link href="/discovery">Discovery</Link> — მოძებნე კანდიდატი და აირჩიე Investigate this candidate.</li><li><Link href="/products">ჩემი პროდუქტები</Link> — გახსენი შენახული პროდუქტი, შეაგროვე წყაროები და შეამოწმე ვარიანტი და მიწოდება.</li><li><Link href="/research">Research</Link> — შეადარე კონკურენტები შენ მიერ არჩეულ ბაზარზე.</li><li><Link href="/opportunities">შეფასებები</Link> — შეავსე ხარჯები და შეადარე ეკონომიკა. უცნობი მონაცემი დადასტურებული მოგება არ არის.</li></ol><p className="mut">საწყისი GE / US კვლევა ცალკე მომზადებული მაგალითია. ავტომატური კანდიდატების ძიება იმართება Automation-იდან; სრული მოთხოვნისა და მოგების ავტომატური კვლევა ჯერ არ არის დაკავშირებული.</p></section>
       <p className="mut">Only saved evaluations are counted. Contribution after ads excludes fixed overhead and income tax. Nothing here is a forecast or a guarantee of profit.</p>
       {sampleCount > 0 && <p className="sample">{sampleCount} SAMPLE item(s) exist and are excluded from every number below.</p>}
       <p><Link href="/discovery">{candidateCount} catalogue candidates awaiting research</Link>. Catalogue entries are excluded from profit metrics until evaluated.</p>
@@ -43,7 +44,7 @@ export default async function Overview() {
         <ul>{recent.map((o) => <li key={o.id}><Link href={`/opportunities/${o.id}`}>{o.name}</Link> <span className="mut">{o.createdAt.toLocaleDateString()}</span></li>)}</ul>
       )}
       <h2>Recent price changes</h2>
-      <p className="mut">No price history is collected yet. Tracking begins with the first live data source (a later milestone).</p>
+      <p className="mut">Catalogue price observations are available on each candidate in Discovery. This overview does not aggregate price changes.</p>
     </>
   );
 }
