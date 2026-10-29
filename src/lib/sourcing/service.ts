@@ -7,6 +7,8 @@ import { validRateDate } from "../fx/reference";
 import { EditConflictError } from "../forms/editing";
 import { sourceUrl } from "../discovery/schema";
 
+import { captureEvaluation, recordChange } from "../finance-history/write";
+
 export const FRESH_FOR_MS = 24 * 3600_000;
 export async function reserveCjOperation() {
   return prisma.$transaction(async (tx) => {
@@ -78,6 +80,7 @@ async function applySourcingQuoteInternal(input: z.infer<typeof applySchema>) {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const quote = await tx.shippingQuote.findUniqueOrThrow({ where: { id: args.quoteId }, include: { variant: { include: { listing: true } }, market: true } });
     const evaluation = await tx.evaluation.findUniqueOrThrow({ where: { id: args.evaluationId } });
+    const before = await captureEvaluation(tx, evaluation.id);
     if (args.expectedVersion !== undefined && evaluation.version !== args.expectedVersion) throw new EditConflictError();
     if (quote.expiresAt <= new Date() || !quote.productObservedAt || Date.now() - quote.productObservedAt.getTime() >= FRESH_FOR_MS || !quote.variant.active) throw new Error("This quote is stale or the variant is no longer active. Refresh before applying.");
     if (evaluation.marketId !== quote.marketId || quote.market.countryCode !== quote.destinationCountry || evaluation.opportunityId !== quote.variant.listing.opportunityId) throw new Error("Quote, market and product do not match this evaluation.");
@@ -120,6 +123,12 @@ async function applySourcingQuoteInternal(input: z.infer<typeof applySchema>) {
         observedAt: kind === "SOURCING" ? quote.productObservedAt : quote.observedAt, expiresAt: quote.expiresAt,
       } });
     }
+    await recordChange(tx, "CJ_QUOTE", before, await captureEvaluation(tx, evaluation.id), {
+      actor: "OWNER_CONFIRMED_QUOTE", reason: "Applied supplier/shipping estimates; import duty inputs reset for review",
+      quoteId: quote.id, variantId: quote.variant.externalId, origin: quote.originCountry, destination: quote.destinationCountry,
+      postalCode: quote.postalCode, method: quote.method, observedAtUtc: quote.observedAt.toISOString(),
+      productObservedAtUtc: quote.productObservedAt.toISOString(), fx: fxNote,
+    });
     return { opportunityId: evaluation.opportunityId, version: updated.version };
   }, { timeout: 20_000 });
 }

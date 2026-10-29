@@ -308,3 +308,9 @@ is atomic. See [behavior and browser regression checks](docs/FORMS.md).
 Finance inputs, market settings and quote application now reject older edit
 versions instead of overwriting newer saves. See [concurrent edit behavior and
 laptop migration instructions](docs/EDIT-CONFLICTS.md).
+
+## Financial history
+
+Owner-only `/history` records before/after inputs, statuses, notes, saved
+calculations and manual/quote/market-change provenance in the same transaction
+as each write. See [coverage, retention and laptop migration](docs/FINANCIAL-HISTORY.md).

@@ -44,7 +44,8 @@ npm.cmd run dev -- --hostname 127.0.0.1
 
 Keep normal backups. Do not reset the database. Old pages without edit metadata
 are rejected; reopen them after updating. No new credentials or provider calls are
-needed. This is a code/schema change, not a full history/audit-log implementation.
+needed. Financial edit history is now captured separately; see FINANCIAL-HISTORY.md for
+coverage and parent-record retention rules.
 Other flows such as evidence entry, competitor review and owner sign-in retain
 their separate validation; they are not all made versioned by this change.
 

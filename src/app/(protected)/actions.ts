@@ -15,6 +15,8 @@ import { InputValidationError } from "@/lib/forms/errors";
 import { sourceUrl } from "@/lib/discovery/schema";
 import type { StoredInput } from "@/lib/data/queries";
 
+import { captureEvaluation, captureMarketEvaluations, marketSnapshot, recordChange, historyData } from "@/lib/finance-history/write";
+
 const STATUSES: DataStatus[] = ["VERIFIED", "ESTIMATED", "UNKNOWN"];
 const text = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const id = (fd: FormData, k: string) => z.coerce.number().int().positive().parse(fd.get(k));
@@ -41,7 +43,10 @@ export async function createMarket(fd: FormData) {
     currency: z.enum(CURRENCIES),
     countryCode: countryCode.nullable(),
   }).parse({ code: text(fd, "code"), name: text(fd, "name"), currency: text(fd, "currency"), countryCode: text(fd, "countryCode") || null });
-  await prisma.market.create({ data: { ...m, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
+  await prisma.$transaction(async tx => {
+    const created = await tx.market.create({ data: { ...m, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
+    await recordChange(tx, "MARKET_CREATED", null, marketSnapshot(created), { actor: "OWNER", reason: "Market created; defaults start unknown" });
+  });
   revalidatePath("/markets");
 }
 
@@ -54,6 +59,8 @@ export async function saveMarket(fd: FormData) {
   const savedVersion = await prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const previous = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
+    const contextChanged = previous.countryCode !== destination || previous.pricesIncludeTax !== (fd.get("pricesIncludeTax") === "on");
+    const oldEvaluations = contextChanged ? await captureMarketEvaluations(tx, previous) : [];
     const claimed = await tx.market.updateMany({ where: { id: marketId, version }, data: { version: { increment: 1 }, assumptions, countryCode: destination, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
     if (claimed.count !== 1) throw new EditConflictError();
     if (previous.countryCode !== destination) {
@@ -67,21 +74,33 @@ export async function saveMarket(fd: FormData) {
       await tx.externalOffer.updateMany({where:{marketId},data:{state:"INVALIDATED",reviewNote:"Destination changed; repeat market-specific research."}});
 
     }
-    if (previous.countryCode !== destination || previous.pricesIncludeTax !== (fd.get("pricesIncludeTax") === "on")) {
+    if (contextChanged) {
       await tx.evaluation.updateMany({ where: { marketId }, data: { version: { increment: 1 }, updatedAt: new Date() } });
     }
+    const latestMarket = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
+    const marketChange = await recordChange(tx, "MARKET_SETTINGS", marketSnapshot(previous), marketSnapshot(latestMarket), { actor: "OWNER", reason: "Market assumptions, tax display or destination saved" });
+    if (contextChanged) {
+      const latest = await captureMarketEvaluations(tx, latestMarket);
+      const oldById = new Map(oldEvaluations.map(e => [e.id, e]));
+      if (latest.some(e => !oldById.has(e.id))) throw new Error("Evaluation set changed during market history capture");
+      if (latest.length) await tx.financialChange.createMany({ data: latest.map(e => historyData("MARKET_CONTEXT", oldById.get(e.id)!, e, {
+        actor: "MARKET_CHANGE", marketChangeId: marketChange.id,
+        reason: previous.countryCode !== destination ? "Destination changed; copied CJ cost estimates cleared for review. Manually entered costs preserved." : "Tax-inclusive price interpretation changed; stored cost inputs preserved.",
+      })) });
+    }
     return version + 1;
-  });
+  }, { timeout: 20_000 });
   revalidatePath("/", "layout");
   return savedVersion;
 }
 
-async function createEvaluation(opportunityId: number, marketId: number, db: Prisma.TransactionClient = prisma) {
+async function createEvaluation(opportunityId: number, marketId: number, db: Prisma.TransactionClient) {
+  const existing = await db.evaluation.findUnique({ where: { opportunityId_marketId: { opportunityId, marketId } } });
+  if (existing) return;
   const market = await db.market.findUniqueOrThrow({ where: { id: marketId } });
   const a = (market.assumptions ?? {}) as unknown as Record<string, StoredInput>;
-  await db.evaluation.upsert({
-    where: { opportunityId_marketId: { opportunityId, marketId } }, update: {},
-    create: {
+  const created = await db.evaluation.create({
+    data: {
       opportunityId, marketId,
       inputs: {
         create: INPUT_KEYS.map((key) => {
@@ -91,6 +110,7 @@ async function createEvaluation(opportunityId: number, marketId: number, db: Pri
       },
     },
   });
+  await recordChange(db, "EVALUATION_CREATED", null, await captureEvaluation(db, created.id), { actor: "OWNER", reason: "Evaluation initialized from market defaults; remaining inputs unknown" });
 }
 
 export async function createOpportunity(fd: FormData) {
@@ -104,6 +124,7 @@ export async function createOpportunity(fd: FormData) {
   }).parse({ name: text(fd, "name"), category: text(fd, "category"), sourceName: text(fd, "sourceName"), sourceUrl: text(fd, "sourceUrl"), notes: text(fd, "notes") });
   const marketIds = fd.getAll("markets").map((v) => z.coerce.number().int().positive().parse(v));
   const opp = await prisma.$transaction(async tx => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const product = await tx.opportunity.create({
       data: { name: o.name, category: o.category || null, sourceName: o.sourceName || null, sourceUrl: o.sourceUrl || null, notes: o.notes || null },
     });
@@ -117,7 +138,11 @@ export async function createOpportunity(fd: FormData) {
 export async function addEvaluation(fd: FormData) {
  await requireOwner();
   const opportunityId = id(fd, "opportunityId");
-  await createEvaluation(opportunityId, id(fd, "marketId"));
+  const marketId = id(fd, "marketId");
+  await prisma.$transaction(async tx => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+    await createEvaluation(opportunityId, marketId, tx);
+  });
   revalidatePath(`/opportunities/${opportunityId}`);
 }
 
@@ -127,12 +152,14 @@ export async function saveEvaluation(fd: FormData) {
   const inputs = readInputs(fd, INPUT_KEYS);
   await prisma.$transaction(async tx => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+    const before = await captureEvaluation(tx, evaluationId);
     const claimed = await tx.evaluation.updateMany({ where: { id: evaluationId, version }, data: { version: { increment: 1 } } });
     if (claimed.count !== 1) throw new EditConflictError();
     for (const i of inputs) await tx.costInput.upsert({
       where: { evaluationId_key: { evaluationId, key: i.key } }, create: { evaluationId, ...i },
       update: { value: i.value, status: i.status, note: i.note },
     });
+    await recordChange(tx, "MANUAL_INPUTS", before, await captureEvaluation(tx, evaluationId), { actor: "OWNER", reason: "Financial inputs saved manually" });
   });
   revalidatePath("/", "layout");
   return version + 1;

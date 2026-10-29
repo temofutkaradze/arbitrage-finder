@@ -91,3 +91,4 @@ jobs:
           node --import tsx scripts/check-forms-browser.ts
           node --import tsx scripts/check-edit-conflicts.ts
           node --import tsx scripts/check-edit-conflicts-browser.ts
+          node --import tsx scripts/check-finance-history.ts

@@ -27,7 +27,7 @@ expiry and retirement reason. Expired/retired records remain in the report but
 cannot satisfy current evidence readiness. Competitor observations preserve match,
 shipping unknowns and tax basis; no sales or recommended prices are inferred.
 Unreviewed provider offers, supplier variants/quotes and their histories, catalogue
-price history and identity/link audit history are outside this first report.
+price history, financial edit history and identity/link audit history are outside this first report.
 The original records remain in the database.
 
 The download requires a valid owner session directly in its route handler, and

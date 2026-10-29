@@ -41,6 +41,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
         return (
           <section className="card" key={e.id}>
             <h2 style={{ marginTop: 0 }}>{e.market.code} · {e.market.name} <Quality q={c.quality} /></h2>
+            <p><Link href={`/history?evaluation=${e.id}`}>Financial change history</Link></p>
             <p><b>{research.label}</b> · {research.next}</p>
             {research.missing.length > 0 && <p className="mut">Evidence still needed: {research.missing.join(", ").toLowerCase().replaceAll("_", " ")}</p>}
             {!c.complete && beforeAds && <div className="warn">Before advertising: {m(beforeAds.contribution)} / order. Break-even CAC: {beforeAds.contribution > 0 ? m(beforeAds.contribution) : "No positive ad budget"}. Advertising profit remains unknown. {beforeAds.assumedZero.length} optional inputs assumed zero; {beforeAds.estimatedKeys.length} inputs estimated.</div>}
@@ -118,7 +119,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       )}
       <form action={deleteOpportunity} className="bar">
         <input type="hidden" name="opportunityId" value={opp.id} />
-        <button>Delete this opportunity</button> <Link href="/opportunities">Back to list</Link>
+        <button>Delete this opportunity</button><span className="mut">Deleting also removes its evaluation history. Keep database backups for retention.</span> <Link href="/opportunities">Back to list</Link>
       </form>
     </>
   );
