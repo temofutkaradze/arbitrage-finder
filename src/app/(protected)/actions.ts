@@ -125,7 +125,12 @@ export async function saveEvaluation(fd: FormData) {
 
 export async function deleteOpportunity(fd: FormData) {
  await requireOwner();
-  await prisma.opportunity.delete({ where: { id: id(fd, "opportunityId") } });
+  const opportunityId = id(fd, "opportunityId");
+  await prisma.$transaction(async (tx) => {
+    // Serialize deletion with supplier identity review and candidate promotion.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340921)`;
+    await tx.opportunity.delete({ where: { id: opportunityId } });
+  });
   revalidatePath("/", "layout");
   redirect("/opportunities");
 }

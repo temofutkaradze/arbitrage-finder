@@ -91,7 +91,47 @@ model SourceListing {
   opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
   observations  ListingObservation[]
   variants      SupplierVariant[]
+  identity      ListingIdentity?
   @@unique([provider, externalId, variantId])
+}
+
+// Operator-entered identifiers; catalogue refreshes never overwrite these.
+model ListingIdentity {
+  listingId Int @id
+  listing SourceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  revision Int
+  gtin String?
+  brand String?
+  mpn String?
+  packUnits Int?
+  variantKey String?
+  sourceUrl String
+  observedAt DateTime
+  note String
+  updatedAt DateTime @updatedAt
+  @@index([gtin])
+  @@index([brand, mpn])
+}
+
+// Immutable snapshots survive deletion of a catalogue row or opportunity.
+model IdentityRevision {
+  id Int @id @default(autoincrement())
+  listingId Int
+  revision Int
+  snapshot Json
+  createdAt DateTime @default(now())
+  @@unique([listingId, revision])
+}
+
+model ListingLinkDecision {
+  id Int @id @default(autoincrement())
+  listingId Int
+  opportunityId Int
+  kind String
+  note String
+  snapshot Json
+  createdAt DateTime @default(now())
+  @@index([listingId, createdAt])
 }
 
 model ListingObservation {

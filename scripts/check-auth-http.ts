@@ -16,7 +16,7 @@ async function post(path:string,html:string,values:Record<string,string>,cookie?
 async function main(){
  let cookie:string|undefined;const temporary:string[]=[];
  try{
-  for(const path of ["/","/research","/markets","/discovery","/automation"]){const r=await fetch(origin+path,{redirect:"manual"});assert.equal(r.status,307);assert.equal(r.headers.get("location"),"/login");}
+  for(const path of ["/","/research","/markets","/discovery","/automation","/matching"]){const r=await fetch(origin+path,{redirect:"manual"});assert.equal(r.status,307);assert.equal(r.headers.get("location"),"/login");}
   const html=await(await fetch(origin+"/login")).text();
   const privateAccess=await readFile(resolve("../.cloud-setup/owner-access.txt"),"utf8");const password=privateAccess.split("\n").find(l=>l.startsWith("Password: "))?.slice(10);assert.ok(password);
   // Authenticate normally; never print credentials, cookie values or response bodies.

@@ -32,6 +32,7 @@ export default async function Discovery() {
     {listings.map((l) => <section className="card" key={l.id}>
       <h2>{l.name}</h2><p><a href={l.url} rel="noopener noreferrer" target="_blank">Source record</a> · {l.importedVia === "CJ_API" ? "Received from CJ API" : "User-imported catalogue"} · {l.provider} · {l.externalId}{l.variantId && ` / ${l.variantId}`}</p>
       <p>Catalogue price: <b>{l.priceMinor === null ? "Unknown / price range" : formatMoney(l.priceMinor, l.currency)}</b> · Observed {l.observedAt.toISOString().slice(0,10)}{new Date().getTime() - l.observedAt.getTime() > 7*86400000 && <span className="sample"> · Older than 7 days — refresh before relying on it</span>}</p>
+      <p><Link href={`/matching?listing=${l.id}`}>Compare product identifiers</Link></p>
       {l.provider === "cj" && l.importedVia === "CJ_API" && <p><Link href={`/discovery/${l.id}`}>Variant prices &amp; shipping estimates</Link></p>}
       <p className="mut">Next: verify the exact variant and a delivered supplier quote, then research the target market.</p>
       <details><summary>Recent price observations</summary><ul>{l.observations.map((o) => <li key={o.id}>{o.observedAt.toISOString()} · {o.importedVia} — {o.priceMinor === null ? "Unknown" : formatMoney(o.priceMinor, o.currency)}</li>)}</ul></details>

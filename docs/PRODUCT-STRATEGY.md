@@ -66,9 +66,9 @@ One Next.js app, one PostgreSQL database, existing deterministic calculator. Sou
 
 JSON import validates the entire batch before writing, then runs atomically under a PostgreSQL advisory lock. Same observation re-imports are idempotent. Older observations and conflicting values at the same timestamp reject the whole batch. Concurrent promotion creates one opportunity. Later observations preserve history. Each record and price observation distinguishes user import from a direct CJ API response. Promotion never silently copies a catalogue cost into all market currencies or marks it verified.
 
-In the managed runtime Node.js 24 configures fetch from the inherited proxy environment; token injection stays on its supported HTTPS route and TLS verification stays enabled. CJ search is deliberately bounded to one page, has a durable 30-second cooldown and a 20-second request timeout, fails closed on changed response shapes and does not retry quota failures. An authentication rejection permits one official API-key exchange and one catalogue retry; repeated authentication failure stops. No full-catalogue scheduler, automatic matching, automatic competitor research, AI analysis or Shopify publishing is connected yet. Avoid claiming these features are complete.
+In the managed runtime Node.js 24 configures fetch from the inherited proxy environment; token injection stays on its supported HTTPS route and TLS verification stays enabled. CJ search is deliberately bounded to one page, has a durable 30-second cooldown and a 20-second request timeout, fails closed on changed response shapes and does not retry quota failures. An authentication rejection permits one official API-key exchange and one catalogue retry; repeated authentication failure stops. Bounded recurring discovery and reviewed identifier matching are described below; full-catalogue coverage, automatic competitor research, AI analysis and Shopify publishing remain unimplemented. Avoid claiming these features are complete.
 
-The current application is a private single-operator app without an authentication layer. Keep development bound to loopback. Authentication/authorization, retention policy and deployment hardening are required before making it a public or multi-user service.
+The application is private and single-operator, with owner authentication and mutation-origin checks. Keep laptop development bound to loopback. Public deployment and multi-user service require their own deployment and retention review; see DEPLOYMENT.md.
 
 ## Next milestones and acceptance
 
@@ -205,3 +205,19 @@ Validation: 73 unit tests, database pipeline tests and production HTTP review/
 destination-change tests with temporary fixtures and mocked provider responses.
 No real eBay data or commercial market was created. Live provider readiness is
 not claimed. Manual source-based competitor research continues without eBay.
+
+## Reviewed supplier identity matching (2026-10-29)
+
+A sourced, deterministic GTIN or brand/MPN workflow now links one supplier
+listing to existing research after explicit pack/variant review. Contradictions,
+missing specifications, ambiguous research targets and stale forms block writes.
+Identifiers have revision history independent of catalogue refresh; reviewed
+links have audited undo. Costs, currencies, evaluations and evidence are preserved.
+This is supplier identity review, not automated identifier extraction, research
+record merging, eBay product matching, or demand validation. No new API key,
+commercial market or provider request is involved. See [workflow and limits](MATCHING.md).
+
+Validated with 81 unit tests, production build, lint/types, PostgreSQL matching
+checks and authenticated production HTTP form checks. Temporary fixtures and
+their audit rows are removed. Shipping testing on the operator laptop is deferred
+at the operator's request; no additional live shipping result is asserted here.

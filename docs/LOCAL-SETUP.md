@@ -102,3 +102,9 @@ executor when PowerShell is unavailable; first execution on the actual Windows
 laptop remains a necessary check. This chat cannot directly access or start your
 laptop's processes. Share errors without passwords/connection strings if a step
 fails. GitHub backs up code, not your PostgreSQL data; use database backups too.
+
+## Updating an existing installation
+
+Stop the app with Ctrl+C. For the reviewed matching update, follow the
+[update commands and workflow](MATCHING.md#updating-the-windows-laptop).
+Keep your existing ignored `.env` and `.env.local`; no new secret is needed.

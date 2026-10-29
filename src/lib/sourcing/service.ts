@@ -64,6 +64,8 @@ const applySchema = z.object({
 export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
   const args = applySchema.parse(input);
   return prisma.$transaction(async (tx) => {
+    // A listing cannot be detached or relinked during quote/product validation.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340921)`;
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const quote = await tx.shippingQuote.findUniqueOrThrow({ where: { id: args.quoteId }, include: { variant: { include: { listing: true } }, market: true } });
     const evaluation = await tx.evaluation.findUniqueOrThrow({ where: { id: args.evaluationId } });
