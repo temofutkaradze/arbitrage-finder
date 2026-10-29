@@ -304,3 +304,7 @@ no production secrets and performs no deployment. See [checks and limits](docs/C
 Shared business forms now preserve entered values through validation/network
 failures and prevent simultaneous duplicate clicks. Product/evaluation creation
 is atomic. See [behavior and browser regression checks](docs/FORMS.md).
+
+Finance inputs, market settings and quote application now reject older edit
+versions instead of overwriting newer saves. See [concurrent edit behavior and
+laptop migration instructions](docs/EDIT-CONFLICTS.md).

@@ -89,3 +89,5 @@ jobs:
           node --import tsx scripts/check-store-draft-http.ts
           node --import tsx scripts/check-market-study-http.ts
           node --import tsx scripts/check-forms-browser.ts
+          node --import tsx scripts/check-edit-conflicts.ts
+          node --import tsx scripts/check-edit-conflicts-browser.ts

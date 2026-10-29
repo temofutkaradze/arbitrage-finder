@@ -20,9 +20,8 @@ Opportunity plus selected evaluations are created in a single transaction. A
 missing market rolls back all of them. Repeated evaluation creation preserves
 existing inputs. Money/count values must fit supported integer bounds and notes
 are limited to 2,000 characters; source URLs require HTTP(S) without credentials.
-A rejected update does not replace saved cost inputs. Concurrent edits from
-separate browser tabs still use the existing save behavior; version-conflict
-handling is outside this change. Native download/delete/sign-in forms have their
+A rejected update does not replace saved cost inputs. Concurrent finance, market and quote forms now have version checks; see
+[edit conflicts](EDIT-CONFLICTS.md). Native download/delete/sign-in forms have their
 own flows and are not all converted to the shared component.
 
 A pinned development-only Playwright dependency exercises real Chromium in CI.

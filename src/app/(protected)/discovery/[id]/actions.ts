@@ -2,8 +2,10 @@
 import {requireOwner} from "@/lib/auth/server";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { refreshVariants, reserveCjOperation, fetchFreight, applySourcingQuote } from "@/lib/sourcing/service";
+import { refreshVariants, reserveCjOperation, fetchFreight, applySourcingQuoteVersioned } from "@/lib/sourcing/service";
 import { quoteRequestSchema } from "@/lib/sourcing/schema";
+import { expectedVersion, EditConflictError, type EditResult } from "@/lib/forms/editing";
+import { InputValidationError, formError } from "@/lib/forms/errors";
 const messages = ["CJ ", "Wait ", "Select ", "Set ", "Refresh ", "The selected ", "This ", "Quote,", "Use an FX", "FX "];
 function safeError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
@@ -29,15 +31,16 @@ export async function requestShipping(_: string, data: FormData) {
     return count ? `Saved ${count} shipping estimates for one unit. Review taxes and delivery limitations.` : "CJ returned no shipping methods for this route. This does not prove that all fulfilment options are unavailable.";
   } catch (error) { return safeError(error); }
 }
-export async function applyQuote(_: string, data: FormData) {
+export async function applyQuote(state: EditResult, data: FormData): Promise<EditResult> {
  await requireOwner();
   try {
-    const opportunityId = await applySourcingQuote({
+    const { opportunityId, version } = await applySourcingQuoteVersioned({
+      expectedVersion: expectedVersion(data),
       fxSnapshotId: data.get("fxSnapshotId") ? Number(data.get("fxSnapshotId")) : undefined,
       quoteId: Number(data.get("quoteId")), evaluationId: Number(data.get("evaluationId")), confirmed: data.get("confirmed") === "on",
       fxRate: String(data.get("fxRate") ?? ""), fxSource: String(data.get("fxSource") ?? ""), fxDate: String(data.get("fxDate") ?? ""),
     });
     revalidatePath("/", "layout");
-    return `Applied as estimates to opportunity ${opportunityId}. Duty inputs were cleared for review; no other financial inputs were filled.`;
-  } catch (error) { return safeError(error); }
+    return { message: `Applied as estimates to opportunity ${opportunityId}. Duty inputs were cleared for review; no other financial inputs were filled.`, version, saved: true, conflict: false };
+  } catch (error) { return { message: error instanceof InputValidationError ? formError(error) : safeError(error), version: state.version, saved: false, conflict: error instanceof EditConflictError }; }
 }

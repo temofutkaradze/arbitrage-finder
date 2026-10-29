@@ -45,7 +45,7 @@ export async function getOpportunity(id: number) {
     ...o,
     evaluations: o.evaluations.map((e) => {
       const inputs = rowsToInputs(e.inputs);
-      return { id: e.id, market: e.market, inputs, result: calculate(inputs, { pricesIncludeTax: e.market.pricesIncludeTax }) };
+      return { id: e.id, version: e.version, market: e.market, inputs, result: calculate(inputs, { pricesIncludeTax: e.market.pricesIncludeTax }) };
     }),
   };
 }

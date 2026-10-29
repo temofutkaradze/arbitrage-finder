@@ -8,6 +8,7 @@ import { formatMoney, formatPct, toDisplay } from "@/lib/profit/format";
 import { INPUT_DEFS, INPUT_KEYS, type InputKey } from "@/lib/profit/types";
 import { Badge, Quality } from "@/components/Badge";
 import { InputFields } from "@/components/InputFields";
+import { VersionedForm } from "@/components/VersionedForm";
 import { ActionForm } from "@/components/ActionForm";
 import { addEvidence } from "../evidence-actions";
 import { EVIDENCE_KINDS, PROVENANCE, researchReadiness } from "@/lib/research/readiness";
@@ -75,11 +76,11 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
             )}
             <details open={!c.complete}>
               <summary>Edit inputs</summary>
-              <ActionForm action={saveEvaluation} label="Save inputs">
+              <VersionedForm action={saveEvaluation} version={e.version} latestUrl={`/opportunities/${opp.id}`} label="Save inputs">
                 <input type="hidden" name="evaluationId" value={e.id} />
                 <InputFields keys={INPUT_KEYS} values={e.inputs} currency={cur} />
                 <div className="bar"><span className="mut">* required for a profit figure. A number left on “Unknown” is saved as an Estimate.</span></div>
-              </ActionForm>
+              </VersionedForm>
             </details>
             <details><summary>What-if calculator</summary><Calculator initial={initial} pricesIncludeTax={e.market.pricesIncludeTax} currency={cur} /></details>
           </section>

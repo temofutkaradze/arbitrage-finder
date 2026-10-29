@@ -4,6 +4,7 @@ import { requestCj } from "../discovery/cj";
 import { originsSchema, normalizeVariants, normalizeFreight, quoteRequestSchema } from "./schema";
 import { convertUsdMinor } from "./convert";
 import { validRateDate } from "../fx/reference";
+import { EditConflictError } from "../forms/editing";
 import { sourceUrl } from "../discovery/schema";
 
 export const FRESH_FOR_MS = 24 * 3600_000;
@@ -57,11 +58,19 @@ export async function fetchFreight(input: z.infer<typeof quoteRequestSchema>) {
   return quotes.length;
 }
 const applySchema = z.object({
+  expectedVersion: z.number().int().min(0).max(2147483646).optional(),
   quoteId: z.coerce.number().int().positive(), evaluationId: z.coerce.number().int().positive(),
   fxSnapshotId: z.number().int().positive().optional(),
   confirmed: z.boolean().refine((value) => value, "Confirm before applying"), fxRate: z.string().max(20), fxSource: z.string().max(1000), fxDate: z.string().max(30),
 });
 export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
+  return (await applySourcingQuoteInternal(input)).opportunityId;
+}
+export async function applySourcingQuoteVersioned(input: z.infer<typeof applySchema> & { expectedVersion: number }) {
+  z.number().int().min(0).max(2147483646).parse(input.expectedVersion);
+  return applySourcingQuoteInternal(input);
+}
+async function applySourcingQuoteInternal(input: z.infer<typeof applySchema>) {
   const args = applySchema.parse(input);
   return prisma.$transaction(async (tx) => {
     // A listing cannot be detached or relinked during quote/product validation.
@@ -69,6 +78,7 @@ export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const quote = await tx.shippingQuote.findUniqueOrThrow({ where: { id: args.quoteId }, include: { variant: { include: { listing: true } }, market: true } });
     const evaluation = await tx.evaluation.findUniqueOrThrow({ where: { id: args.evaluationId } });
+    if (args.expectedVersion !== undefined && evaluation.version !== args.expectedVersion) throw new EditConflictError();
     if (quote.expiresAt <= new Date() || !quote.productObservedAt || Date.now() - quote.productObservedAt.getTime() >= FRESH_FOR_MS || !quote.variant.active) throw new Error("This quote is stale or the variant is no longer active. Refresh before applying.");
     if (evaluation.marketId !== quote.marketId || quote.market.countryCode !== quote.destinationCountry || evaluation.opportunityId !== quote.variant.listing.opportunityId) throw new Error("Quote, market and product do not match this evaluation.");
     if (quote.productPriceMinor === null) throw new Error("This variant has no exact product price; confirm it before applying.");
@@ -100,7 +110,7 @@ export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
       create: { evaluationId: evaluation.id, key, value: null, status: "UNKNOWN", note },
       update: { value: null, status: "UNKNOWN", note },
     });
-    await tx.evaluation.update({ where: { id: evaluation.id }, data: { updatedAt: new Date() } });
+    const updated = await tx.evaluation.update({ where: { id: evaluation.id }, data: { version: { increment: 1 }, updatedAt: new Date() } });
     // Provider quotes are estimates, not observed delivery outcomes or demand.
     for (const kind of ["SOURCING", "SHIPPING"]) {
       const existing = await tx.evidence.findFirst({ where: { opportunityId: evaluation.opportunityId, marketId: evaluation.marketId, kind, summary: note.slice(0, 2000) } });
@@ -110,6 +120,6 @@ export async function applySourcingQuote(input: z.infer<typeof applySchema>) {
         observedAt: kind === "SOURCING" ? quote.productObservedAt : quote.observedAt, expiresAt: quote.expiresAt,
       } });
     }
-    return evaluation.opportunityId;
+    return { opportunityId: evaluation.opportunityId, version: updated.version };
   }, { timeout: 20_000 });
 }

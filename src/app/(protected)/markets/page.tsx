@@ -1,5 +1,6 @@
 import {requireOwner} from "@/lib/auth/server";
 import { prisma } from "@/lib/db/prisma";
+import { VersionedForm } from "@/components/VersionedForm";
 import { ActionForm } from "@/components/ActionForm";
 import { refreshFx } from "./fx-actions";
 import { validRateDate } from "@/lib/fx/reference";
@@ -36,13 +37,13 @@ export default async function Markets() {
         <section className="card" key={m.id}>
           <details>
             <summary><b>{m.code}</b> · {m.name} · {m.currency}</summary>
-            <ActionForm action={saveMarket} label="Save market assumptions">
+            <VersionedForm action={saveMarket} version={m.version} latestUrl="/markets" label="Save market assumptions">
               <input type="hidden" name="marketId" value={m.id} />
               <label>Destination country code (needed for shipping estimates)<input name="countryCode" defaultValue={m.countryCode ?? ""} maxLength={2} pattern="[A-Za-z]{2}" /></label>
               <label style={{ display: "inline" }}><input type="checkbox" name="pricesIncludeTax" defaultChecked={m.pricesIncludeTax} style={{ width: "auto" }} /> Prices include VAT/tax</label>
               <InputFields keys={MARKET_KEYS} values={(m.assumptions ?? {}) as unknown as Inputs} currency={m.currency} />
               <div className="bar"><span className="mut">Cost assumptions apply to new evaluations. Changing the destination clears applied CJ sourcing estimates for review.</span></div>
-            </ActionForm>
+            </VersionedForm>
           </details>
         </section>
       ))}

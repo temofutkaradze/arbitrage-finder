@@ -10,6 +10,7 @@ import { CURRENCIES } from "@/lib/discovery/schema";
 import { MARKET_KEYS } from "@/lib/profit/markets";
 import { INPUT_DEFS, INPUT_KEYS, type DataStatus, type InputKey } from "@/lib/profit/types";
 import type { Prisma } from "../../../generated/prisma/client";
+import { EditConflictError, expectedVersion } from "@/lib/forms/editing";
 import { InputValidationError } from "@/lib/forms/errors";
 import { sourceUrl } from "@/lib/discovery/schema";
 import type { StoredInput } from "@/lib/data/queries";
@@ -46,14 +47,15 @@ export async function createMarket(fd: FormData) {
 
 export async function saveMarket(fd: FormData) {
  await requireOwner();
-  const marketId = id(fd, "marketId");
+  const marketId = id(fd, "marketId"), version = expectedVersion(fd);
   const assumptions: Record<string, StoredInput> = {};
   for (const i of readInputs(fd, MARKET_KEYS)) assumptions[i.key] = { value: i.value, status: i.status, note: i.note };
   const destination = countryCode.nullable().parse(text(fd, "countryCode") || null);
-  await prisma.$transaction(async (tx) => {
+  const savedVersion = await prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
     const previous = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
-    await tx.market.update({ where: { id: marketId }, data: { assumptions, countryCode: destination, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
+    const claimed = await tx.market.updateMany({ where: { id: marketId, version }, data: { version: { increment: 1 }, assumptions, countryCode: destination, pricesIncludeTax: fd.get("pricesIncludeTax") === "on" } });
+    if (claimed.count !== 1) throw new EditConflictError();
     if (previous.countryCode !== destination) {
       // A route change invalidates copied CJ estimates, while preserving manually
       // entered costs and the immutable original quote for historical review.
@@ -63,10 +65,15 @@ export async function saveMarket(fd: FormData) {
       await tx.evidence.updateMany({ where: { marketId, kind: { in: ["SOURCING", "SHIPPING"] }, summary: { startsWith: "CJ estimate #" } }, data: { expiresAt: new Date() } });
       await tx.competitorObservation.updateMany({where:{marketId},data:{expiresAt:new Date()}});
       await tx.externalOffer.updateMany({where:{marketId},data:{state:"INVALIDATED",reviewNote:"Destination changed; repeat market-specific research."}});
-      await tx.evaluation.updateMany({ where: { marketId }, data: { updatedAt: new Date() } });
+
     }
+    if (previous.countryCode !== destination || previous.pricesIncludeTax !== (fd.get("pricesIncludeTax") === "on")) {
+      await tx.evaluation.updateMany({ where: { marketId }, data: { version: { increment: 1 }, updatedAt: new Date() } });
+    }
+    return version + 1;
   });
   revalidatePath("/", "layout");
+  return savedVersion;
 }
 
 async function createEvaluation(opportunityId: number, marketId: number, db: Prisma.TransactionClient = prisma) {
@@ -116,19 +123,19 @@ export async function addEvaluation(fd: FormData) {
 
 export async function saveEvaluation(fd: FormData) {
  await requireOwner();
-  const evaluationId = id(fd, "evaluationId");
+  const evaluationId = id(fd, "evaluationId"), version = expectedVersion(fd);
   const inputs = readInputs(fd, INPUT_KEYS);
-  await prisma.$transaction([
-    ...inputs.map((i) =>
-      prisma.costInput.upsert({
-        where: { evaluationId_key: { evaluationId, key: i.key } },
-        create: { evaluationId, ...i },
-        update: { value: i.value, status: i.status, note: i.note },
-      }),
-    ),
-    prisma.evaluation.update({ where: { id: evaluationId }, data: { updatedAt: new Date() } }),
-  ]);
+  await prisma.$transaction(async tx => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+    const claimed = await tx.evaluation.updateMany({ where: { id: evaluationId, version }, data: { version: { increment: 1 } } });
+    if (claimed.count !== 1) throw new EditConflictError();
+    for (const i of inputs) await tx.costInput.upsert({
+      where: { evaluationId_key: { evaluationId, key: i.key } }, create: { evaluationId, ...i },
+      update: { value: i.value, status: i.status, note: i.note },
+    });
+  });
   revalidatePath("/", "layout");
+  return version + 1;
 }
 
 export async function deleteOpportunity(fd: FormData) {

@@ -4,6 +4,7 @@ import { validRateDate } from "@/lib/fx/reference";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { formatMoney } from "@/lib/profit/format";
+import { VersionedForm } from "@/components/VersionedForm";
 import { ActionForm } from "@/components/ActionForm";
 import { originsSchema } from "@/lib/sourcing/schema";
 import { FRESH_FOR_MS } from "@/lib/sourcing/service";
@@ -63,7 +64,7 @@ export default async function Sourcing({ params }: { params: Promise<{ id: strin
         <div className="cards"><div><span>Product</span><b>{usd(q.productPriceMinor)}</b></div><div><span>Shipping</span><b>{usd(q.shippingMinor)}</b></div><div><span>Partial product + shipping</span><b>{q.productPriceMinor === null ? "Unknown" : usd(q.productPriceMinor + q.shippingMinor)}</b></div></div>
         <p>Provider-reported taxes: {usd(q.taxesMinor)} · Clearance: {usd(q.clearanceMinor)} · Provider total postage: {usd(q.totalPostageMinor)}</p>
         <p className="mut">Shipping observed {q.observedAt.toISOString()} · Product observed {q.productObservedAt?.toISOString() ?? "Unknown"} · Review by {q.expiresAt.toISOString()}{stale ? " · STALE / ROUTE CHANGED" : ""}</p>
-        {!listing.opportunityId ? <p>Select this candidate for investigation from <Link href="/discovery">Discovery</Link>, then add a market evaluation to use an estimate.</p> : !evaluations.length ? <p><Link href={`/opportunities/${listing.opportunityId}`}>Add this market to the product evaluation</Link> to use the estimate.</p> : !stale && q.productPriceMinor !== null && <ActionForm action={applyQuote} label="Apply sourcing estimate">
+        {!listing.opportunityId ? <p>Select this candidate for investigation from <Link href="/discovery">Discovery</Link>, then add a market evaluation to use an estimate.</p> : !evaluations.length ? <p><Link href={`/opportunities/${listing.opportunityId}`}>Add this market to the product evaluation</Link> to use the estimate.</p> : !stale && q.productPriceMinor !== null && <VersionedForm action={applyQuote} version={evaluations[0].version} latestUrl={`/discovery/${listing.id}`} label="Apply sourcing estimate">
           <input type="hidden" name="quoteId" value={q.id}/><input type="hidden" name="evaluationId" value={evaluations[0].id}/>
           {q.market.currency !== "USD" && <div className="grid">
             <label>FX source<select name="fxSnapshotId"><option value="">Manual rate below</option>{rates.filter(r=>r.currency===q.market.currency&&validRateDate(r.rateDate)).map(r=><option key={r.id} value={r.id}>{r.provider}: {r.rate} · {r.rateDate.toISOString().slice(0,10)}</option>)}</select></label>
@@ -74,7 +75,7 @@ export default async function Sourcing({ params }: { params: Promise<{ id: strin
           </div>}
           <label><input type="checkbox" name="confirmed" required style={{width:"auto"}}/> Replace product and shipping inputs with these estimates, and clear duty/handling inputs for a fresh tax review. I will separately account for all taxes, clearance and other charges.</label>
           <p className="mut">Selling price, payment fees, returns and CAC stay as currently entered. Unknown costs must still be researched.</p>
-        </ActionForm>}
+        </VersionedForm>}
         {listing.opportunityId && <Link href={`/opportunities/${listing.opportunityId}`}>Open product-market evaluation</Link>}
       </section>;
     })}

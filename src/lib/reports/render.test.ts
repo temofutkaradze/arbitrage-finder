@@ -4,9 +4,9 @@ import { assertReportLimits } from "./policy";
 import type { ReportData } from "./data";
 import { INPUT_DEFS } from "../profit/types";
 const now = new Date("2026-10-29T10:00:00Z");
-const market = { id: 1, code: "TEST", name: "Technical fixture", currency: "USD", countryCode: null, pricesIncludeTax: false, assumptions: {}, createdAt: now, updatedAt: now };
+const market = { version: 0, id: 1, code: "TEST", name: "Technical fixture", currency: "USD", countryCode: null, pricesIncludeTax: false, assumptions: {}, createdAt: now, updatedAt: now };
 function fixture(): ReportData {
-  return { id: 1, name: "Test product", category: null, sourceName: null, sourceUrl: null, notes: null, isSample: true, createdAt: now, updatedAt: now, listings: [], evidence: [], competitors: [], evaluations: [{ id: 1, opportunityId: 1, marketId: 1, createdAt: now, updatedAt: now, market,
+  return { id: 1, name: "Test product", category: null, sourceName: null, sourceUrl: null, notes: null, isSample: true, createdAt: now, updatedAt: now, listings: [], evidence: [], competitors: [], evaluations: [{ version: 0, id: 1, opportunityId: 1, marketId: 1, createdAt: now, updatedAt: now, market,
     inputs: INPUT_DEFS.filter(d => d.essential).map((d, index) => ({ id: index+1, evaluationId: 1, key: d.key, value: d.key === "sellingPrice" ? 10000 : d.key === "supplierPrice" ? 2000 : d.key === "shippingToCustomer" ? 300 : d.key === "cac" ? 1000 : 0, status: "ESTIMATED", note: "Fixture assumption", updatedAt: now })) }] };
 }
 describe("research export", () => {
