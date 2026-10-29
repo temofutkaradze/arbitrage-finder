@@ -14,3 +14,5 @@ input,select,textarea,button{font:inherit;color:var(--ink);background:var(--pane
 .badge{display:inline-block;font-size:12px;border-radius:10px;padding:0 8px;border:1px solid var(--line);color:var(--mut)}.badge.verified{color:var(--pos);border-color:var(--pos)}.badge.estimated{color:var(--warn);border-color:var(--warn)}.badge.unknown{color:var(--neg);border-color:var(--neg)}
 .req{color:var(--neg)}section.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:16px 0}details>summary{cursor:pointer;margin:8px 0}
 .sample{color:var(--warn);font-weight:600}input[type=text]{min-width:0}
+
+.top{flex-wrap:wrap}.top nav{flex-wrap:wrap}

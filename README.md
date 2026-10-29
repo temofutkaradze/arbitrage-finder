@@ -285,3 +285,10 @@ Code and local settings must also be preserved separately.
 Each Opportunity now links to **Prepare a store draft** for owner-reviewed
 customer text and a JSON review file. No Shopify account is contacted.
 See [workflow, limitations and verification](docs/STORE-DRAFT.md).
+
+## Georgia / US feasibility study
+
+`/market-study` shows the owner a dated 2026-10-29 comparison using two real
+CJ variants and representative GE/US postcodes, with unknown tax, payments and
+profit left explicit. It does not perform live requests on page view. See
+[findings, sources and next commercial checks](docs/research/GE-US-2026-10-29.md).

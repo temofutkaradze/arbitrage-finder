@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "checkedDateGeorgia": "2026-10-29",
+  "fx": {
+    "usdToGel": "2.5957",
+    "effectiveDate": "2026-10-29",
+    "sourceUrl": "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json/?date=2026-10-29"
+  },
+  "candidates": [
+    {
+      "candidate": {
+        "checkedAtUtc": "2026-10-29T12:22:51.567Z",
+        "candidate": {
+          "externalId": "1876836104507744257",
+          "name": "Kitchen Organizer",
+          "url": "https://developers.cjdropshipping.com/api2.0/v1/product/query?pid=1876836104507744257"
+        },
+        "variants": [
+          {
+            "externalId": "1876836104574853122",
+            "name": "CJCF226441701AZ",
+            "sku": "CJCF226441701AZ",
+            "priceMinor": 3160,
+            "origins": [
+              {
+                "cjInventory": 622,
+                "countryCode": "US",
+                "totalInventory": 622,
+                "factoryInventory": 0
+              }
+            ],
+            "observedAt": "2026-10-29T12:22:51.551Z"
+          }
+        ]
+      },
+      "results": [
+        {
+          "country": "GE",
+          "postalCode": "0100",
+          "origin": "US",
+          "quantity": 1,
+          "observedAtUtc": "2026-10-29T12:23:58.313Z",
+          "quotes": []
+        },
+        {
+          "country": "US",
+          "postalCode": "10001",
+          "origin": "US",
+          "quantity": 1,
+          "observedAtUtc": "2026-10-29T12:24:30.244Z",
+          "quotes": [
+            {
+              "method": "USPS US to US",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "Fedex US to US",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "UPS US to US",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "USPS US to US #41",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "UPS US to US #51",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "Fedex US to US #48",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            },
+            {
+              "method": "GOFO US to US #15",
+              "shippingMinor": 0,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate": {
+        "checkedAtUtc": "2026-10-29T12:26:00.559Z",
+        "candidate": {
+          "externalId": "1496403300390670336",
+          "name": "Makeup Storage Organizer Set",
+          "url": "https://developers.cjdropshipping.com/api2.0/v1/product/query?pid=1496403300390670336"
+        },
+        "variants": [
+          {
+            "externalId": "1496403300495527936",
+            "name": "Makeup Storage Organizer Set Default",
+            "sku": "CJJT142263501AZ",
+            "priceMinor": 411,
+            "origins": [
+              {
+                "cjInventory": 0,
+                "countryCode": "CN",
+                "totalInventory": 37172,
+                "factoryInventory": 37172
+              }
+            ],
+            "observedAt": "2026-10-29T12:26:00.541Z"
+          }
+        ]
+      },
+      "results": [
+        {
+          "country": "GE",
+          "postalCode": "0100",
+          "origin": "CN",
+          "quantity": 1,
+          "observedAtUtc": "2026-10-29T12:26:32.238Z",
+          "quotes": [
+            {
+              "method": "CJPacket Eub",
+              "shippingMinor": 2841,
+              "deliveryEstimate": "12-50",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 2841
+            },
+            {
+              "method": "CJPacket Liquid Line",
+              "shippingMinor": 3027,
+              "deliveryEstimate": "20-60",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3027
+            },
+            {
+              "method": "CJPacket Postal",
+              "shippingMinor": 8466,
+              "deliveryEstimate": "12-50",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 8466
+            },
+            {
+              "method": "DHL Official",
+              "shippingMinor": 16708,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 16708
+            }
+          ]
+        },
+        {
+          "country": "US",
+          "postalCode": "10001",
+          "origin": "CN",
+          "quantity": 1,
+          "observedAtUtc": "2026-10-29T12:27:04.390Z",
+          "quotes": [
+            {
+              "method": "YunExpress Ordinary",
+              "shippingMinor": 2590,
+              "deliveryEstimate": "4-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 2590
+            },
+            {
+              "method": "CJPacket Ordinary",
+              "shippingMinor": 2529,
+              "deliveryEstimate": "4-9",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 2529
+            },
+            {
+              "method": "YunExpress Sensitive",
+              "shippingMinor": 2887,
+              "deliveryEstimate": "4-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 2887
+            },
+            {
+              "method": "CJPacket Sensitive",
+              "shippingMinor": 2733,
+              "deliveryEstimate": "4-9",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 2733
+            },
+            {
+              "method": "CJPacket Eub",
+              "shippingMinor": 2942,
+              "deliveryEstimate": "12-50",
+              "taxesMinor": 0,
+              "clearanceMinor": 20,
+              "totalPostageMinor": 2962
+            },
+            {
+              "method": "CJPacket Fast Ordinary",
+              "shippingMinor": 3270,
+              "deliveryEstimate": "4-6",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3270
+            },
+            {
+              "method": "CJPacket Sensitive Pro+",
+              "shippingMinor": 3447,
+              "deliveryEstimate": "6-11",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3447
+            },
+            {
+              "method": "CJPacket FJTY Eub Special Line",
+              "shippingMinor": 3473,
+              "deliveryEstimate": "15-25",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3473
+            },
+            {
+              "method": "CJPacket Fast US",
+              "shippingMinor": 3871,
+              "deliveryEstimate": "7-12",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3871
+            },
+            {
+              "method": "CJPacket Eub Special Line",
+              "shippingMinor": 3739,
+              "deliveryEstimate": "10-23",
+              "taxesMinor": 0,
+              "clearanceMinor": 46,
+              "totalPostageMinor": 3785
+            },
+            {
+              "method": "CJPacket Ordinary Over Length",
+              "shippingMinor": 4522,
+              "deliveryEstimate": "7-11",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4522
+            },
+            {
+              "method": "CJPacket LX Sensitive Plant",
+              "shippingMinor": 4068,
+              "deliveryEstimate": "8-20",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4068
+            },
+            {
+              "method": "CJPacket Fast Line",
+              "shippingMinor": 4075,
+              "deliveryEstimate": "4-9",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4075
+            },
+            {
+              "method": "CJPacket Liquid US",
+              "shippingMinor": 4050,
+              "deliveryEstimate": "5-11",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4050
+            },
+            {
+              "method": "CJPacket Sensitive Over Length",
+              "shippingMinor": 4827,
+              "deliveryEstimate": "7-12",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4827
+            },
+            {
+              "method": "USPS",
+              "shippingMinor": 4178,
+              "deliveryEstimate": "4-9",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4178
+            },
+            {
+              "method": "USPS Ordinary",
+              "shippingMinor": 3899,
+              "deliveryEstimate": "5-11",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 3899
+            },
+            {
+              "method": "CJPacket Super Pure Electricity",
+              "shippingMinor": 4435,
+              "deliveryEstimate": "5-11",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4435
+            },
+            {
+              "method": "CJPacket Pure Electricity",
+              "shippingMinor": 4435,
+              "deliveryEstimate": "7-14",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4435
+            },
+            {
+              "method": "CJPacket Ordinary Oversize Line",
+              "shippingMinor": 5198,
+              "deliveryEstimate": "7-15",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 5198
+            },
+            {
+              "method": "CJPacket Sensitive Oversize Line",
+              "shippingMinor": 5198,
+              "deliveryEstimate": "8-16",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 5198
+            },
+            {
+              "method": "CJPacket Liquid Line",
+              "shippingMinor": 4619,
+              "deliveryEstimate": "20-60",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4619
+            },
+            {
+              "method": "Qfulfillment A line",
+              "shippingMinor": 4962,
+              "deliveryEstimate": "10-25",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 4962
+            },
+            {
+              "method": "CJPacket USPS Remote",
+              "shippingMinor": 5099,
+              "deliveryEstimate": "5-10",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 5099
+            },
+            {
+              "method": "CJPacket Postal",
+              "shippingMinor": 5806,
+              "deliveryEstimate": "5-9",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 5806
+            },
+            {
+              "method": "DHL Official",
+              "shippingMinor": 6154,
+              "deliveryEstimate": "3-7",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 6154
+            },
+            {
+              "method": "CJPacket Sea",
+              "shippingMinor": 8298,
+              "deliveryEstimate": "25-30",
+              "taxesMinor": 0,
+              "clearanceMinor": 0,
+              "totalPostageMinor": 8298
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
