@@ -1,5 +1,6 @@
 import "dotenv/config";
 import {config} from "dotenv";
+import {resolve} from "node:path";
 import {readFile} from "node:fs/promises";
 import assert from "node:assert/strict";
 import {prisma} from "../src/lib/db/prisma";
@@ -17,7 +18,7 @@ async function main(){
  try{
   for(const path of ["/","/research","/markets","/discovery","/automation"]){const r=await fetch(origin+path,{redirect:"manual"});assert.equal(r.status,307);assert.equal(r.headers.get("location"),"/login");}
   const html=await(await fetch(origin+"/login")).text();
-  const privateAccess=await readFile("/workspace/.cloud-setup/owner-access.txt","utf8");const password=privateAccess.split("\n").find(l=>l.startsWith("Password: "))?.slice(10);assert.ok(password);
+  const privateAccess=await readFile(resolve("../.cloud-setup/owner-access.txt"),"utf8");const password=privateAccess.split("\n").find(l=>l.startsWith("Password: "))?.slice(10);assert.ok(password);
   // Authenticate normally; never print credentials, cookie values or response bodies.
   const good=await post("/login",html,{password});assert.equal(good.status,303);
   const setCookie=good.headers.get("set-cookie");assert.ok(setCookie);assert.ok(setCookie.includes("HttpOnly"));assert.ok(/SameSite=strict/i.test(setCookie));cookie=setCookie.split(";")[0];

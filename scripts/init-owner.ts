@@ -8,6 +8,6 @@ async function main(){
  const password=randomBytes(24).toString("base64url");await mkdir(directory,{recursive:true,mode:0o700});
  await writeFile(credentialFile,`Arbitrage Finder owner access\nLocal sign-in: http://127.0.0.1:3000/login\nPassword: ${password}\nKeep this file private. It is not a production hosting configuration.\n`,{mode:0o600,flag:"wx"});
  try{await writeFile(file,`APP_ORIGIN=http://127.0.0.1:3000\nAPP_PASSWORD_HASH=${hashPassword(password)}\n`,{mode:0o600,flag:"wx"});}catch(e){await unlink(credentialFile);throw e;}
- console.log("Owner authentication initialized. Password is only in /workspace/.cloud-setup/owner-access.txt; .env.local is ignored. No credential values logged.");
+ console.log(`Owner authentication initialized. Private access file: ${credentialFile}. Local settings: ${file}. No credential values logged.`);
 }
 main().catch(e=>{console.error(e instanceof Error?e.message:"Owner initialization failed");process.exitCode=1;});

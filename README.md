@@ -277,3 +277,11 @@ configuration remains an external prerequisite; the app is not publicly deployed
 `npx tsx scripts/check-auth-http.ts` verifies the local sign-in flow. Existing HTTP
 regression scripts now authenticate with temporary test sessions and remove them;
 they do not bypass authorization in application code.
+
+## Run on your own laptop
+
+Start with [LOCAL-SETUP.md](docs/LOCAL-SETUP.md). It includes Windows PowerShell
+setup, safe local database creation and portable owner-password file paths.
+No online hosting is necessary. The latest complete code lives on branch
+`codex/product-research-automation`. Preserve any existing local project/database
+before updating, and never reset your database to resolve setup errors.
