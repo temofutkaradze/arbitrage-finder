@@ -1,0 +1,88 @@
+name: Quality checks
+on:
+  pull_request:
+  push:
+    branches: [master, codex/product-research-automation]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: arbitrage
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d arbitrage"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://postgres:ci-only-password@127.0.0.1:5432/arbitrage
+      SHADOW_DATABASE_URL: postgresql://postgres:ci-only-password@127.0.0.1:5432/arbitrage_shadow
+      NEXT_TELEMETRY_DISABLED: '1'
+      CJ_ACCESS_TOKEN: ''
+      EBAY_ACCESS_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare isolated database and owner
+        run: |
+          node --import tsx scripts/prepare-local-db.ts
+          npx prisma generate
+          npx prisma migrate deploy
+          node --import tsx scripts/init-owner.ts
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Database integration checks
+        run: |
+          node --import tsx scripts/check-discovery.ts
+          node --import tsx scripts/check-sourcing.ts
+          node --import tsx scripts/check-offers.ts
+          node --import tsx scripts/check-matching.ts
+      - name: Production HTTP checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- --hostname 127.0.0.1 > "$RUNNER_TEMP/arbitrage-server.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /dev/null; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$app_pid" 2>/dev/null; then
+              echo 'Application stopped before readiness.'
+              exit 1
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            echo 'Application did not become ready.'
+            exit 1
+          fi
+          node --import tsx scripts/check-auth-http.ts
+          node --import tsx scripts/check-discovery-http.ts
+          node --import tsx scripts/check-matching-http.ts
+          node --import tsx scripts/check-report-http.ts
+          node --import tsx scripts/check-store-draft-http.ts
+          node --import tsx scripts/check-market-study-http.ts
