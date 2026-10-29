@@ -1,12 +1,14 @@
 import { requireOwner } from "@/lib/auth/server";
 import snapshot from "@/lib/market-study/snapshot.json";
+import { Followup } from "./Followup";
 import { routeSummary } from "@/lib/market-study/summary";
 export const dynamic = "force-dynamic";
 export default async function MarketStudy() {
  await requireOwner(false);
  return <><h1>საქართველო და აშშ — პირველი კვლევა</h1><p>შემოწმების თარიღი: {snapshot.checkedDateGeorgia}. ეს თარიღიანი კვლევის სურათია; გვერდის გახსნა ახალ API მოთხოვნას არ აგზავნის.</p>
- <p className="warn">გაყიდვის დაწყება ჯერ დასაბუთებული არ არის: გადახდის მიღება, რეალური კონკურენტები, საგადასახადო კლასიფიკაცია და სრული ეკონომიკა დაუზუსტებელია. ქვემოთ ნაჩვენებია პროდუქტი + მიწოდება და არა სრული თვითღირებულება ან მოგება.</p>
- <h2>იგივე ზუსტი ვარიანტი — ორი მარშრუტი</h2>
+ <p className="warn">გაყიდვის დაწყება ჯერ დასაბუთებული არ არის: მერჩანტად მიღება, ზუსტად შესადარებელი კონკურენტები, საგადასახადო კლასიფიკაცია და სრული ეკონომიკა დაუზუსტებელია. ქვემოთ ნაჩვენებია პროდუქტი + მიწოდება და არა სრული თვითღირებულება ან მოგება.</p>
+ <Followup/>
+ <h2>პირველი ეტაპის მონაცემები — იგივე ზუსტი ვარიანტი — ორი მარშრუტი</h2>
  {snapshot.candidates.map(({candidate,results})=>{const variant=candidate.variants[0];return <section className="card" key={candidate.candidate.externalId}>
  <h2>{candidate.candidate.name}</h2><p><a href={candidate.candidate.url} target="_blank" rel="noopener noreferrer">CJ წყარო</a> · პროდუქტი {candidate.candidate.externalId} · ვარიანტი {variant.externalId} · SKU {variant.sku}</p>
  <p>ფასი: USD {(variant.priceMinor/100).toFixed(2)}. მარაგის ანგარიში: {variant.origins.map(o=>`${o.countryCode}: ${o.totalInventory} (CJ ${o.cjInventory}; ქარხანა ${o.factoryInventory})`).join("; ")}. ქარხნის რაოდენობა არ ნიშნავს CJ საწყობში მზადყოფნას ან დაჯავშნას.</p>
@@ -22,6 +24,6 @@ export default async function MarketStudy() {
  <h2>გადასახადები — რიცხვებში არ არის ჩათვლილი</h2><p><a href="https://matsne.gov.ge/en/document/view/1043717" target="_blank" rel="noopener noreferrer">საქართველოს საგადასახადო კოდექსი</a> განასხვავებს იმპორტის დღგ-სა და ბრუნვაზე დღგ-ის რეგისტრაციას. 100,000 GEL-ის ზოგადი ზღვარი იმპორტის ავტომატურ გათავისუფლებას არ ნიშნავს. პირადი, არაკომერციული გზავნილის შეღავათს ბიზნესის ყველა გზავნილზე ვერ გადავიტანთ. ზუსტი HS კოდი, იმპორტიორი, საბაჟო ღირებულება და სტატუსი დაუზუსტებელია; გადასახადი უცნობად რჩება.</p>
  <p><a href="https://www.whitehouse.gov/presidential-actions/2025/07/suspending-duty-free-de-minimis-treatment-for-all-countries/" target="_blank" rel="noopener noreferrer">აშშ-ის 2025 წლის ოფიციალური აქტი</a> ნიშნავს, რომ ძველ $800-იან ზოგად გათავისუფლებას ვარაუდად ვერ გამოვიყენებთ. მიმდინარე ტარიფი და state sales tax ცალკე დასადასტურებელია. აშშ-ის საწყობიდან შიდა გზავნილი და ჩინეთიდან იმპორტი სხვადასხვა შემთხვევაა. ეს საგადასახადო დასკვნა არ არის.</p>
  <p>საცნობარო FX: 1 USD = {snapshot.fx.usdToGel} GEL; ძალაშია {snapshot.fx.effectiveDate}. <a href={snapshot.fx.sourceUrl} target="_blank" rel="noopener noreferrer">NBG წყარო</a>. ბანკის spread/საკომისიო აქ არ შედის.</p>
- <h2>დარჩენილი საკითხები</h2><ol><li>საქართველოში საქმიანობის შესაბამისი რეგისტრაცია/სტატუსი და მერჩანტის მოთხოვნები გადაამოწმე ბანკთან და ბუღალტერთან.</li><li>გადახდის პროვაიდერისგან მიიღე წერილობითი პირობები ორივე ბაზრისა და Shopify-ისთვის.</li><li>იპოვე ზუსტად შესადარებელი ადგილობრივი/აშშ შეთავაზებები. ამ კვლევაში კონკურენტების ფასი და მოთხოვნა არ დადასტურებულა.</li><li>დაადასტურე მიმდინარე საბოლოო მიწოდება, HS/გადასახადები, დაბრუნების მისამართი, გასაყიდი ფასი და სატესტო დანაკარგის ბიუჯეტი.</li></ol>
+ <h2>დარჩენილი საკითხები</h2><ol><li>საქართველოში საქმიანობის შესაბამისი რეგისტრაცია/სტატუსი და მერჩანტის მოთხოვნები გადაამოწმე ბანკთან და ბუღალტერთან.</li><li>გადახდის პროვაიდერისგან მიიღე წერილობითი პირობები ორივე ბაზრისა და Shopify-ისთვის.</li><li>იპოვე ზუსტად შესადარებელი ადგილობრივი/აშშ შეთავაზებები. მეორე ეტაპზე რამდენიმე საცალო ფასი დადასტურდა; ზუსტი იდენტურობა და მოთხოვნა ჯერ უცნობია.</li><li>დაადასტურე მიმდინარე საბოლოო მიწოდება, HS/გადასახადები, დაბრუნების მისამართი, გასაყიდი ფასი და სატესტო დანაკარგის ბიუჯეტი.</li></ol>
  </>;
 }

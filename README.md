@@ -292,3 +292,5 @@ See [workflow, limitations and verification](docs/STORE-DRAFT.md).
 CJ variants and representative GE/US postcodes, with unknown tax, payments and
 profit left explicit. It does not perform live requests on page view. See
 [findings, sources and next commercial checks](docs/research/GE-US-2026-10-29.md).
+
+Follow-up research adds [verified retail price references and local sourcing leads](docs/research/GE-US-SHORTLIST-2026-10-29.md), with match differences and unknown wholesale/payment terms kept explicit.

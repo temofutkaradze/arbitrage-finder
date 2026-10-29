@@ -1,0 +1,185 @@
+{
+  "checkedDateGeorgia": "2026-10-29",
+  "supplier": {
+    "provider": "CJ",
+    "productId": "1876836104507744257",
+    "variantId": "1876836104574853122",
+    "sku": "CJCF226441701AZ",
+    "priceMinor": 3160,
+    "currency": "USD",
+    "dimensionsCm": [
+      54,
+      29,
+      150
+    ],
+    "color": "Silver",
+    "material": "Carbon steel and PP",
+    "productWeightKgClaim": "4.95",
+    "packageWeightGramsClaim": 5500,
+    "brand": "Unknown",
+    "certifiedLoadCapacity": null,
+    "sourceUrl": "https://developers.cjdropshipping.com/api2.0/v1/product/query?pid=1876836104507744257"
+  },
+  "alignedSupplierRoute": {
+    "observedAtUtc": "2026-10-29T12:47:11.717Z",
+    "variantId": "1876836104574853122",
+    "origin": "US",
+    "destination": "US",
+    "postcode": "95829",
+    "quantity": 1,
+    "quotes": [
+      {
+        "method": "USPS US to US",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "Fedex US to US",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "UPS US to US",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "USPS US to US #41",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "UPS US to US #51",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "Fedex US to US #48",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      },
+      {
+        "method": "GOFO US to US #15",
+        "shippingMinor": 0,
+        "deliveryEstimate": "3-7",
+        "taxesMinor": 0,
+        "clearanceMinor": 0,
+        "totalPostageMinor": 0
+      }
+    ]
+  },
+  "retailObservations": [
+    {
+      "merchant": "Walmart / SanTu",
+      "market": "US",
+      "title": "Lowestbest 5 Tier Wire Shelving — Silver",
+      "url": "https://www.walmart.com/ip/Lowestbest-5-Tier-Wire-Shelving-Metal-Storage-Shelves-Heavy-Duty-Adjustable-Shelf-Standing-Kitchen-Rack-Silver/1253599314",
+      "priceMinor": 3720,
+      "currency": "USD",
+      "shippingMinor": 1000,
+      "postalCode": "95829",
+      "taxBasis": "UNKNOWN",
+      "availability": "Page reports IN_STOCK",
+      "sourceType": "Visible product page and embedded product data",
+      "comparison": "NEAR_MATCH_UNCONFIRMED",
+      "limitations": "ვერცხლისფერი, 54×29×150 სმ, მსგავსი მასალა/აღწერა; ბრენდი Lowestbest, CJ ბრენდი/GTIN არ დადასტურდა. ქარხნისა და ხარისხის იდენტურობა უცნობია. მიწოდება მხოლოდ გვერდზე ნაჩვენები 95829 ZIP-ისთვის; არა შეკვეთის საბოლოო quote."
+    },
+    {
+      "merchant": "Lowe’s",
+      "market": "US",
+      "title": "Winado LO113029637 — Black",
+      "url": "https://www.lowes.com/pd/Outopee-Steel-Heavy-Duty-5-Tier-Utility-Shelving-Unit-21-25-in-W-x-11-42-in-D-x-59-06-in-H/5014757333",
+      "priceMinor": 3598,
+      "currency": "USD",
+      "shippingMinor": null,
+      "postalCode": null,
+      "taxBasis": "UNKNOWN",
+      "availability": "Structured data says InStock; local availability not confirmed",
+      "sourceType": "Embedded structured offer data; visible price confirmation required",
+      "comparison": "NEAR_MATCH_UNCONFIRMED",
+      "limitations": "იგივე ნომინალური ზომა, მაგრამ შავი ფერი, სხვა ბრენდი/მოდელი და დატვირთვის განსხვავებული განცხადება. $35.98 გვერდის მეტამონაცემშია; checkout/ZIP არ შემოწმებულა."
+    },
+    {
+      "merchant": "IKEA US",
+      "market": "US",
+      "title": "HYLLIS 002.785.78",
+      "url": "https://www.ikea.com/us/en/p/hyllis-shelf-unit-indoor-outdoor-00278578/",
+      "priceMinor": 2999,
+      "currency": "USD",
+      "shippingMinor": null,
+      "postalCode": null,
+      "taxBasis": "UNKNOWN",
+      "availability": "Location-specific availability unknown",
+      "sourceType": "Visible product page and structured offer data",
+      "comparison": "FUNCTIONAL_SUBSTITUTE",
+      "limitations": "სხვა პროდუქტი: გალვანიზებული ფოლადი, დაახლოებით 60×27×140 სმ. ზუსტი ანალოგი არაა; ნაჩვენები საცალო ფასია და არა სრული მიწოდებული თანხა."
+    },
+    {
+      "merchant": "Gorgia",
+      "market": "GE",
+      "title": "NATURAL HOUSE MH24030 — BM-00198054",
+      "url": "https://gorgia.ge/ka/aveji/karadebi-da-taroebi/taro/ხის-ორგანაიზერი-mh24030-32x20x73/",
+      "priceMinor": 3500,
+      "currency": "GEL",
+      "shippingMinor": null,
+      "postalCode": null,
+      "taxBasis": "UNKNOWN",
+      "availability": "გვერდზე მითითებულია მარაგშია",
+      "sourceType": "Visible product page",
+      "comparison": "LOCAL_RETAIL_LEAD",
+      "limitations": "სრულიად სხვა, ხის 32×20×73 სმ ორგანაიზერია. 35 GEL აქციის საცალო ფასი (ძველი 55 GEL), არა საბითუმო შეთავაზება. 250 GEL-იანი უფასო მიწოდების წესი ამ ნივთისთვის არ დადასტურდა; ტრანსპორტი უცნობია."
+    }
+  ],
+  "supplierLeads": [
+    {
+      "name": "Fabricon",
+      "url": "https://fabricon.ge/63-სტელაჟი-მეტალის-თარო.html",
+      "claim": "საიტი აცხადებს ქართული წარმოების, მოდიფიცირებადი მეტალის სტელაჟის შეთავაზებას. ნაჩვენები მოდელი 1320×565×2500 მმ სამრეწველო ზომისაა.",
+      "priceMinor": null,
+      "currency": "GEL",
+      "openQuestions": "საბითუმო ფასი, მცირე ზომის მოდელი, MOQ, მიწოდება, გარანტია და გადაყიდვის პირობები უცნობია; კომერციული შეთავაზება არ მოთხოვნილა."
+    }
+  ],
+  "excludedLeads": [
+    {
+      "name": "Velinova CS-436",
+      "url": "https://velinova.ge/products/samzareulos-taro",
+      "reason": "სხვა 5-უჯრიანი პროდუქტი, 88 GEL; გვერდზე არ არის მარაგში. აქტიურ მომარაგების კანდიდატად არ ჩაითვალა."
+    }
+  ],
+  "paymentSources": [
+    {
+      "name": "TBC merchant registration",
+      "url": "https://developers.tbcbank.ge/docs/checkout-registering-merchant-account",
+      "finding": "ანგარიშის მიღება პირობებთან შესაბამისობის დადასტურებას მოითხოვს. ინდივიდუალური მიღება და ტარიფები უცნობია."
+    },
+    {
+      "name": "TBC supported plug-ins overview",
+      "url": "https://developers.tbcbank.ge/docs/checkout-plugins-overview",
+      "finding": "წაკითხულ სიაში WooCommerce, CS Cart, Storera და Kovzy წერია. Shopify არ არის ჩამოთვლილი; ეს სრული აკრძალვის მტკიცებულება არაა. არაპირდაპირი/მესამე მხარის ვარიანტი ბანკთან დასადასტურებელია."
+    },
+    {
+      "name": "BOG Online Payment API",
+      "url": "https://api.bog.ge/docs/en/payments/introduction",
+      "finding": "API დოკუმენტაცია მერჩანტად მიღების, Shopify ინტეგრაციის ან საკომისიოს ინდივიდუალურ დადასტურებას არ ცვლის."
+    }
+  ]
+}
