@@ -29,6 +29,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <p className="mut">{[opp.category, opp.sourceName].filter(Boolean).join(" · ")}
         {opp.sourceUrl && <> · <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">Source listing</a></>}</p>
       <p><a href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a> · <span className="mut">Current inputs, calculations, sources and evidence. Review private notes before sharing.</span></p>
+      <p><Link href={`/opportunities/${opp.id}/prepare`}>Prepare a store draft</Link></p>
       {opp.notes && <p>{opp.notes}</p>}
       <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 

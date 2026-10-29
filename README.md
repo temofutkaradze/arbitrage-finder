@@ -279,3 +279,9 @@ Use `-- --pg-bin "path/to/PostgreSQL/bin"` when tools are not on PATH. Local
 credentials come from the app settings, never CLI arguments. Read
 [Windows commands, included data and restore rehearsal](docs/LOCAL-BACKUP.md).
 Code and local settings must also be preserved separately.
+
+## Offline store draft preparation
+
+Each Opportunity now links to **Prepare a store draft** for owner-reviewed
+customer text and a JSON review file. No Shopify account is contacted.
+See [workflow, limitations and verification](docs/STORE-DRAFT.md).
