@@ -41,3 +41,28 @@ Use `npx tsx scripts/check-fx-http.ts` with existing current references; optiona
 No permanent commercial market has been selected by the operator. Code is backed
 up on GitHub branch `codex/product-research-automation`. Saving instructions or
 pushing code does not deploy the application or publish an environment snapshot.
+
+## Owner authentication startup addendum
+
+The application now requires owner authentication for every private page and
+business mutation. Existing unprotected startup text is superseded by
+DEPLOYMENT.md. Local `.env.local` and `/workspace/.cloud-setup/owner-access.txt`
+were generated privately; preserve them and never print or commit their values.
+If auth has not been configured, `npm run auth:init` creates credentials once and
+refuses to overwrite existing files. APP_PASSWORD_HASH must be a literal secure
+runtime setting, not a network-proxy credential placeholder. APP_ORIGIN is the
+canonical HTTPS public origin (local HTTP only for loopback tests).
+
+Use normal Prisma generate/migrate deploy for OwnerSession/OwnerLoginState.
+Run `npx next typegen` after route moves; pages now live in `(protected)` while
+URLs are unchanged. `npm test` has 75 tests. `scripts/check-auth-http.ts` verifies
+real local login, revocation, expiry, throttling, action/origin rejection and health
+without printing credentials. Other HTTP regressions create/clean temporary
+sessions and require auth configuration. The Docker image was successfully built
+and tested with its own isolated PostgreSQL: migrations, readiness, non-root
+execution, absence of env/git/CA-secret files and actual login all passed.
+
+No public hosting account, production database, domain, registry upload or public
+deployment is configured. There are three remaining deployment operations in
+DEPLOYMENT.md. Do not invent hosting credentials or purchase resources. Do not
+publish this environment or overwrite newer configuration automatically.
