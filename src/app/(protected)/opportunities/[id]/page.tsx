@@ -28,8 +28,9 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <h1>{opp.name}{opp.isSample && <span className="sample"> SAMPLE</span>}</h1>
       <p className="mut">{[opp.category, opp.sourceName].filter(Boolean).join(" · ")}
         {opp.sourceUrl && <> · <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">Source listing</a></>}</p>
+      <p><a href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a> · <span className="mut">Current inputs, calculations, sources and evidence. Review private notes before sharing.</span></p>
       {opp.notes && <p>{opp.notes}</p>}
-      <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Cross-source matching and automated demand research are not connected yet.</p>
+      <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 
       {opp.evaluations.map((e) => {
         const c = e.result; const research = researchReadiness(opp.evidence, e.market.id); const beforeAds = calculateBeforeAds(e.inputs, { pricesIncludeTax: e.market.pricesIncludeTax }); const cur = e.market.currency; const m = (n: number) => formatMoney(n, cur);

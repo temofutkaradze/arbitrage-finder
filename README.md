@@ -263,3 +263,10 @@ Conflicts, incomplete specifications and duplicate research targets block linkin
 History and an explicit undo are available; costs, prices and evidence stay intact.
 See [workflow, limits, laptop update and validation](docs/MATCHING.md). No new
 credential or provider call is needed.
+
+## Downloadable research snapshot
+
+Each Opportunity has **Download research report (.txt)** for current market
+calculations, stored inputs, sources, evidence and competitor observations.
+Unknowns, expiry/retirement and input assumptions remain explicit. No provider
+call or database write is made. See [usage, limits and laptop update](docs/RESEARCH-REPORT.md).

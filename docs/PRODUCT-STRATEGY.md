@@ -221,3 +221,15 @@ Validated with 81 unit tests, production build, lint/types, PostgreSQL matching
 checks and authenticated production HTTP form checks. Temporary fixtures and
 their audit rows are removed. Shipping testing on the operator laptop is deferred
 at the operator's request; no additional live shipping result is asserted here.
+
+## Research snapshot export (2026-10-29)
+
+An owner-authenticated plain-text report now exports current Opportunity research
+and market calculations for review. It preserves unknowns, input status and notes,
+evidence provenance/expiry/retirement, supplier catalogue identifiers and
+competitor comparison limitations. No cross-currency sum, provider request,
+financial input update, demand claim or Shopify action occurs. This is a research
+snapshot, not store preparation or a backup. See [workflow and limits](RESEARCH-REPORT.md).
+Validation: 86 unit tests, lint/types, production build and authenticated HTTP
+download tests with temporary fixtures removed. Commercial markets remain the
+operator's decision; the deferred laptop shipping pilot is still outstanding.
