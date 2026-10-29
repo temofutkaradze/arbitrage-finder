@@ -43,7 +43,10 @@ async function exchangeApiKey(credential: string): Promise<string> {
     if (response.status === 401) throw new Error(AUTH_ERROR);
     checkHttp(response);
     const result = envelope.parse(await response.json());
-    if (!(result.result || result.success) || result.code !== 200) throw new Error(AUTH_ERROR);
+    if (!(result.result || result.success) || result.code !== 200) {
+      if ([1600001, 1601000].includes(result.code)) throw new Error(`${AUTH_ERROR} CJ exchange code: ${result.code}.`);
+      throw new Error(`CJ token exchange rejected (code ${result.code}). Check account access and call limits; this response alone does not establish an invalid API Key.`);
+    }
     const data = tokenData.parse(result.data);
     const expiry = data.accessTokenExpiryDate ? Date.parse(data.accessTokenExpiryDate) : NaN;
     if (Number.isFinite(expiry)) {
@@ -79,7 +82,7 @@ export async function requestCj(resource: CjResource, query: Record<string, stri
     if (cached && tokenCache === cached) tokenCache = undefined;
     const token = await exchangeApiKey(credential);
     data = await catalogue(url, token, body);
-    if (data === AUTH_REJECTED) { tokenCache = undefined; throw new Error(AUTH_ERROR); }
+    if (data === AUTH_REJECTED) { tokenCache = undefined; throw new Error("CJ authentication failed after token issuance. Check catalogue authorization and account access."); }
   }
   return data;
 }

@@ -87,6 +87,12 @@ describe("CJ access errors and API-key exchange", () => {
     expect(url.searchParams.get("orderBy")).toBe("3");expect(url.searchParams.get("sort")).toBe("desc");
     expect(url.searchParams.get("page")).toBe("1");expect(url.searchParams.get("size")).toBe("20");
   });
+  it("preserves non-auth exchange codes without falsely blaming the API Key", async () => {
+    const mock=vi.fn().mockResolvedValueOnce(new Response("",{status:401}))
+      .mockResolvedValueOnce(new Response(JSON.stringify({code:1600200,result:false,data:null,message:"private upstream text"})));
+    vi.stubGlobal("fetch",mock);
+    await expect(discoverCj("fixture","test-only-limited-key")).rejects.toThrow(/exchange rejected \(code 1600200\)/);
+  });
   it("does not exchange credentials on rate limiting", async () => {
     const mock=vi.fn().mockResolvedValue(new Response("", {status:429}));vi.stubGlobal("fetch",mock);
     await expect(discoverCj("fixture", "test-only-quota-credential")).rejects.toThrow(/rate limit/);
