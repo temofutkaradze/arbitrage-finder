@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireOwner } from "@/lib/auth/server";
+import { ResearchProgress } from "@/components/ResearchProgress";
+import { rowsToInputs } from "@/lib/data/queries";
+import { calculate } from "@/lib/profit/calculate";
 import { prisma } from "@/lib/db/prisma";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +16,7 @@ export default async function Products({ searchParams }: { searchParams: Promise
   const products = await prisma.opportunity.findMany({
     where: { isSample: false, ...(q ? { name: { contains: q, mode: "insensitive" } } : {}), ...(before === undefined ? {} : { id: { lt: before } }) },
     orderBy: { id: "desc" }, take: 26,
-    include: { _count: { select: { evaluations: true, evidence: true, listings: true } } },
+    include: { evidence: true, evaluations: { include: { market: true, inputs: true }, orderBy: { id: "asc" } }, _count: { select: { evaluations: true, evidence: true, listings: true } } },
   });
   const page = products.slice(0, 25);
   const older = new URLSearchParams({ ...(q ? { q } : {}), before: String(page.at(-1)?.id ?? "") });
@@ -28,6 +31,7 @@ export default async function Products({ searchParams }: { searchParams: Promise
       <h2><Link href={`/opportunities/${p.id}`}>{p.name}</Link></h2>
       <p className="mut">{[p.category, p.sourceName].filter(Boolean).join(" · ") || "წყარო ჯერ არ არის მითითებული"}</p>
       <p>{p._count.evaluations ? `${p._count.evaluations} ბაზრის შეფასება` : "ჯერ შეუფასებელია"} · {p._count.evidence} მტკიცებულების ჩანაწერი · {p._count.listings} დაკავშირებული კატალოგის ჩანაწერი</p>
+      <ResearchProgress productId={p.id} evidence={p.evidence} evaluations={p.evaluations.map(e => ({ market: e.market, result: calculate(rowsToInputs(e.inputs), { pricesIncludeTax: e.market.pricesIncludeTax }) }))}/>
       <div className="bar"><Link href={`/opportunities/${p.id}`}>ხარჯები, მტკიცებულებები და ანგარიში</Link><Link href={`/research?product=${p.id}`}>კონკურენტები და კვლევის წყაროები</Link></div>
     </section>)}
     {products.length > 25 && <p><Link href={`/products?${older}`}>შემდეგი პროდუქტები →</Link></p>}

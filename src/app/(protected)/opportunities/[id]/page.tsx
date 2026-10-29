@@ -1,4 +1,5 @@
 import {requireOwner} from "@/lib/auth/server";
+import { ResearchProgress } from "@/components/ResearchProgress";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { deleteOpportunity } from "../../actions";
@@ -36,11 +37,13 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       {opp.notes && <p>{opp.notes}</p>}
       <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 
+      <ResearchProgress productId={opp.id} evidence={opp.evidence} evaluations={opp.evaluations}/>
+
       {opp.evaluations.map((e) => {
         const c = e.result; const research = researchReadiness(opp.evidence, e.market.id); const beforeAds = calculateBeforeAds(e.inputs, { pricesIncludeTax: e.market.pricesIncludeTax }); const cur = e.market.currency; const m = (n: number) => formatMoney(n, cur);
         const initial = Object.fromEntries(INPUT_DEFS.map((d) => [d.key, toDisplay(d.unit, e.inputs[d.key]?.value)])) as Record<InputKey, string>;
         return (
-          <section className="card" key={e.id}>
+          <section className="card" key={e.id} id={`evaluation-${e.market.id}`}>
             <h2 style={{ marginTop: 0 }}>{e.market.code} · {e.market.name} <Quality q={c.quality} /></h2>
             <p><Link href={`/history?evaluation=${e.id}`}>Financial change history</Link></p>
             <p><b>{research.label}</b> · {research.next}</p>
@@ -111,6 +114,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
           <label>What the source supports, and what remains unknown<textarea name="summary" required minLength={10} maxLength={2000} rows={3} style={{width:"100%"}}/></label>
         </ActionForm></details>
       </section>
+      <div id="add-market"/>
       {unused.length > 0 && (
         <ActionForm action={addEvaluation} label="Evaluate in another market">
           <input type="hidden" name="opportunityId" value={opp.id} />

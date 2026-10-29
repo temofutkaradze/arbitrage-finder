@@ -11,6 +11,11 @@ async function main() {
     ids.push(p.id);
   }
   const html = await (await authenticatedFetch(`${base}/products?q=${name}`)).text();
+  assert.ok(html.includes("კვლევის პროგრესი"));
+  assert.ok(html.includes(`/opportunities/${ids[100]}#add-market`));
+  const detail = await (await authenticatedFetch(`${base}/opportunities/${ids[100]}`)).text();
+  assert.ok(detail.includes('id="add-market"'));
+  assert.ok(detail.includes("აირჩიე ბაზარი"));
   assert.ok(html.includes(`/opportunities/${ids[100]}`), "Newest unevaluated real product is visible");
   assert.ok(!html.includes(`/opportunities/${ids[101]}`), "Samples excluded");
   assert.ok(!html.includes(`/opportunities/${ids[75]}`), "First page bounded to 25");
