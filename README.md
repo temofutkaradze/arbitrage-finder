@@ -300,3 +300,7 @@ Follow-up research adds [verified retail price references and local sourcing lea
 GitHub Actions validates pull requests and working-branch pushes using a fresh
 PostgreSQL database, unit/build checks and protected HTTP workflows. It requires
 no production secrets and performs no deployment. See [checks and limits](docs/CI.md).
+
+Shared business forms now preserve entered values through validation/network
+failures and prevent simultaneous duplicate clicks. Product/evaluation creation
+is atomic. See [behavior and browser regression checks](docs/FORMS.md).

@@ -3,7 +3,9 @@
 GitHub Actions runs `.github/workflows/quality.yml` on pull requests, pushes to
 master/the working branch, or manual workflow dispatch. It uses Node 24, a fresh
 PostgreSQL 17 service, frozen npm install, migrations, temporary owner settings,
-lint, unit tests, production build, database checks and authenticated HTTP checks.
+lint, unit tests, production build, database checks, authenticated HTTP checks
+and real Chromium form regressions. Playwright installs its browser only in CI
+or when the developer requests local browser tests.
 
 No repository secret is required. The password in the workflow belongs only to
 the ephemeral CI database, not a laptop or production account. CJ/eBay credentials

@@ -9,6 +9,9 @@ import { countryCode } from "@/lib/sourcing/schema";
 import { CURRENCIES } from "@/lib/discovery/schema";
 import { MARKET_KEYS } from "@/lib/profit/markets";
 import { INPUT_DEFS, INPUT_KEYS, type DataStatus, type InputKey } from "@/lib/profit/types";
+import type { Prisma } from "../../../generated/prisma/client";
+import { InputValidationError } from "@/lib/forms/errors";
+import { sourceUrl } from "@/lib/discovery/schema";
 import type { StoredInput } from "@/lib/data/queries";
 
 const STATUSES: DataStatus[] = ["VERIFIED", "ESTIMATED", "UNKNOWN"];
@@ -18,12 +21,13 @@ const id = (fd: FormData, k: string) => z.coerce.number().int().positive().parse
 function readInputs(fd: FormData, keys: readonly InputKey[]) {
   return INPUT_DEFS.filter((d) => keys.includes(d.key)).map((d) => {
     const p = parseInput(d.unit, text(fd, `${d.key}__value`));
-    if (p.error) throw new Error(`${d.label}: ${p.error}`);
+    if (p.error || (p.value !== null && (!Number.isSafeInteger(p.value) || p.value > 2_000_000_000))) throw new InputValidationError(`${d.label}: enter a valid non-negative value within the supported range.`);
     const chosen = text(fd, `${d.key}__status`) as DataStatus;
     let status: DataStatus = STATUSES.includes(chosen) ? chosen : "UNKNOWN";
     if (p.value === null) status = "UNKNOWN";
     else if (status === "UNKNOWN") status = "ESTIMATED"; // a number was typed but not marked verified
     const note = text(fd, `${d.key}__note`) || null;
+    if (note && note.length > 2000) throw new InputValidationError(`${d.label}: notes are limited to 2000 characters.`);
     return { key: d.key, value: status === "UNKNOWN" ? null : p.value, status, note };
   });
 }
@@ -65,11 +69,12 @@ export async function saveMarket(fd: FormData) {
   revalidatePath("/", "layout");
 }
 
-async function createEvaluation(opportunityId: number, marketId: number) {
-  const market = await prisma.market.findUniqueOrThrow({ where: { id: marketId } });
+async function createEvaluation(opportunityId: number, marketId: number, db: Prisma.TransactionClient = prisma) {
+  const market = await db.market.findUniqueOrThrow({ where: { id: marketId } });
   const a = (market.assumptions ?? {}) as unknown as Record<string, StoredInput>;
-  await prisma.evaluation.create({
-    data: {
+  await db.evaluation.upsert({
+    where: { opportunityId_marketId: { opportunityId, marketId } }, update: {},
+    create: {
       opportunityId, marketId,
       inputs: {
         create: INPUT_KEYS.map((key) => {
@@ -87,14 +92,17 @@ export async function createOpportunity(fd: FormData) {
     name: z.string().trim().min(1).max(200),
     category: z.string().trim().max(80),
     sourceName: z.string().trim().max(80),
-    sourceUrl: z.string().trim().max(500).refine((u) => u === "" || /^https?:\/\//.test(u), "URL must start with http(s)://"),
+    sourceUrl: z.union([z.literal(""), sourceUrl]),
     notes: z.string().trim().max(2000),
   }).parse({ name: text(fd, "name"), category: text(fd, "category"), sourceName: text(fd, "sourceName"), sourceUrl: text(fd, "sourceUrl"), notes: text(fd, "notes") });
   const marketIds = fd.getAll("markets").map((v) => z.coerce.number().int().positive().parse(v));
-  const opp = await prisma.opportunity.create({
-    data: { name: o.name, category: o.category || null, sourceName: o.sourceName || null, sourceUrl: o.sourceUrl || null, notes: o.notes || null },
+  const opp = await prisma.$transaction(async tx => {
+    const product = await tx.opportunity.create({
+      data: { name: o.name, category: o.category || null, sourceName: o.sourceName || null, sourceUrl: o.sourceUrl || null, notes: o.notes || null },
+    });
+    for (const mid of new Set(marketIds)) await createEvaluation(product.id, mid, tx);
+    return product;
   });
-  for (const mid of marketIds) await createEvaluation(opp.id, mid);
   revalidatePath("/", "layout");
   redirect(`/opportunities/${opp.id}`);
 }

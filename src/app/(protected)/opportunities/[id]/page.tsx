@@ -1,7 +1,8 @@
 import {requireOwner} from "@/lib/auth/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { addEvaluation, deleteOpportunity, saveEvaluation } from "../../actions";
+import { deleteOpportunity } from "../../actions";
+import { addEvaluation, saveEvaluation } from "../../form-actions";
 import { getMarkets, getOpportunity } from "@/lib/data/queries";
 import { formatMoney, formatPct, toDisplay } from "@/lib/profit/format";
 import { INPUT_DEFS, INPUT_KEYS, type InputKey } from "@/lib/profit/types";
@@ -74,11 +75,11 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
             )}
             <details open={!c.complete}>
               <summary>Edit inputs</summary>
-              <form action={saveEvaluation}>
+              <ActionForm action={saveEvaluation} label="Save inputs">
                 <input type="hidden" name="evaluationId" value={e.id} />
                 <InputFields keys={INPUT_KEYS} values={e.inputs} currency={cur} />
-                <div className="bar"><button className="primary">Save inputs</button><span className="mut">* required for a profit figure. A number left on “Unknown” is saved as an Estimate.</span></div>
-              </form>
+                <div className="bar"><span className="mut">* required for a profit figure. A number left on “Unknown” is saved as an Estimate.</span></div>
+              </ActionForm>
             </details>
             <details><summary>What-if calculator</summary><Calculator initial={initial} pricesIncludeTax={e.market.pricesIncludeTax} currency={cur} /></details>
           </section>
@@ -108,11 +109,11 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
         </ActionForm></details>
       </section>
       {unused.length > 0 && (
-        <form action={addEvaluation} className="bar">
+        <ActionForm action={addEvaluation} label="Evaluate in another market">
           <input type="hidden" name="opportunityId" value={opp.id} />
           <select name="marketId">{unused.map((m) => <option key={m.id} value={m.id}>{m.code}</option>)}</select>
-          <button>Evaluate in another market</button>
-        </form>
+
+        </ActionForm>
       )}
       <form action={deleteOpportunity} className="bar">
         <input type="hidden" name="opportunityId" value={opp.id} />
