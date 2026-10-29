@@ -46,3 +46,7 @@ next-env.d.ts
 .agents/
 .claude/
 .windsurf/
+# Local database archives are private and never belong in source control
+*.dump
+*.dump.partial
+/arbitrage-finder-backups/

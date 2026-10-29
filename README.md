@@ -270,3 +270,12 @@ Each Opportunity has **Download research report (.txt)** for current market
 calculations, stored inputs, sources, evidence and competitor observations.
 Unknowns, expiry/retirement and input assumptions remain explicit. No provider
 call or database write is made. See [usage, limits and laptop update](docs/RESEARCH-REPORT.md).
+
+## Local database backup
+
+Run `npm run db:backup` from the checkout to create a private PostgreSQL custom
+archive outside the project, with a SHA-256 manifest and archive-index check.
+Use `-- --pg-bin "path/to/PostgreSQL/bin"` when tools are not on PATH. Local
+credentials come from the app settings, never CLI arguments. Read
+[Windows commands, included data and restore rehearsal](docs/LOCAL-BACKUP.md).
+Code and local settings must also be preserved separately.

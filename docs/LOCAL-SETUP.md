@@ -108,3 +108,9 @@ fails. GitHub backs up code, not your PostgreSQL data; use database backups too.
 Stop the app with Ctrl+C. For the reviewed matching update, follow the
 [update commands and workflow](MATCHING.md#updating-the-windows-laptop).
 Keep your existing ignored `.env` and `.env.local`; no new secret is needed.
+
+## Back up local research data
+
+Use `npm.cmd run db:backup` from this checkout. See [backup and recovery](LOCAL-BACKUP.md)
+for PostgreSQL tool discovery, private storage, what is excluded and safe restore
+practice. GitHub and research reports do not replace the database archive.

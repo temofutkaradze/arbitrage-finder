@@ -6,3 +6,7 @@ generated
 coverage
 *.tsbuildinfo
 npm-debug.log*
+
+*.dump
+*.dump.partial
+arbitrage-finder-backups
