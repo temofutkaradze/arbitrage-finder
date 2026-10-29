@@ -28,6 +28,7 @@ model Market {
   evidence         Evidence[]
   shippingQuotes   ShippingQuote[]
   competitors      CompetitorObservation[]
+  offers           ExternalOffer[]
 }
 
 model Opportunity {
@@ -43,6 +44,7 @@ model Opportunity {
   evaluations Evaluation[]
   listings    SourceListing[]
   competitors CompetitorObservation[]
+  offers      ExternalOffer[]
   evidence    Evidence[]
 }
 
@@ -169,6 +171,7 @@ model ShippingQuote {
 }
 
 model CompetitorObservation {
+  importedOffer ExternalOffer?
   id            Int @id @default(autoincrement())
   opportunityId Int
   opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
@@ -228,4 +231,27 @@ model FxSnapshot {
   retrievedAt  DateTime @default(now())
   sourceUrl    String
   @@unique([provider, currency, rateDate, rate])
+}
+
+model ExternalOffer {
+  id            Int @id @default(autoincrement())
+  opportunityId Int
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  marketId      Int
+  market        Market @relation(fields: [marketId], references: [id], onDelete: Restrict)
+  provider      String
+  externalId    String
+  title         String
+  merchant      String
+  url           String
+  priceMinor    Int
+  currency      String
+  destinationCountry String
+  observedAt    DateTime
+  expiresAt     DateTime
+  state         String @default("PENDING")
+  reviewNote    String?
+  observationId Int? @unique
+  observation   CompetitorObservation? @relation(fields: [observationId], references: [id], onDelete: SetNull)
+  @@unique([opportunityId, marketId, provider, externalId])
 }

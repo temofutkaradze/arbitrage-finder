@@ -172,3 +172,36 @@ production Markets form, cooldown enforcement, official snapshot application,
 wrong-currency rejection, manual fallback and dated source provenance. Temporary
 technical markets/products are removed. This validates reference calculations,
 not actual payment-provider settlement rates or commercial profitability.
+
+## Optional eBay Browse offer-review extension (2026-10-29)
+
+The official [OpenAPI specification](https://developer.ebay.com/api-docs/master/buy/browse/openapi/3/buy_browse_v1_oas3.json)
+was read to verify `/item_summary/search`, marketplace header, limit/filter
+parameters, summary fields and base OAuth scope. The [production requirements](https://developer.ebay.com/api-docs/buy/static/buy-requirements.html)
+and [client credentials documentation](https://developer.ebay.com/api-docs/static/oauth-client-credentials-grant.html)
+were reachable. The production requirements describe application review/contracts
+for relevant Buy API use cases; exact eligibility and approved use must be checked
+with eBay for this app, not inferred from the existence of documentation.
+
+Implemented: bounded on-demand fixed-price search on `api.ebay.com`, explicit
+country/currency mapping, one-minute cooldown, safe response parsing and an
+ExternalOffer review inbox. No scraping, image copying, eBay background collection,
+automatic product-equivalence claim or demand inference is performed. A valid
+production application bearer token is an external prerequisite; the current
+instance has no EBAY_ACCESS_TOKEN. Real provider authorization, current quota,
+fees and retention/display conditions are unverified. Automatic token issuance
+and renewal are not implemented; expired tokens fail clearly.
+
+Candidates remain outside comparable-price summaries until explicit comparison
+review. Confirm pack, model, condition, delivery and source context. Shipping and
+tax basis stay unknown unless the operator supplies them; they are never silently
+zeroed. Refreshing an offer expires its old accepted observation and returns it
+to pending, preserving historical prices. Changing market destination invalidates
+old comparisons. Only price observations are created; no demand evidence or
+selling-price assumptions are filled. An equivalent-looking item can still be a
+poor match: the human review is a judgment, not independent certification.
+
+Validation: 73 unit tests, database pipeline tests and production HTTP review/
+destination-change tests with temporary fixtures and mocked provider responses.
+No real eBay data or commercial market was created. Live provider readiness is
+not claimed. Manual source-based competitor research continues without eBay.

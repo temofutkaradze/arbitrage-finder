@@ -54,6 +54,8 @@ export async function saveMarket(fd: FormData) {
         evaluation: { marketId }, key: { in: ["supplierPrice", "shippingToCustomer", "importDutyPct", "importDutyFixed"] }, note: { startsWith: "CJ estimate #" },
       }, data: { value: null, status: "UNKNOWN", note: "CJ sourcing estimate invalidated: destination country changed. Request a new quote." } });
       await tx.evidence.updateMany({ where: { marketId, kind: { in: ["SOURCING", "SHIPPING"] }, summary: { startsWith: "CJ estimate #" } }, data: { expiresAt: new Date() } });
+      await tx.competitorObservation.updateMany({where:{marketId},data:{expiresAt:new Date()}});
+      await tx.externalOffer.updateMany({where:{marketId},data:{state:"INVALIDATED",reviewNote:"Destination changed; repeat market-specific research."}});
       await tx.evaluation.updateMany({ where: { marketId }, data: { updatedAt: new Date() } });
     }
   });

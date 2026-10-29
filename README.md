@@ -225,3 +225,38 @@ npx tsx scripts/check-fx-http.ts --refresh
 The FX HTTP check removes its own temporary products/quotes/market, retaining
 only real official rate snapshots. The existing sourcing integration check also
 covers wrong-currency and stale snapshot rejection and manual fallback.
+
+## Optional eBay competitor offers
+
+Research can fetch one page of up to 20 fixed-price offers from the production
+Browse API for an explicitly selected destination. Supported country/currency
+pairs: US/USD, GB/GBP, DE/FR/IT/ES/EUR, CA/CAD, AU/AUD. No default country is used.
+This optional provider requires production account eligibility and an application
+access token with `https://api.ebay.com/oauth/api_scope`; configure it securely as
+`EBAY_ACCESS_TOKEN`, scoped to `api.ebay.com`. It is not a CJ credential. No token
+is currently configured and no real eBay offer fetch has been validated. Tokens
+can expire; automatic OAuth token minting/renewal is not implemented.
+
+Official requirements and approved data-use/retention/display conditions must be
+checked for the actual application before enabling live collection. Current fees
+and quota were not independently established. The connector makes no scheduled
+requests and has a one-minute cooldown. It never stores upstream error bodies or
+credentials. Existing manual competitor entry and CJ functions remain available.
+
+Offers arrive pending and cannot affect comparable-price summaries until explicit
+human review. Check exact model, dimensions, pack size, condition and delivery.
+Shipping/tax values are deliberately unknown unless confirmed. An accepted offer
+is a displayed-price observation, not sales or demand evidence, and never fills
+selling-price assumptions automatically. Re-fetching expires the previous accepted
+observation and requires review again. Changing destination expires prior market
+comparisons and invalidates the offer inbox. The 24-hour review window is an app
+freshness rule, not a provider retention licence or availability guarantee.
+
+```sh
+npx tsx scripts/check-offers.ts
+# With the production server running:
+npx tsx scripts/check-offers-http.ts
+```
+
+These checks use clearly labelled fixtures, remove them afterward and do not call
+eBay. See docs/ENVIRONMENT-HANDOFF.md if the environment draft is uneditable.
