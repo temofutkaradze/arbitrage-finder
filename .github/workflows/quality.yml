@@ -2,7 +2,7 @@ name: Quality checks
 on:
   pull_request:
   push:
-    branches: [master, codex/product-research-automation]
+    branches: [master, feature/product-research-automation]
   workflow_dispatch:
 permissions:
   contents: read

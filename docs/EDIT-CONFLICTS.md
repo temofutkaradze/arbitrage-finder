@@ -35,7 +35,7 @@ cd C:\Users\temof\arbitrage-finder-local
 Stop the app first with Ctrl+C, then:
 
 ```bat
-git pull --ff-only origin codex/product-research-automation
+git pull --ff-only origin feature/product-research-automation
 npm.cmd ci
 npx prisma generate
 npx prisma migrate deploy

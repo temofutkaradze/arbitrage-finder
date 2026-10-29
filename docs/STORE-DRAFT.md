@@ -30,7 +30,7 @@ Claims, supplier variant, market, pricing, fulfilment, taxes, safety, returns an
 asset rights must still be reviewed before selling. An exported draft is not an
 assertion that any of those checks have passed.
 
-Update the local checkout with `git pull --ff-only origin codex/product-research-automation`,
+Update the local checkout with `git pull --ff-only origin feature/product-research-automation`,
 then restart the app. If earlier updates are not yet installed, follow the
 full generate/migrate startup commands in LOCAL-SETUP.md.
 

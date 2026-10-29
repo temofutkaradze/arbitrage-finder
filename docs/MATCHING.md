@@ -60,7 +60,7 @@ deleted. Latest 10 revisions/decisions are visible; full history is in PostgreSQ
 Stop the app with Ctrl+C, then run inside `arbitrage-finder-local`:
 
 ```bat
-git pull --ff-only origin codex/product-research-automation
+git pull --ff-only origin feature/product-research-automation
 npx prisma generate
 npx prisma migrate deploy
 npm.cmd run dev -- --hostname 127.0.0.1

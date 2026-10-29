@@ -39,7 +39,7 @@ Use `npx tsx scripts/check-fx-http.ts` with existing current references; optiona
 `--refresh` makes one actual public request. Do not silently revalue old inputs.
 
 No permanent commercial market has been selected by the operator. Code is backed
-up on GitHub branch `codex/product-research-automation`. Saving instructions or
+up on GitHub branch `feature/product-research-automation`. Saving instructions or
 pushing code does not deploy the application or publish an environment snapshot.
 
 ## Owner authentication startup addendum

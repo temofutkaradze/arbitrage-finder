@@ -45,7 +45,7 @@ file are explicitly UTC snapshots, not promises of current provider availability
 Stop the app with Ctrl+C. Inside `C:\Users\temof\arbitrage-finder-local`:
 
 ```bat
-git pull --ff-only origin codex/product-research-automation
+git pull --ff-only origin feature/product-research-automation
 npx prisma generate
 npx prisma migrate deploy
 npm.cmd run dev -- --hostname 127.0.0.1

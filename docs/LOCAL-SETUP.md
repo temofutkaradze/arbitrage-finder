@@ -19,7 +19,7 @@ Download the complete branch into a NEW folder, preserving any older local copy:
 
 ```powershell
 cd $HOME
- git clone --branch codex/product-research-automation --single-branch https://github.com/temofutkaradze/arbitrage-finder.git arbitrage-finder-local
+ git clone --branch feature/product-research-automation --single-branch https://github.com/temofutkaradze/arbitrage-finder.git arbitrage-finder-local
 cd arbitrage-finder-local
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-local.ps1
 ```

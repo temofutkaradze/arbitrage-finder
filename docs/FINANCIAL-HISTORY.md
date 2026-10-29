@@ -59,7 +59,7 @@ Stop the app with Ctrl+C before updating. From the checkout:
 
 ```bat
 cd C:\Users\temof\arbitrage-finder-local
-git pull --ff-only origin codex/product-research-automation
+git pull --ff-only origin feature/product-research-automation
 npm.cmd ci
 npx prisma generate
 npx prisma migrate deploy

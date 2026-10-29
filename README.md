@@ -252,7 +252,7 @@ they do not bypass authorization in application code.
 Start with [LOCAL-SETUP.md](docs/LOCAL-SETUP.md). It includes Windows PowerShell
 setup, safe local database creation and portable owner-password file paths.
 No online hosting is necessary. The latest complete code lives on branch
-`codex/product-research-automation`. Preserve any existing local project/database
+`feature/product-research-automation`. Preserve any existing local project/database
 before updating, and never reset your database to resolve setup errors.
 
 ## Reviewed supplier matching
@@ -314,3 +314,5 @@ laptop migration instructions](docs/EDIT-CONFLICTS.md).
 Owner-only `/history` records before/after inputs, statuses, notes, saved
 calculations and manual/quote/market-change provenance in the same transaction
 as each write. See [coverage, retention and laptop migration](docs/FINANCIAL-HISTORY.md).
+
+For existing laptop clones, follow the [one-time profile/branch update](docs/GIT-PROFILE-UPDATE.md) before the next pull.
