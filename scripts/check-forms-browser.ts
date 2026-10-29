@@ -10,7 +10,7 @@ async function main(){
  let marketId:number|undefined;
  await prisma.ownerSession.create({data:{id:session.id,passwordVersion:configuredAuth().version,expiresAt:session.expiresAt}});
  try{
-  const context=await browser.newContext();await context.addCookies([{name:SESSION_COOKIE,value:session.token,url:"http://127.0.0.1:3000"}]);const page=await context.newPage();
+  const context=await browser.newContext();context.setDefaultTimeout(20000);context.setDefaultNavigationTimeout(20000);await context.addCookies([{name:SESSION_COOKIE,value:session.token,url:"http://127.0.0.1:3000"}]);const page=await context.newPage();
   await page.goto("http://127.0.0.1:3000/markets");
   const form=page.locator("form").filter({has:page.locator('[name="code"]')});
   await form.locator('[name="code"]').fill("_");await form.locator('[name="name"]').fill(name);await form.getByRole("button").click();
