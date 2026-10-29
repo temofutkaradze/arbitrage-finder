@@ -1,3 +1,5 @@
+import { SupplierProgress } from "@/components/SupplierProgress";
+import { loadSupplierProgress } from "@/lib/sourcing/progress";
 import {requireOwner} from "@/lib/auth/server";
 import { ResearchProgress } from "@/components/ResearchProgress";
 import Link from "next/link";
@@ -25,6 +27,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
   const opp = /^\d+$/.test(id) ? await getOpportunity(Number(id)) : null;
   if (!opp) notFound();
   const markets = await getMarkets();
+  const supplierData = await loadSupplierProgress([opp.id]);
   const unused = markets.filter((m) => !opp.evaluations.some((e) => e.market.id === m.id));
   return (
     <>
@@ -37,6 +40,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       {opp.notes && <p>{opp.notes}</p>}
       <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 
+      <SupplierProgress productId={opp.id} data={supplierData}/>
       <ResearchProgress productId={opp.id} evidence={opp.evidence} evaluations={opp.evaluations}/>
 
       {opp.evaluations.map((e) => {

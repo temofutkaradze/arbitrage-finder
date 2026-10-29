@@ -1,3 +1,5 @@
+import { SupplierProgress } from "@/components/SupplierProgress";
+import { loadSupplierProgress } from "@/lib/sourcing/progress";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireOwner } from "@/lib/auth/server";
@@ -19,6 +21,7 @@ export default async function Products({ searchParams }: { searchParams: Promise
     include: { evidence: true, evaluations: { include: { market: true, inputs: true }, orderBy: { id: "asc" } }, _count: { select: { evaluations: true, evidence: true, listings: true } } },
   });
   const page = products.slice(0, 25);
+  const supplierData = await loadSupplierProgress(page.map(p => p.id));
   const older = new URLSearchParams({ ...(q ? { q } : {}), before: String(page.at(-1)?.id ?? "") });
   return <>
     <h1>ჩემი პროდუქტები</h1>
@@ -31,6 +34,7 @@ export default async function Products({ searchParams }: { searchParams: Promise
       <h2><Link href={`/opportunities/${p.id}`}>{p.name}</Link></h2>
       <p className="mut">{[p.category, p.sourceName].filter(Boolean).join(" · ") || "წყარო ჯერ არ არის მითითებული"}</p>
       <p>{p._count.evaluations ? `${p._count.evaluations} ბაზრის შეფასება` : "ჯერ შეუფასებელია"} · {p._count.evidence} მტკიცებულების ჩანაწერი · {p._count.listings} დაკავშირებული კატალოგის ჩანაწერი</p>
+      <SupplierProgress productId={p.id} data={supplierData}/>
       <ResearchProgress productId={p.id} evidence={p.evidence} evaluations={p.evaluations.map(e => ({ market: e.market, result: calculate(rowsToInputs(e.inputs), { pricesIncludeTax: e.market.pricesIncludeTax }) }))}/>
       <div className="bar"><Link href={`/opportunities/${p.id}`}>ხარჯები, მტკიცებულებები და ანგარიში</Link><Link href={`/research?product=${p.id}`}>კონკურენტები და კვლევის წყაროები</Link></div>
     </section>)}
