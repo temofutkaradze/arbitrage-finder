@@ -35,6 +35,7 @@ export default async function Products({ searchParams }: { searchParams: Promise
       <p className="mut">{[p.category, p.sourceName].filter(Boolean).join(" · ") || "წყარო ჯერ არ არის მითითებული"}</p>
       <p>{p._count.evaluations ? `${p._count.evaluations} ბაზრის შეფასება` : "ჯერ შეუფასებელია"} · {p._count.evidence} მტკიცებულების ჩანაწერი · {p._count.listings} დაკავშირებული კატალოგის ჩანაწერი</p>
       <SupplierProgress productId={p.id} data={supplierData}/>
+      <p><Link href={`/opportunities/${p.id}/ai`}>AI კვლევა</Link></p>
       <ResearchProgress productId={p.id} evidence={p.evidence} evaluations={p.evaluations.map(e => ({ market: e.market, result: calculate(rowsToInputs(e.inputs), { pricesIncludeTax: e.market.pricesIncludeTax }) }))}/>
       <div className="bar"><Link href={`/opportunities/${p.id}`}>ხარჯები, მტკიცებულებები და ანგარიში</Link><Link href={`/research?product=${p.id}`}>კონკურენტები და კვლევის წყაროები</Link></div>
     </section>)}

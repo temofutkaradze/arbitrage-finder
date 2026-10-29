@@ -34,6 +34,7 @@ model Market {
 }
 
 model Opportunity {
+  aiResearch AiResearchRun[]
   id          Int          @id @default(autoincrement())
   name        String
   category    String?
@@ -331,4 +332,28 @@ model FinancialChange {
   @@unique([scope, recordId, version])
   @@index([evaluationId, id])
   @@index([marketId, id])
+}
+
+// Attempts count toward the daily bound, including failed/unknown provider outcomes.
+model AiResearchRun {
+  id Int @id @default(autoincrement())
+  opportunityId Int
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  model String
+  state String
+  inputHash String
+  snapshot Json
+  report Json?
+  createdAt DateTime @default(now())
+  finishedAt DateTime?
+  @@index([opportunityId, id])
+  @@index([createdAt])
+}
+
+// Retained even if products and their report snapshots are deleted.
+model AiResearchBudget {
+ id String @id
+ day String
+ attempts Int
+ lastStartedAt DateTime
 }

@@ -37,6 +37,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <p><a href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a> · <span className="mut">Current inputs, calculations, sources and evidence. Review private notes before sharing.</span></p>
       <p><Link href="/products">← ჩემი პროდუქტები</Link> · <Link href={`/research?product=${opp.id}`}>კონკურენტები და კვლევის წყაროები</Link></p>
       <p><Link href={`/opportunities/${opp.id}/prepare`}>Prepare a store draft</Link></p>
+      {!opp.isSample && <p><Link href={`/opportunities/${opp.id}/ai`}>AI — გამოიკვლიე შენახული მონაცემები</Link></p>}
       {opp.notes && <p>{opp.notes}</p>}
       <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 
