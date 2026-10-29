@@ -44,7 +44,7 @@ async function exchangeApiKey(credential: string): Promise<string> {
     checkHttp(response);
     const result = envelope.parse(await response.json());
     if (!(result.result || result.success) || result.code !== 200) {
-      if ([1600001, 1601000].includes(result.code)) throw new Error(`${AUTH_ERROR} CJ exchange code: ${result.code}.`);
+      if ([1600001, 1600004, 1600005, 1600006, 1601000].includes(result.code)) throw new Error(`${AUTH_ERROR} CJ exchange code: ${result.code}.`);
       throw new Error(`CJ token exchange rejected (code ${result.code}). Check account access and call limits; this response alone does not establish an invalid API Key.`);
     }
     const data = tokenData.parse(result.data);
