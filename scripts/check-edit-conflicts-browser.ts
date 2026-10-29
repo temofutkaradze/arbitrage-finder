@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../src/lib/db/prisma";
 import { newSession, configuredAuth, SESSION_COOKIE } from "../src/lib/auth/core";
-async function submit(page:Page,label:string){const response=page.waitForResponse(r=>r.request().method()==="POST");await page.getByRole("button",{name:label,exact:true}).click();await(await response).finished();}
+async function submit(page:Page,label:string){const response=page.waitForResponse(r=>r.request().method()==="POST");await page.getByRole("button",{name:label,exact:true}).click();await response;}
 async function main(){
  const tag=randomUUID(),session=newSession(),market=await prisma.market.create({data:{code:`V${tag.slice(0,8)}`,name:"VERSION BROWSER FIXTURE",countryCode:"US",currency:"USD"}});
  const product=await prisma.opportunity.create({data:{name:"VERSION BROWSER FIXTURE",isSample:true}});
