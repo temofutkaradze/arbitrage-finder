@@ -1,3 +1,4 @@
+import {authenticatedFetch as fetch,cleanupTestSessions} from "./test-auth";
 import "dotenv/config";
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
@@ -42,4 +43,4 @@ async function main(){
   console.log("PASS: official FX display, reference selection, currency mismatch rejection and dated provenance through production forms");
  }finally{if(listingId)await prisma.sourceListing.delete({where:{id:listingId}});if(productId)await prisma.opportunity.delete({where:{id:productId}});if(marketId)await prisma.market.delete({where:{id:marketId}});}
 }
-main().catch(e=>{console.error(e instanceof Error?e.message:"FX HTTP verification failed");process.exitCode=1;}).finally(()=>prisma.$disconnect());
+main().catch(e=>{console.error(e instanceof Error?e.message:"FX HTTP verification failed");process.exitCode=1;}).finally(async()=>{await cleanupTestSessions();await prisma.$disconnect();});

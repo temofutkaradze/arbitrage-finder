@@ -255,3 +255,16 @@ model ExternalOffer {
   observation   CompetitorObservation? @relation(fields: [observationId], references: [id], onDelete: SetNull)
   @@unique([opportunityId, marketId, provider, externalId])
 }
+
+model OwnerSession {
+  id              String @id
+  passwordVersion String
+  expiresAt       DateTime
+  @@index([expiresAt])
+}
+model OwnerLoginState {
+  id              String @id
+  failures        Int @default(0)
+  windowStartedAt DateTime
+  lockedUntil     DateTime?
+}

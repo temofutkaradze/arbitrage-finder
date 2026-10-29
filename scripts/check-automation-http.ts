@@ -1,3 +1,4 @@
+import {authenticatedFetch as fetch,cleanupTestSessions} from "./test-auth";
 import "dotenv/config";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -38,4 +39,4 @@ async function main(){
   console.log("PASS: schedule form validation, paused defaults, explicit enable confirmation and pause; no provider requests");
  }finally{await prisma.discoverySchedule.deleteMany({where:{keyword}});}
 }
-main().catch(e=>{console.error(e instanceof Error?e.message:"Automation HTTP check failed");process.exitCode=1;}).finally(()=>prisma.$disconnect());
+main().catch(e=>{console.error(e instanceof Error?e.message:"Automation HTTP check failed");process.exitCode=1;}).finally(async()=>{await cleanupTestSessions();await prisma.$disconnect();});

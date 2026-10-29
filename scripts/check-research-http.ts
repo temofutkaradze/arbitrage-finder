@@ -1,3 +1,4 @@
+import {authenticatedFetch as fetch,cleanupTestSessions} from "./test-auth";
 import "dotenv/config";
 import assert from "node:assert/strict";
 import {randomUUID} from "node:crypto";
@@ -32,4 +33,4 @@ async function main(){
   console.log("PASS: research HTTP observations, currency rejection, unknown shipping, duplicate protection and evidence retirement/readiness");
  }finally{if(productId)await prisma.opportunity.delete({where:{id:productId}});if(marketId)await prisma.market.delete({where:{id:marketId}});}
 }
-main().catch(e=>{console.error(e instanceof Error?e.message:"Research check failed");process.exitCode=1;}).finally(()=>prisma.$disconnect());
+main().catch(e=>{console.error(e instanceof Error?e.message:"Research check failed");process.exitCode=1;}).finally(async()=>{await cleanupTestSessions();await prisma.$disconnect();});

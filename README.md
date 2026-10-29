@@ -260,3 +260,20 @@ npx tsx scripts/check-offers-http.ts
 
 These checks use clearly labelled fixtures, remove them afterward and do not call
 eBay. See docs/ENVIRONMENT-HANDOFF.md if the environment draft is uneditable.
+
+## Owner sign-in and deployment
+
+Private pages and mutations now require an owner session. Run `npm run auth:init`
+once for local setup; it preserves existing files and writes the generated
+credential only to the private file path reported by the command. Do not commit
+.env.local or copy the local origin into a public deployment. There is no default
+password and no unauthenticated development bypass.
+
+Use [the deployment runbook](docs/DEPLOYMENT.md) for required environment settings,
+Docker build/release/web/worker commands and validation. /api/health reports
+readiness without exposing configuration. Public hosting/account/production DB
+configuration remains an external prerequisite; the app is not publicly deployed.
+
+`npx tsx scripts/check-auth-http.ts` verifies the local sign-in flow. Existing HTTP
+regression scripts now authenticate with temporary test sessions and remove them;
+they do not bypass authorization in application code.

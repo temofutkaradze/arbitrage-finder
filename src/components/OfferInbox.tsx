@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { ActionForm } from "./ActionForm";
-import { fetchOffers, reviewExternalOffer } from "@/app/research/offer-actions";
+import { fetchOffers, reviewExternalOffer } from "@/app/(protected)/research/offer-actions";
 export async function OfferInbox({productId,marketId,query}:{productId:number;marketId:number;query:string}){
  const offers=await prisma.externalOffer.findMany({where:{opportunityId:productId,marketId},orderBy:{observedAt:"desc"},take:40});
  return <section className="card"><h2>External offers awaiting comparison</h2><p className="mut">Optional eBay Browse connector: {process.env.EBAY_ACCESS_TOKEN?"credential configured; account access checked when searching":"not connected — production access and an application access token are required"}. One page, up to 20 offers, one-minute cooldown. No scraping or scheduled eBay collection. Manual competitor entry below remains available.</p><ActionForm action={fetchOffers} label="Find eBay offers"><input type="hidden" name="opportunityId" value={productId}/><input type="hidden" name="marketId" value={marketId}/><label>Search phrase<input name="query" minLength={2} maxLength={100} defaultValue={query.slice(0,100)} required/></label></ActionForm><p className="mut">Marketplace and delivery country follow your configured market. Delivery availability, shipping and taxes still need confirmation. An active listing is not proof of sales. Re-fetching an offer expires its previous accepted observation and requires a new review.</p>
