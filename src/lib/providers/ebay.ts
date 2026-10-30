@@ -1,3 +1,4 @@
+import {getEbayToken} from "./ebay-auth";
 import { z } from "zod";
 import { usdMinor } from "../sourcing/schema";
 import { configureProxyFromEnvironment } from "../discovery/network";
@@ -19,14 +20,15 @@ export function normalizeEbay(payload:unknown,currency:string){
   return {provider:"ebay",externalId:row.itemId,title:row.title,merchant:row.seller.username,url:row.itemWebUrl,priceMinor,currency};
  });
 }
-export async function searchEbay(query:string,country:string,currency:string,token=process.env.EBAY_ACCESS_TOKEN){
- if(!token)throw new Error("eBay is not connected. A production Browse API application access token and account eligibility are required. Manual research remains available.");
+export async function searchEbay(query:string,country:string,currency:string,token?:string){
+ if(token==="")throw new Error("eBay is not connected. A production Browse API application access token and account eligibility are required. Manual research remains available.");
  const market=EBAY_MARKETS[country];if(!market||market.currency!==currency)throw new Error("eBay market/currency combination is not supported. Choose a matching configured destination; no default marketplace is assumed.");
  if(query.trim().length<2||query.length>100)throw new Error("eBay search phrase must contain 2–100 characters.");
+ token=token??await getEbayToken();
  configureProxyFromEnvironment();
  const url=new URL("https://api.ebay.com/buy/browse/v1/item_summary/search");url.searchParams.set("q",query.trim());url.searchParams.set("limit","20");url.searchParams.set("filter",`deliveryCountry:${country},buyingOptions:{FIXED_PRICE}`);
  let response:Response;try{response=await fetch(url,{headers:{Authorization:`Bearer ${token}`,"X-EBAY-C-MARKETPLACE-ID":market.id},cache:"no-store",redirect:"error",signal:AbortSignal.timeout(20000)});}catch{throw new Error("eBay request could not complete. No offers were saved.");}
- if(response.status===401)throw new Error("eBay token was rejected or expired. Update it securely; tokens are not refreshed by this connector.");
+ if(response.status===401){getEbayToken.invalidate(token);throw new Error("eBay token was rejected or expired. Automatic credentials will be checked again on your next search; manually supplied tokens need secure replacement. No automatic search retry was sent.");}
  if(response.status===403)throw new Error("eBay production access was denied. Confirm Browse API eligibility and scopes with eBay.");
  if(response.status===429)throw new Error("eBay rate limit reached. Wait before trying again.");
  if(!response.ok)throw new Error(`eBay returned HTTP ${response.status}. No offers were saved.`);

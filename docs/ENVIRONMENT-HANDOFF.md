@@ -66,3 +66,10 @@ No public hosting account, production database, domain, registry upload or publi
 deployment is configured. There are three remaining deployment operations in
 DEPLOYMENT.md. Do not invent hosting credentials or purchase resources. Do not
 publish this environment or overwrite newer configuration automatically.
+
+## eBay automatic credentials (2026-10-30)
+Prefer server-only EBAY_CLIENT_ID (production App ID) and EBAY_CLIENT_SECRET
+(production Cert ID), scoped to api.ebay.com in managed secret configuration.
+No environment secret binding is created automatically by this code change.
+The previous EBAY_ACCESS_TOKEN option is still supported; both application keys
+take precedence when present. See EBAY-SETUP.md for setup and verification.

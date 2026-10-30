@@ -1,3 +1,4 @@
+import {ebayConnectionMode} from "./ebay-auth";
 import { z } from "zod";
 import { prisma } from "../db/prisma";
 import { searchEbay, type normalizeEbay } from "./ebay";
@@ -20,7 +21,7 @@ export async function saveExternalOffers(opportunityId:number,marketId:number,co
 export async function fetchEbayOffers(opportunityId:number,marketId:number,query:string){
  const market=await prisma.market.findUniqueOrThrow({where:{id:marketId}});
  if(!market.countryCode)throw new Error("eBay needs an explicit destination country in Markets.");
- if(!process.env.EBAY_ACCESS_TOKEN)throw new Error("eBay is not connected. Configure EBAY_ACCESS_TOKEN securely after obtaining production access; no credentials are entered here.");
+ if(ebayConnectionMode()==="missing")throw new Error("eBay is not connected. Configure production EBAY_CLIENT_ID and EBAY_CLIENT_SECRET securely; no credentials are entered here.");
  await prisma.$transaction(async tx=>{
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340927)`;
   const last=await tx.importRun.findFirst({where:{source:"ebay-attempt"},orderBy:{completedAt:"desc"}});
