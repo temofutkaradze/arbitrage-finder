@@ -1,4 +1,75 @@
-# Saved-source AI research (first integration)
+# AI provider switching: Gemini and OpenAI
+
+Both providers use the same research page, report validation, private snapshots,
+shared daily attempt counter and 90-second cooldown. No migration is required
+for provider switching. Reports now record `provider:model` in the existing model
+field; older unprefixed model records were OpenAI. There is no automatic failover,
+so errors never trigger an unexpected paid request to another service.
+
+## Gemini configuration on Windows
+
+Stop the app with Ctrl+C and open the existing local configuration:
+
+```bat
+notepad C:\Users\temof\arbitrage-finder-local\.env.local
+```
+
+Preserve existing database/CJ/auth settings. Add or update each variable once:
+
+```dotenv
+AI_PROVIDER=gemini
+AI_RESEARCH_ENABLED=true
+AI_RESEARCH_MODEL=YOUR_AVAILABLE_GEMINI_MODEL_ID
+GEMINI_API_KEY=YOUR_PRIVATE_KEY
+```
+
+Replace the two placeholders locally: use the exact compatible model ID shown in
+Google AI Studio and your API key. Use a model supporting generateContent and JSON
+schema structured output. Model availability/free-tier eligibility varies: inspect
+your project's quota, billing status, and current data-use terms before sending
+research notes. Do not enable paid billing merely to configure this feature.
+Key creation: https://aistudio.google.com/apikey
+API reference: https://ai.google.dev/api/generate-content
+Data terms: https://ai.google.dev/gemini-api/terms
+Pricing/free-tier details: https://ai.google.dev/gemini-api/docs/pricing
+
+Restart the app. Product → AI research shows `gemini` and the exact model before
+you consent to sending. Review the outgoing data packet first. If Gemini is missing
+its key or returns an error, OpenAI is never called as a fallback.
+
+## Switch to OpenAI later, without changing code
+
+Keep your Gemini key privately if desired; set these variables instead:
+
+```dotenv
+AI_PROVIDER=openai
+AI_RESEARCH_ENABLED=true
+AI_RESEARCH_MODEL=gpt-4.1-mini
+OPENAI_API_KEY=YOUR_PRIVATE_OPENAI_KEY
+```
+
+Use a Responses/structured-output-compatible model available in your own account;
+the example is not an access or cost guarantee. Restart the app. Both keys may be
+present, but only the selected provider is used. To disable all calls, set
+`AI_RESEARCH_ENABLED=false` and restart. Never use NEXT_PUBLIC_ for secrets.
+
+Older OpenAI-only settings remain compatible when AI_PROVIDER is absent.
+When AI_PROVIDER is explicitly set, use AI_RESEARCH_ENABLED. AI_RESEARCH_MODEL
+selects the model for either provider; provider-specific OPENAI_RESEARCH_MODEL or
+GEMINI_RESEARCH_MODEL are fallbacks only when the shared model setting is absent.
+Unknown providers or incomplete configuration disable research. A new provider
+with a different API still needs an adapter; these settings support the two
+implemented providers, not every arbitrary external API.
+
+Gemini uses a fixed Google endpoint and x-goog-api-key header, never a key in the
+URL. OpenAI uses its fixed Responses endpoint. Neither adapter browses, uses tools,
+follows redirects, or retries automatically. No dependencies or database fields
+were added. Real paid/free-quota provider calls were not made in implementation
+checks; the first live call requires your configured account and explicit action.
+
+---
+
+# Shared research behavior
 
 This version explains saved product data with cited source IDs. It does not browse,
 claim live demand, overwrite economics, promote evidence, order or publish.
@@ -6,38 +77,15 @@ OpenAI Responses API requests go only to `https://api.openai.com/v1/responses`.
 `store:false` is requested; this is not a promise of zero provider retention.
 Official API reference: https://platform.openai.com/docs/api-reference/responses/create
 
-## Laptop setup
+## Updating an existing checkout
 
-Run in the existing Windows CMD checkout, after stopping the app with Ctrl+C:
-
-```bat
-cd C:\Users\temof\arbitrage-finder-local
-git pull --ff-only origin feature/product-research-automation
-npx prisma generate
-npx prisma migrate deploy
-```
-
-The preview and disabled UI work without an API account. For live use, create an
-API key in your own OpenAI API platform account, check model access and pricing,
-and configure project budgets/alerts separately. ChatGPT subscription does not
-supply API credit. No paid call was needed to implement or test this feature.
-
-Edit `.env.local` locally (never share it) and add the following variables using
-your actual key and an accessible Responses/structured-output-compatible model:
-
-```dotenv
-OPENAI_API_KEY=replace_locally_with_your_key
-OPENAI_RESEARCH_MODEL=gpt-4.1-mini
-OPENAI_RESEARCH_ENABLED=true
-```
-
-`gpt-4.1-mini` is a suggested starting model, not a guarantee of access or cost.
-Restart `npm.cmd run dev -- --hostname 127.0.0.1`. Open a real product → AI research,
-inspect the complete outgoing packet, then confirm the explicit send checkbox.
-Do not add `NEXT_PUBLIC_` to any of these names. To disable paid calls, remove
-`OPENAI_RESEARCH_ENABLED` or set it to `false`, then restart.
-Cloud setup would need a separately configured secret and api.openai.com network
-access. This change does not modify or publish the cloud environment settings.
+Stop the app, then run `git pull --ff-only origin feature/product-research-automation`.
+Provider support adds no migration or dependency. If upgrading from before the
+first AI feature, see that release's report-table migration instructions; obtain
+owner approval before applying any unapplied migration. Restart the application
+after editing environment settings. Cloud credentials/network access must be
+configured separately for the selected fixed host; nothing here publishes cloud
+settings.
 
 ## Bounds and interpretation
 

@@ -13,7 +13,7 @@ export async function runResearch(id:number,expectedHash:string,generate:typeof 
   const attempts=budget?.day===day?budget.attempts:0;
   if(attempts>=10||(budget&&now.getTime()-budget.lastStartedAt.getTime()<90000))return null;
   await tx.aiResearchBudget.upsert({where:{id:"owner"},create:{id:"owner",day,attempts:1,lastStartedAt:now},update:{day,attempts:attempts+1,lastStartedAt:now}});
-  return tx.aiResearchRun.create({data:{opportunityId:id,model:config.model,state:"PENDING",inputHash:packet.hash,snapshot:packet.snapshot}});
+  return tx.aiResearchRun.create({data:{opportunityId:id,model:`${config.provider}:${config.model}`,state:"PENDING",inputHash:packet.hash,snapshot:packet.snapshot}});
  });
  if(!run)return "ლიმიტი: მაქსიმუმ 10 მცდელობა UTC დღეში, მინიმუმ 90 წამი მცდელობებს შორის. წარუმატებელი მცდელობაც ითვლება.";
  try{

@@ -12,16 +12,17 @@ async function main(){
  const fake:typeof generateReport=async()=>{calls++;return {findings:[{kind:"unknown",text:"Missing demand evidence",sourceIds:[`product:${p.id}`]}]};};
  try{
   const packet=await researchPacket(p.id);assert.ok(packet);assert.ok(!JSON.stringify(packet.snapshot).includes("PRIVATE GENERAL NOTE"));
-  process.env.OPENAI_RESEARCH_ENABLED="false";
+  process.env.AI_RESEARCH_ENABLED="false";
+  process.env.AI_PROVIDER="gemini";
   assert.ok((await runResearch(p.id,packet.hash,fake)).includes("გამორთულია"));assert.equal(calls,0);
   assert.equal((await fetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`,{redirect:"manual"})).status,307);
   const page=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);assert.equal(page.status,200);assert.ok((await page.text()).includes("AI ჯერ გამორთულია"));
-  process.env.OPENAI_RESEARCH_ENABLED="true";process.env.OPENAI_API_KEY="mock-only-never-send";process.env.OPENAI_RESEARCH_MODEL="mock-model";
+  process.env.AI_RESEARCH_ENABLED="true";process.env.GEMINI_API_KEY="mock-only-never-send";process.env.AI_RESEARCH_MODEL="mock-model";
   await prisma.aiResearchBudget.deleteMany({where:{id:"owner"}});
   assert.ok((await runResearch(p.id,"wrong hash",fake)).includes("შეიცვალა"));assert.equal(calls,0);
   const messages=await Promise.all([runResearch(p.id,packet.hash,fake),runResearch(p.id,packet.hash,fake)]);
   assert.equal(calls,1);assert.ok(messages.some(m=>m.includes("ლიმიტი")));
-  assert.equal(await prisma.aiResearchRun.count({where:{opportunityId:p.id,state:"SUCCEEDED"}}),1);
+  assert.equal(await prisma.aiResearchRun.count({where:{opportunityId:p.id,state:"SUCCEEDED",model:"gemini:mock-model"}}),1);
   const savedPage=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);
   assert.ok((await savedPage.text()).includes("Missing demand evidence"));
   await prisma.aiResearchBudget.update({where:{id:"owner"},data:{lastStartedAt:new Date(Date.now()-100000)}});
