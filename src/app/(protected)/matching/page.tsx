@@ -21,7 +21,7 @@ export default async function Matching({ searchParams }: { searchParams: Promise
   ]) : [[], []];
   const latest = decisions[0];
   return <>
-    <h1>Product matching</h1>
+    <h1>პროდუქტების შედარება</h1><p className="page-subtitle">Product matching</p>
     <p>Compare supplier listings using sourced identifiers, then review the exact pack and variant before linking to existing research.</p>
     <p className="mut">Identifiers are operator-entered claims. A valid GTIN check digit does not verify its owner or prove authenticity. CJ warehouse barcodes and supplier SKUs are not automatically treated as GTINs or manufacturer part numbers. Names and images do not trigger a match.</p>
     <form method="get" className="bar"><label>Supplier listing (latest 200)<select name="listing" defaultValue={sp.listing ?? ""}><option value="">Choose a listing</option>{source && !listings.some(l => l.id === source.id) && <option value={source.id}>{source.name}</option>}{listings.map(l => <option key={l.id} value={l.id}>#{l.id} · {l.provider} · {l.name} {l.identity ? "· Identifiers recorded" : ""}</option>)}</select></label><button>Open matching</button></form>

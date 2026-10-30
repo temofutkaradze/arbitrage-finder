@@ -22,7 +22,7 @@ async function main(){
   // Authenticate normally; never print credentials, cookie values or response bodies.
   const good=await post("/login",html,{password});assert.equal(good.status,303);
   const setCookie=good.headers.get("set-cookie");assert.ok(setCookie);assert.ok(setCookie.includes("HttpOnly"));assert.ok(/SameSite=strict/i.test(setCookie));cookie=setCookie.split(";")[0];
-  const home=await(await fetch(origin,{headers:{Cookie:cookie}})).text();assert.ok(home.includes("Overview"));
+  const home=await(await fetch(origin,{headers:{Cookie:cookie}})).text();assert.ok(home.includes("მიმოხილვა"));assert.ok(home.includes('id="main-content"'));
   const expired=newSession();temporary.push(expired.id);await prisma.ownerSession.create({data:{id:expired.id,passwordVersion:configuredAuth().version,expiresAt:new Date(0)}});
   assert.equal((await fetch(origin,{headers:{Cookie:`${SESSION_COOKIE}=${expired.token}`},redirect:"manual"})).status,307);
   const wrongVersion=newSession();temporary.push(wrongVersion.id);await prisma.ownerSession.create({data:{id:wrongVersion.id,passwordVersion:"old-password-version",expiresAt:wrongVersion.expiresAt}});

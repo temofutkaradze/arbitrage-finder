@@ -35,11 +35,8 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <h1>{opp.name}{opp.isSample && <span className="sample"> SAMPLE</span>}</h1>
       <p className="mut">{[opp.category, opp.sourceName].filter(Boolean).join(" · ")}
         {opp.sourceUrl && <> · <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">Source listing</a></>}</p>
-      <p><a href={`/opportunities/${opp.id}/report?format=json`} download>ჩამოტვირთე კვლევის სრული პაკეტი (.json)</a> · შენახული ვარიანტები, მარაგი, მიწოდება, კონკურენტები და შეფასებები. გაზიარებამდე გადაამოწმე პირადი შენიშვნები; ეს ბაზის backup ან ავტომატური სინქრონიზაცია არ არის.</p>
-      <p><a href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a> · <span className="mut">Current inputs, calculations, sources and evidence. Review private notes before sharing.</span></p>
-      <p><Link href="/products">← ჩემი პროდუქტები</Link> · <Link href={`/research?product=${opp.id}`}>კონკურენტები და კვლევის წყაროები</Link></p>
-      <p><Link href={`/opportunities/${opp.id}/prepare`}>Prepare a store draft</Link></p>
-      {!opp.isSample && <p><Link href={`/opportunities/${opp.id}/ai`}>AI — გამოიკვლიე შენახული მონაცემები</Link></p>}
+      <nav className="detail-actions" aria-label="პროდუქტის მოქმედებები"><Link href="/products">← ჩემი პროდუქტები</Link><Link href={`/research?product=${opp.id}`}>ბაზრის კვლევა</Link>{!opp.isSample && <Link href={`/opportunities/${opp.id}/ai`}>AI კვლევა</Link>}<Link href={`/opportunities/${opp.id}/prepare`}>მაღაზიის მონახაზი</Link></nav>
+      <details><summary>კვლევის ჩამოტვირთვა</summary><div className="bar"><a className="button" href={`/opportunities/${opp.id}/report?format=json`} download>კვლევის სრული პაკეტი (.json)</a><a className="button" href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a></div><p className="mut">შენახული ვარიანტები, მარაგი, მიწოდება, კონკურენტები და შეფასებები. გაზიარებამდე გადაამოწმე პირადი შენიშვნები; ეს ბაზის backup ან ავტომატური სინქრონიზაცია არ არის. Current inputs, calculations, sources and evidence. Review private notes before sharing.</p></details>
       {opp.notes && <p>{opp.notes}</p>}
       <p className="mut">Research records below distinguish observed claims, provider estimates and assumptions. Supplier identifier matching is available in Matching. Automated demand research is not connected yet.</p>
 
@@ -60,7 +57,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
               <p className="warn">No profit figure: missing required inputs: {c.missing.map(label).join("; ")}. Fill them in below (mark as Estimate or Verified).</p>
             ) : (
               <>
-                <div className="cards">
+                <div className="cards evaluation-metrics">
                   <div><span className="mut">Contribution after ads / order</span><b className={c.netProfit >= 0 ? "pos" : "neg"}>{m(c.netProfit)}</b></div>
                   <div><span className="mut">Margin</span><b>{formatPct(c.margin)}</b></div>
                   <div><span className="mut">Return on capital</span><b>{formatPct(c.roi)}</b></div>

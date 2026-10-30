@@ -13,7 +13,7 @@ export default async function Discovery() {
     prisma.importRun.findMany({ orderBy: { completedAt: "desc" }, take: 5 }),
   ]);
   return <>
-    <h1>Product discovery</h1>
+    <div className="page-heading"><div><h1>პროდუქტის ძიება</h1><p>Product discovery · მომწოდებლის კატალოგიდან კვლევამდე.</p></div><Link className="button" href="/products">ჩემი პროდუქტები →</Link></div>
     <p className="mut">A catalogue finds candidates. Demand, exact variant cost, shipping and profit still need evidence.</p>
     <section className="card"><h2>Search CJ catalogue</h2>
       <p>{process.env.CJ_ACCESS_TOKEN ? "CJ connection configured; account access is checked when searching." : "CJ is not connected yet. An account access token or API Key is required; authorised JSON import below works independently."}</p>
@@ -22,11 +22,12 @@ export default async function Discovery() {
       </ActionForm>
       <p className="mut">One page per search; 30-second cooldown. CJ prices are USD catalogue indications, not delivered variant quotes. No orders or store changes are made.</p>
     </section>
-    <section className="card"><h2>Import an authorised catalogue</h2>
+    <details className="import-disclosure"><summary>Import an authorised catalogue</summary><section className="card"><h2>კატალოგის ხელით იმპორტი</h2>
       <p className="mut">Paste a JSON array from a source you are allowed to use. Prices use minor units (1234 = 12.34). Supported currencies: USD, EUR, GBP, CAD, AUD, GEL. Missing prices must be null. Maximum 100 records / 250 KB.</p>
       <details><summary>Required format (illustrative only; do not import as real research)</summary><pre style={{ overflowX: "auto" }}>{JSON.stringify([{provider:"supplier",externalId:"product-id",variantId:"variant-id",name:"Product name",url:"https://example.com/product",currency:"USD",priceMinor:null,observedAt:"2026-01-01T00:00:00Z"}], null, 2)}</pre></details>
       <ActionForm action={importCatalogue} label="Validate and import"><label>Catalogue JSON<textarea name="catalogue" required rows={8} maxLength={250000} style={{ width: "100%" }} /></label></ActionForm>
     </section>
+    </details>
     <h2>Latest candidates</h2><p className="mut">Showing up to 100 most recent candidates. Prices in different currencies are not ranked together. Freshness is shown; no catalogue record proves demand.</p>
     {listings.length === 0 && <p>No candidates imported yet. Connect CJ or import an authorised catalogue.</p>}
     {listings.map((l) => <section className="card" key={l.id}>

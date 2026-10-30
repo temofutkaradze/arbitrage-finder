@@ -3,48 +3,47 @@ import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { getEvalRows } from "@/lib/data/queries";
 import { formatMoney } from "@/lib/profit/format";
-
 export const dynamic = "force-dynamic";
 
 export default async function Overview() {
- await requireOwner(false);
-  const [rows, recent, sampleCount, candidateCount] = await Promise.all([
+  await requireOwner(false);
+  const [rows, recent, sampleCount, candidateCount, productCount] = await Promise.all([
     getEvalRows(),
-    prisma.opportunity.findMany({ where: { isSample: false }, orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.opportunity.findMany({ where: { isSample: false }, orderBy: { createdAt: "desc" }, take: 5, include: { _count: { select: { evaluations: true } } } }),
     prisma.opportunity.count({ where: { isSample: true } }),
     prisma.sourceListing.count({ where: { opportunityId: null } }),
+    prisma.opportunity.count({ where: { isSample: false } }),
   ]);
-  const real = rows.filter((r) => !r.isSample);
-  const complete = real.flatMap((r) => (r.result.complete ? [{ r, net: r.result.netProfit }] : []));
-  const profitable = complete.filter((c) => c.net > 0);
+  const real = rows.filter(r => !r.isSample);
+  const complete = real.flatMap(r => r.result.complete ? [{ r, net: r.result.netProfit }] : []);
+  const incomplete = real.length - complete.length;
   const best = new Map<string, (typeof complete)[number]>();
   for (const c of complete) { const b = best.get(c.r.currency); if (!b || c.net > b.net) best.set(c.r.currency, c); }
-  const oppCount = new Set(real.map((r) => r.opportunityId)).size;
-  return (
-    <>
-      <h1>Overview</h1>
-      <section className="card"><h2>პროდუქტის კვლევის გზა</h2><ol><li><Link href="/discovery">Discovery</Link> — მოძებნე კანდიდატი და აირჩიე Investigate this candidate.</li><li><Link href="/products">ჩემი პროდუქტები</Link> — გახსენი შენახული პროდუქტი, შეაგროვე წყაროები და შეამოწმე ვარიანტი და მიწოდება.</li><li><Link href="/research">Research</Link> — შეადარე კონკურენტები შენ მიერ არჩეულ ბაზარზე.</li><li><Link href="/opportunities">შეფასებები</Link> — შეავსე ხარჯები და შეადარე ეკონომიკა. უცნობი მონაცემი დადასტურებული მოგება არ არის.</li></ol><p className="mut">საწყისი GE / US კვლევა ცალკე მომზადებული მაგალითია. ავტომატური კანდიდატების ძიება იმართება Automation-იდან; სრული მოთხოვნისა და მოგების ავტომატური კვლევა ჯერ არ არის დაკავშირებული.</p></section>
-      <p className="mut">Only saved evaluations are counted. Contribution after ads excludes fixed overhead and income tax. Nothing here is a forecast or a guarantee of profit.</p>
-      {sampleCount > 0 && <p className="sample">{sampleCount} SAMPLE item(s) exist and are excluded from every number below.</p>}
-      <p><Link href="/discovery">{candidateCount} catalogue candidates awaiting research</Link>. Catalogue entries are excluded from profit metrics until evaluated.</p>
-      <div className="cards">
-        <div><span className="mut">Opportunities analyzed</span><b>{oppCount}</b></div>
-        <div><span className="mut">Evaluations (product × market)</span><b>{real.length}</b></div>
-        <div><span className="mut">With a complete profit figure</span><b>{complete.length}</b></div>
-        <div><span className="mut">Profitable (net &gt; 0)</span><b>{profitable.length}</b></div>
-      </div>
-      <h2>Highest estimated contribution after ads per order</h2>
-      {best.size === 0 ? <p className="mut">None yet: an evaluation needs all required inputs before a profit figure is shown.</p> : (
-        <ul>{[...best.entries()].map(([cur, c]) => (
-          <li key={cur}><Link href={`/opportunities/${c.r.opportunityId}`}>{c.r.name}</Link> ({c.r.marketCode}): <b>{formatMoney(c.net, cur)}</b> <span className="mut">{c.r.result.quality === "verified" ? "verified inputs" : "contains estimates"}; currencies are not converted</span></li>
-        ))}</ul>
-      )}
-      <h2>Recently added</h2>
-      {recent.length === 0 ? <p className="mut">No opportunities yet. <Link href="/opportunities/new">Add one</Link> or configure a <Link href="/markets">market</Link> first.</p> : (
-        <ul>{recent.map((o) => <li key={o.id}><Link href={`/opportunities/${o.id}`}>{o.name}</Link> <span className="mut">{o.createdAt.toLocaleDateString()}</span></li>)}</ul>
-      )}
-      <h2>Recent price changes</h2>
-      <p className="mut">Catalogue price observations are available on each candidate in Discovery. This overview does not aggregate price changes.</p>
-    </>
-  );
+  const steps = [
+    { name: "მოძებნე კანდიდატი", href: "/discovery", description: "შეარჩიე პროდუქტი მომწოდებლის კატალოგიდან." },
+    { name: "შეამოწმე მიწოდება", href: "/products", description: "დააზუსტე ვარიანტი, მარაგი და ტრანსპორტირება." },
+    { name: "შეისწავლე ბაზარი", href: "/research", description: "შეადარე კონკურენტები და შეინახე წყაროები." },
+    { name: "დათვალე ხარჯები", href: "/opportunities", description: "შეაფასე ეკონომიკა შენს არჩეულ ბაზარზე." },
+  ];
+  return <>
+    <div className="page-heading overview-intro"><div><p className="eyebrow">შენი კვლევის სამუშაო სივრცე</p><h1>მიმოხილვა</h1><p>პროდუქტები, წყაროები და შემდეგი ნაბიჯი — ერთ ადგილას.</p></div><Link className="button primary" href="/discovery">მოძებნე პროდუქტი <span aria-hidden="true">→</span></Link></div>
+    <div className="cards" aria-label="შენახული კვლევის მაჩვენებლები">
+      <div><span className="mut">შენახული პროდუქტები</span><b>{productCount}</b></div>
+      <div><span className="mut">ბაზრის შეფასებები</span><b>{real.length}</b></div>
+      <div><span className="mut">სრული გამოთვლა</span><b>{complete.length}</b></div>
+      <div><span className="mut">მონაცემები შესავსებია</span><b>{incomplete}</b></div>
+    </div>
+    <section className="next-step" aria-label="შემდეგი ნაბიჯი"><div><b>{incomplete ? `${incomplete} შეფასებას აუცილებელი მონაცემები აკლია` : candidateCount ? `${candidateCount} კანდიდატი კვლევას ელოდება` : "კვლევა ერთი პროდუქტით იწყება"}</b><p>{incomplete ? "შეავსე ფასი და ხარჯები, რომ ფინანსური შედეგის დათვლა შეძლო." : "აირჩიე კანდიდატი და გადაამოწმე მომწოდებლის პირობები."}</p></div><Link className="button" href={incomplete ? "/opportunities" : "/discovery"}>{incomplete ? "გახსენი შეფასებები" : "გახსენი კატალოგი"} <span aria-hidden="true">→</span></Link></section>
+    <div className="overview-grid">
+      <section className="panel"><div className="section-heading"><h2>ბოლო პროდუქტები</h2><Link href="/products">ყველა პროდუქტი →</Link></div>
+        {recent.length ? <ul className="ledger-list">{recent.map(o => <li key={o.id}><Link href={`/opportunities/${o.id}`}><span><b>{o.name}</b><small>{o._count.evaluations ? `${o._count.evaluations} ბაზრის შეფასება` : "ბაზარი ჯერ არ არის არჩეული"} · {new Intl.DateTimeFormat("ka-GE", { dateStyle: "medium", timeZone: "Asia/Tbilisi" }).format(o.createdAt)}</small></span><span className="row-arrow" aria-hidden="true">→</span></Link></li>)}</ul> : <div className="empty-state"><p>შენახული პროდუქტი ჯერ არ გაქვს. აირჩიე კანდიდატი კატალოგიდან ან დაამატე ხელით.</p><Link className="button" href="/opportunities/new">დაამატე პირველი პროდუქტი</Link></div>}
+      </section>
+      <section className="panel"><div className="section-heading"><h2>შეფასებული შედეგი</h2><Link href="/opportunities">შეფასებები →</Link></div><p className="mut">მაქსიმალური კონტრიბუცია რეკლამის შემდეგ, თითო შეკვეთაზე და ვალუტაზე.</p>
+        {best.size ? <ul className="ledger-list">{[...best.entries()].map(([cur, c]) => <li key={cur}><Link href={`/opportunities/${c.r.opportunityId}`}><span><b>{c.r.name}</b><small>{c.r.marketCode} · {c.r.result.quality === "verified" ? "მომხმარებლის მიერ დადასტურებული მონაცემები" : "შეიცავს შეფასებით მონაცემებს"}</small></span><strong className={c.net > 0 ? "pos" : c.net < 0 ? "neg" : undefined}>{formatMoney(c.net, cur)}</strong></Link></li>)}</ul> : <p className="result-empty">შედეგი ჯერ არ არის დათვლილი. შეავსე აუცილებელი ხარჯები შეფასებაში.</p>}
+        <details className="result-note"><summary>როგორ წავიკითხო შედეგი</summary><p className="fine-print">ფიქსირებული ხარჯები და საშემოსავლო გადასახადი გამორიცხულია. ვალუტები ცალ-ცალკე ფასდება; შედეგი მოგების გარანტია არ არის.</p></details>
+      </section>
+    </div>
+    <section className="panel"><div className="section-heading"><h2>პროდუქტის კვლევის გზა</h2><Link href="/research">კვლევის სივრცე →</Link></div><ol className="workflow">{steps.map((step, i) => <li key={step.href}><span>ეტაპი {i + 1}</span><Link href={step.href}>{step.name}</Link><p>{step.description}</p></li>)}</ol></section>
+    <details><summary>მონაცემების შესახებ</summary><p className="mut">მაჩვენებლები ეფუძნება შენახულ ჩანაწერებს. {candidateCount} კატალოგის კანდიდატი კვლევას ელოდება და ფინანსურ მაჩვენებლებში არ შედის. {sampleCount > 0 ? `${sampleCount} SAMPLE პროდუქტი ყველა მაჩვენებლიდან გამორიცხულია.` : "სატესტო პროდუქტები მაჩვენებლებში არ შედის."} კატალოგის ფასის დაკვირვებები ხელმისაწვდომია თითოეულ კანდიდატზე; აქ ფასის ცვლილებები არ ჯამდება.</p><p className="mut">საწყისი GE / US კვლევა ცალკე მომზადებული მაგალითია. ავტომატური კანდიდატების ძიება იმართება <Link href="/automation">ავტომატიზაციიდან</Link>; მოთხოვნისა და მოგების სრული ავტომატური კვლევა ჯერ არ არის დაკავშირებული.</p></details>
+  </>;
 }

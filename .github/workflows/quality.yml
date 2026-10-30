@@ -90,6 +90,7 @@ jobs:
           node --import tsx scripts/check-market-study-http.ts
           node --import tsx scripts/check-offer-import.ts
           node --import tsx scripts/check-products-http.ts
+          node --import tsx scripts/check-design-browser.ts
           node --import tsx scripts/check-price-scenarios.ts
           node --import tsx scripts/check-ai-research.ts
           node --import tsx scripts/check-product-refresh-browser.ts
