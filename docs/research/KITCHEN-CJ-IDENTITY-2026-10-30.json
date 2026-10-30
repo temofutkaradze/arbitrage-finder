@@ -1,0 +1,33 @@
+{
+  "kind": "manual-supplier-identity-review-not-app-import",
+  "observedAt": "2026-10-30T19:36:42.321Z",
+  "sourceUrl": "https://developers.cjdropshipping.com/api2.0/v1/product/query?pid=1876836104507744257",
+  "productId": "1876836104507744257",
+  "variantId": "1876836104574853122",
+  "sku": "CJCF226441701AZ",
+  "variantKey": "Silver",
+  "priceMinor": 3160,
+  "currency": "USD",
+  "assembledDimensionsCm": [
+    54,
+    29,
+    150
+  ],
+  "descriptionWeightKgClaim": 4.95,
+  "variantWeightGrams": 5500,
+  "packageDimensionsMm": [
+    553,
+    310,
+    168
+  ],
+  "materialClaim": "Carbon steel & PP",
+  "packageContentsClaim": "1 x Storage Rack",
+  "warehouseBarcodeValue": "8600000155187",
+  "manufacturerGtinConfirmed": false,
+  "manufacturerMpnConfirmed": false,
+  "manufacturerConfirmed": false,
+  "identityWithWalmartConfirmed": false,
+  "shippingRefreshed": false,
+  "stockRefreshed": false,
+  "loadCapacityIndependentlyVerified": false
+}
