@@ -1,0 +1,129 @@
+{
+  "release": "0.1.0-local",
+  "checkedCodeCommit": "baa63fba9d3e0d713c008d3ea6da6c15fa85fd7d",
+  "completedAtUtc": "2026-10-30T20:03:14.300675+00:00",
+  "environment": "Cloud Linux; Node 24; PostgreSQL 17; Chromium",
+  "unitTests": {
+    "passed": 144,
+    "failed": 0
+  },
+  "lint": "passed",
+  "productionBuild": "passed",
+  "databaseChecks": [
+    {
+      "check": "discovery",
+      "passed": true
+    },
+    {
+      "check": "sourcing",
+      "passed": true
+    },
+    {
+      "check": "offers",
+      "passed": true
+    },
+    {
+      "check": "matching",
+      "passed": true
+    }
+  ],
+  "httpAndBrowserChecks": [
+    {
+      "check": "auth-http",
+      "passed": true
+    },
+    {
+      "check": "discovery-http",
+      "passed": true
+    },
+    {
+      "check": "matching-http",
+      "passed": true
+    },
+    {
+      "check": "report-http",
+      "passed": true
+    },
+    {
+      "check": "store-draft-http",
+      "passed": true
+    },
+    {
+      "check": "market-study-http",
+      "passed": true
+    },
+    {
+      "check": "offer-import",
+      "passed": true
+    },
+    {
+      "check": "products-http",
+      "passed": true
+    },
+    {
+      "check": "design-browser",
+      "passed": true
+    },
+    {
+      "check": "price-scenarios",
+      "passed": true
+    },
+    {
+      "check": "ai-research",
+      "passed": true
+    },
+    {
+      "check": "product-refresh-browser",
+      "passed": true
+    },
+    {
+      "check": "payments-browser",
+      "passed": true
+    },
+    {
+      "check": "forms-browser",
+      "passed": true
+    },
+    {
+      "check": "edit-conflicts",
+      "passed": true
+    },
+    {
+      "check": "edit-conflicts-browser",
+      "passed": true
+    },
+    {
+      "check": "finance-history",
+      "passed": true
+    }
+  ],
+  "responsiveCoverage": {
+    "routes": 17,
+    "widths": [
+      1440,
+      768,
+      390,
+      375
+    ]
+  },
+  "backup": {
+    "created": true,
+    "archiveIndexVerified": true,
+    "fullRestoreTested": false,
+    "database": "cloud arbitrage, not laptop",
+    "privateArchiveCommitted": false
+  },
+  "blockingFailuresFound": 0,
+  "sourceFixesNeeded": false,
+  "liveAiCallsDuringAcceptance": 0,
+  "migrationsRunDuringAcceptance": 0,
+  "limitations": [
+    "Windows execution not independently performed in cloud",
+    "Owner reported successful Gemini run; not a reliability benchmark",
+    "eBay real account approval/entitlement unverified",
+    "Supplier identity and commercial viability unconfirmed",
+    "AI analyzes saved sources; autonomous web research not implemented",
+    "Cloud environment publication not validated",
+    "Full backup restore rehearsal remains separate"
+  ]
+}

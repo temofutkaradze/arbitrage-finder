@@ -1,57 +1,51 @@
-# Personal product-research tool: implementation review, 2026-10-30
+# First local version — acceptance status
 
-This is a single-owner decision-support tool, not a SaaS. No selling channel,
-merchant account, registered business or production store is assumed.
+Scope: a single-owner product-research and contribution-analysis workspace on the
+owner's laptop. This is the first local version (package version 0.1.0); it does
+not claim a fully autonomous product-discovery business or public launch readiness.
+For operation and the final acceptance record see [LOCAL-RELEASE.md](LOCAL-RELEASE.md).
 
-## Confirmed implementation
+## Implemented
 
-- Discovery: CJ catalogue import/search, price observations, explicit promotion
-  to saved products. Variant/stock reports and immutable shipping estimates.
-- Matching: sourced identifiers with explicit link review and revisions.
-- Research: manual competitor observations, source links, market-specific evidence
-  and expiry/retirement. Optional eBay Browse adapter and human review inbox already
-  exist; they require the user's production eligibility/token. Website links are
-  not automatic data collection. No new competitor connector was needed here.
-- Economics: deterministic calculator, required-unknown handling, assumptions,
-  currency separation, scenarios, explicit quote application, financial history,
-  conflict protection, private report export and offline store-draft preparation.
-  Reported contribution excludes fixed overhead and business income tax; this is
-  not a complete accounting net-profit model or universal tax engine.
-- Automation: paused-first bounded CJ discovery worker exists. It is not an
-  end-to-end autonomous competitor/demand research service.
-- AI: OpenAI/Gemini adapters exist. User asked to postpone activation; no live AI
-  access or end-to-end model quality is established by mocked tests.
+- CJ search/import → saved product → exact variant and stock reports → destination
+  shipping estimate → explicit application as estimated costs.
+- Sourced identifiers, reviewed linking/undo, manual competitors and evidence,
+  bounded pending-offer JSON import, expiry and correction history.
+- Deterministic product/market calculations, unknown essential inputs blocking
+  results, separate currencies, competitor-price scenarios and advertising scenarios.
+- Financial history and optimistic conflict protection; private JSON/TXT report
+  downloads and offline store-draft export, without store publication.
+- Gemini and OpenAI adapters; explicit provider/model configuration, outgoing
+  packet preview and consent, local configuration diagnosis, source-ID validation,
+  safe failure categories, bounded 120-second deadline and no automatic retries.
+- Calm responsive interface, grouped navigation, self-hosted Georgian font,
+  optional dark theme, owner sign-in, local PostgreSQL backup helper.
+- Optional paused-first scheduled CJ discovery and production eBay OAuth/Browse
+  integration. Neither is enabled automatically.
 
-## Missing bridge completed in this change
+## Live observations versus test evidence
 
-Saved competitor prices were summarized but not connected to saved product costs.
-Read-only low/median/high price scenarios now use the existing calculator on the
-product evaluation and market-selected Research pages. Exact and equivalent
-products are separated. Currency/tax basis must match, shipping must be known,
-and sources must be current. Newest observations replace older ones per source
-URL, including when the newest one is no longer comparable. Delivered customer
-price is modeled as sellingPrice with shippingCharged=0, without changing stored
-inputs. Unknown required costs still prevent a contribution figure.
+The owner reported one successful Gemini research run on the laptop, and supplied
+the output for source comparison. Its quoted prices and incomplete inputs matched
+the supplied snapshot. This is evidence for that run, not a model reliability score.
+The assistant also read the exact CJ variant using the existing secure API binding.
+Neither observation guarantees future provider uptime or current delivery prices.
+Final automatic acceptance checks use temporary fixtures and mocked providers;
+see the release record for actual results. No new live AI trial is part of release.
 
-The source population is explicitly bounded to the page's loaded observations;
-its range is not a market census or an estimate of achievable sales prices.
-No sources, prices or evidence are fabricated or automatically promoted.
+## Open external and commercial matters
 
-## Validation and limits
+- eBay production account approval and real credentials: pending; manual research
+  remains available. Mocked OAuth success does not prove account eligibility.
+- The Kitchen Organizer manufacturer/GTIN and equivalence to Walmart: unconfirmed.
+  Keep the competitor UNCERTAIN; do not infer demand or a complete profit figure.
+- Merchant approval, selling channel, registration, taxes, returns and real CAC:
+  not established. Contribution excludes fixed overhead and business income tax.
+- Public deployment/store connection, orders, ads and bank communication: outside
+  this local release. No automatic end-to-end competitor/demand web research is
+  implemented; AI analyzes saved sources and does not browse.
+- Cloud environment Publish failure is separate from repository delivery. GitHub
+  syncs code, not the owner's database or ignored environment files.
 
-122 unit tests and the production build passed. Authenticated HTTP checks verified
-scenario rendering on both pages and unchanged saved CostInput/FinancialChange
-records using disposable fixtures. Existing product workspace checks also passed.
-No migration, dependency, subscription or live provider/AI request was introduced.
-
-## Remaining priorities
-
-1. Validate one actual product/variant and selected destination with current
-   supplier, delivered cost, comparable retail observations and the user's fees.
-2. Expand permitted competitor data ingestion only where access, reuse terms and
-   cost have been checked; do not scrape indiscriminately or assume free access.
-3. Connect those real sources into a bounded refresh/review workflow. Product
-   matching, demand verification and taxes still require review; a catalogue price
-   spread alone is not profit or demand.
-4. Resume the first Gemini live test when the owner is ready. Existing adapters
-   need not be rebuilt. No model subscription is needed for these price scenarios.
+These are explicit limits of this release, not an indefinitely expanding checklist
+required to finish its technical acceptance. New capabilities need a new scope.

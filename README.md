@@ -4,6 +4,12 @@ Private product discovery and contribution research app. For laptop setup, use
 [Windows / local PostgreSQL instructions](docs/LOCAL-SETUP.md). The app requires
 owner sign-in; keep local development on `127.0.0.1`.
 
+## First local version
+
+Start with the [local release and operating guide](docs/LOCAL-RELEASE.md) and
+[current implementation status](docs/PROJECT-STATUS.md). The release scope is
+a private research workspace; AI analyzes saved sources and does not browse.
+
 ## Product research workflow
 
 See [business model, source research and phased roadmap](docs/PRODUCT-STRATEGY.md).
