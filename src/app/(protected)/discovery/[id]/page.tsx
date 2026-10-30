@@ -1,3 +1,4 @@
+import { ProductRefresh } from "@/components/ProductRefresh";
 import {requireOwner} from "@/lib/auth/server";
 import Link from "next/link";
 import { validRateDate } from "@/lib/fx/reference";
@@ -28,6 +29,7 @@ export default async function Sourcing({ params }: { params: Promise<{ id: strin
   return <>
     <Link href="/discovery">← Discovery</Link><h1>{listing.name}</h1>
     <p className="mut">Exact variant catalogue prices and provider shipping estimates. One unit per quote. No sample, supplier order or store publication is performed.</p>
+    {listing.opportunityId&&<ProductRefresh listingId={listing.id}/>}
     <section className="card"><h2>Refresh variants and stock reports</h2>
       <ActionForm action={refreshCandidate} label="Refresh from CJ"><input type="hidden" name="listingId" value={listing.id}/></ActionForm>
       <p className="mut">Two read-only requests. CJ operations share a 30-second cooldown. Inventory is a provider report, not a reservation. Showing up to 100 active variants.</p>

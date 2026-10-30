@@ -91,6 +91,7 @@ jobs:
           node --import tsx scripts/check-products-http.ts
           node --import tsx scripts/check-price-scenarios.ts
           node --import tsx scripts/check-ai-research.ts
+          node --import tsx scripts/check-product-refresh-browser.ts
           node --import tsx scripts/check-payments-browser.ts
           node --import tsx scripts/check-forms-browser.ts
           node --import tsx scripts/check-edit-conflicts.ts
