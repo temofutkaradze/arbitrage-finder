@@ -43,7 +43,20 @@ next-env.d.ts
 /generated/prisma
 /generated/
 
-.agents/
+**/.agents/
+!/.agents/
+/.agents/*
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/arbitrage-debugging/
+!/.agents/skills/arbitrage-code-security-review/
+!/.agents/skills/arbitrage-ai-evaluation/
+/.agents/skills/arbitrage-debugging/*
+!/.agents/skills/arbitrage-debugging/SKILL.md
+/.agents/skills/arbitrage-code-security-review/*
+!/.agents/skills/arbitrage-code-security-review/SKILL.md
+/.agents/skills/arbitrage-ai-evaluation/*
+!/.agents/skills/arbitrage-ai-evaluation/SKILL.md
 .claude/
 .windsurf/
 # Local database archives are private and never belong in source control
