@@ -1,10 +1,10 @@
 import {z} from "zod";
 export const batchIds=z.array(z.number().int().positive().max(2147483647)).min(1).max(3).refine(ids=>new Set(ids).size===ids.length,"Duplicate candidates");
 type Start={ok:boolean;message:string;changes:string[];routes:{quoteId:number;label:string}[]};
-export type BatchEvent={id:number;stage:"supplier"|"shipping";state:"running"|"done"|"blocked"|"failed";message:string};
-export async function runResearchBatch(ids:number[],ops:{start:(id:number)=>Promise<Start>;route:(id:number,quoteId:number)=>Promise<{ok:boolean;message:string}>;wait:()=>Promise<boolean>;event:(e:BatchEvent)=>void},signal:AbortSignal){
+export type BatchEvent={id:number;stage:"supplier"|"shipping"|"competitors";state:"running"|"done"|"blocked"|"failed";message:string;href?:string};
+export async function runResearchBatch(ids:number[],ops:{start:(id:number)=>Promise<Start>;route:(id:number,quoteId:number)=>Promise<{ok:boolean;message:string}>;wait:()=>Promise<boolean>;event:(e:BatchEvent)=>void;competitors?:(id:number)=>Promise<{state:"done"|"blocked"|"failed";attempted:boolean;message:string;href?:string}>;waitCompetitors?:()=>Promise<boolean>},signal:AbortSignal){
  batchIds.parse(ids);
- let needsWait=false;
+ let needsWait=false,offersAttempted=false,offersFailed=false;
  for(const id of ids){
   if(signal.aborted)return "stopped";
   if(needsWait&&!await ops.wait())return "stopped";
@@ -24,13 +24,23 @@ export async function runResearchBatch(ids:number[],ops:{start:(id:number)=>Prom
    if(signal.aborted)return "stopped";
    if(!updated.ok)return "failed";
   }
+  if(ops.competitors){
+   if(signal.aborted)return "stopped";
+   if(offersFailed){ops.event({id,stage:"competitors",state:"blocked",message:"eBay-ის წინა შეცდომის შემდეგ დარჩენილი ძიება გამოტოვებულია; CJ პროცესი გრძელდება."});continue;}
+   if(offersAttempted){if(!ops.waitCompetitors)throw new Error("Competitor pacing missing");if(!await ops.waitCompetitors()||signal.aborted)return "stopped";}
+   ops.event({id,stage:"competitors",state:"running",message:"eBay წვდომა და არჩეული ბაზარი მოწმდება…"});
+   const offers=await ops.competitors(id);offersAttempted=offersAttempted||offers.attempted;offersFailed=offers.state==="failed";
+   ops.event({id,stage:"competitors",...offers});
+   if(signal.aborted)return "stopped";
+  }
+
  }
  return "finished";
 }
-export function waitForCj(signal:AbortSignal,tick:(n:number)=>void){
+export function waitForCj(signal:AbortSignal,tick:(n:number)=>void,duration=31){
  return new Promise<boolean>(resolve=>{
   if(signal.aborted){resolve(false);return;}
-  let seconds=31;tick(seconds);
+  let seconds=duration;tick(seconds);
   const finish=(ok:boolean)=>{clearInterval(timer);signal.removeEventListener("abort",stop);tick(0);resolve(ok);};
   const stop=()=>finish(false);
   const timer=setInterval(()=>{seconds--;tick(seconds);if(seconds===0)finish(true);},1000);

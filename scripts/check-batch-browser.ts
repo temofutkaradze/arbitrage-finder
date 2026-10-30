@@ -14,7 +14,7 @@ async function main(){
   let posts=0;const count=await prisma.importRun.count();
   await page.route('**/automation',async route=>{if(route.request().method()!=="POST")return route.continue();posts++;if(posts===1)return route.continue();await new Promise(r=>setTimeout(r,700));await route.abort();});
   await page.goto('http://127.0.0.1:3000/automation');const batch=page.locator('section').filter({has:page.locator('#batch-title')});
-  await batch.locator('select').first().selectOption(String(l.id));await batch.locator('input[type=checkbox]').check();
+  await batch.locator('select').first().selectOption(String(l.id));await batch.locator('input[type=checkbox]').last().check();
   await batch.getByRole('button',{name:'გაუშვი CJ ეტაპი',exact:true}).evaluate(el=>{(el as HTMLButtonElement).click();(el as HTMLButtonElement).click();});
   await page.waitForFunction(()=>document.querySelector('[aria-label="ჯგუფური კვლევის ეტაპები"]')?.textContent?.includes('ვარიანტები'));
   await batch.getByRole('button',{name:'Stop',exact:true}).click();

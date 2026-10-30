@@ -93,6 +93,7 @@ jobs:
           node --import tsx scripts/check-design-browser.ts
           node --import tsx scripts/check-price-scenarios.ts
           node --import tsx scripts/check-ai-research.ts
+          node --import tsx scripts/check-batch-offers.ts
           node --import tsx scripts/check-batch-browser.ts
           node --import tsx scripts/check-automation-http.ts
           node --import tsx scripts/check-product-refresh-browser.ts

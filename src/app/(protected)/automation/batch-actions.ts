@@ -10,3 +10,9 @@ export async function prepareResearchBatch(input:unknown){
  if(rows.length!==parsed.data.length)return {ok:false as const,message:"ერთ-ერთი ჩანაწერი აღარ არის შენახული CJ კანდიდატი. განაახლე გვერდი.",ids:[]};
  return {ok:true as const,message:"",ids:parsed.data};
 }
+export async function collectResearchBatchOffers(listingId:number,marketId:number){
+ await requireOwner();
+ if(!Number.isSafeInteger(listingId)||listingId<1||listingId>2147483647||!Number.isSafeInteger(marketId)||marketId<1||marketId>2147483647)return {state:"blocked" as const,attempted:false,message:"კანდიდატის ან ბაზრის ID არასწორია."};
+ const {collectBatchOffers}=await import("@/lib/automation/batch-offers");
+ return collectBatchOffers(listingId,marketId);
+}

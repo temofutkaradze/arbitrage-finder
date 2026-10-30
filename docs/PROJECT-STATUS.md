@@ -1,3 +1,5 @@
+> Next batch increment (2026-10-31): optional eBay collection and explicit blocked states are implemented; real entitlement remains unverified. AI orchestration is still pending.
+
 > Post-release addition (2026-10-31): [browser-run CJ batch for 1–3 saved candidates](automation/RESEARCH-BATCH.md). eBay/AI orchestration is not included in this first batch stage.
 
 # First local version — acceptance status

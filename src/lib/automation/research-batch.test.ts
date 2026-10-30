@@ -16,3 +16,13 @@ it("stops on failure and prevents follow-ups after stopping an in-flight request
 it("cancels cooldown promptly without scheduling another operation",async()=>{
  vi.useFakeTimers();try{const cancel=new AbortController(),tick=vi.fn();const pending=waitForCj(cancel.signal,tick);cancel.abort();expect(await pending).toBe(false);expect(vi.getTimerCount()).toBe(0);}finally{vi.useRealTimers();}
 });
+it("collects optional offers with separate pacing; blocked access does not stop CJ",async()=>{
+ const events:BatchEvent[]=[],calls:string[]=[];let n=0;
+ const state=await runResearchBatch([1,2,3],{start:async id=>{calls.push('cj'+id);return {ok:true,message:'ok',changes:[],routes:[]};},route:async()=>({ok:true,message:'ok'}),wait:async()=>true,event:e=>events.push(e),waitCompetitors:async()=>{calls.push('ebay-wait');return true;},competitors:async()=>{n++;return n===1?{state:'done',attempted:true,message:'pending'}:{state:'blocked',attempted:false,message:'no evaluation'};}},new AbortController().signal);
+ expect(state).toBe('finished');expect(calls).toEqual(['cj1','cj2','ebay-wait','cj3','ebay-wait']);expect(events.filter(e=>e.stage==='competitors'&&e.state==='blocked')).toHaveLength(2);
+});
+it("does not repeat eBay failures for remaining candidates but continues CJ",async()=>{
+ const offers=vi.fn().mockResolvedValue({state:'failed',attempted:true,message:'denied'}),start=vi.fn().mockResolvedValue({ok:true,message:'ok',changes:[],routes:[]});
+ await runResearchBatch([1,2],{start,route:vi.fn(),wait:async()=>true,event:()=>{},competitors:offers},new AbortController().signal);
+ expect(offers).toHaveBeenCalledTimes(1);expect(start).toHaveBeenCalledTimes(2);
+});
