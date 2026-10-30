@@ -38,7 +38,7 @@ export async function getEvalRows(): Promise<EvalRow[]> {
 export async function getOpportunity(id: number) {
   const o = await prisma.opportunity.findUnique({
     where: { id },
-    include: { evidence: true, evaluations: { include: { market: true, inputs: true }, orderBy: { id: "asc" } } },
+    include: { competitors: { orderBy: [{ observedAt: "desc" }, { id: "desc" }], take: 100 }, evidence: true, evaluations: { include: { market: true, inputs: true }, orderBy: { id: "asc" } } },
   });
   if (!o) return null;
   return {

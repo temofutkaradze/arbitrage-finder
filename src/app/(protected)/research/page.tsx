@@ -1,3 +1,5 @@
+import { CompetitorScenarios } from "@/components/CompetitorScenarios";
+import { rowsToInputs } from "@/lib/data/queries";
 import {requireOwner} from "@/lib/auth/server";
 import { OfferInbox } from "@/components/OfferInbox";
 import Link from "next/link";
@@ -22,6 +24,7 @@ export default async function Research({searchParams}:{searchParams:Promise<{pro
   prisma.competitorObservation.findMany({where:{opportunityId:product.id,...(market?{marketId:market.id}:{})},include:{market:true},orderBy:{observedAt:"desc"},take:100}),
   prisma.evidence.findMany({where:{opportunityId:product.id},orderBy:{createdAt:"desc"},take:100}),
  ]):[[],[]];
+ const evaluation=product&&market?await prisma.evaluation.findUnique({where:{opportunityId_marketId:{opportunityId:product.id,marketId:market.id}},include:{inputs:true}}):null;
  const links=product?researchLinks(product.name,market?.countryCode):null;
  return <>
   <h1>Research workbench</h1><p><Link href="/products">ჩემი პროდუქტები — სრული სია</Link>. ეს სივრცე არჩეული პროდუქტის კვლევას ინახავს; საწყისი GE / US მაგალითი ცალკე გვერდია.</p><p className="mut">Evidence first. A listing price, search trend or active ad does not prove sales or profitable acquisition. Demand evidence requires research. Optional eBay offers require account access and human comparison.</p>
@@ -30,6 +33,8 @@ export default async function Research({searchParams}:{searchParams:Promise<{pro
   {product&&<><h2>{product.name}</h2><p><Link href={`/opportunities/${product.id}`}>Economics and evidence entry</Link></p>
    {links&&<section className="card"><h2>Research sources</h2><div className="bar"><a href={links.ebay} target="_blank" rel="noopener noreferrer">Search comparable listings</a><a href={links.trends} target="_blank" rel="noopener noreferrer">Google Trends</a><a href={links.meta} target="_blank" rel="noopener noreferrer">Meta Ad Library</a><a href={links.tiktok} target="_blank" rel="noopener noreferrer">TikTok Creative Center</a></div><p className="mut">These open official research tools; no data is imported. Set country and date filters in each source. eBay.com results are not automatically scoped to your market. Check access and reuse rights.</p><ol><li>Compare exact model, material, dimensions, pack size, delivery and returns. Explain any mismatch.</li><li>Record the trend period and region; label stable, growing, seasonal or unknown only when the evidence supports it.</li><li>Describe the customer problem and a demonstrable benefit. Record ad examples without inferring spend, CAC or conversion.</li><li>Investigate quality, compliance, IP, shipping and return concerns. Retire superseded records with a reason.</li></ol></section>}
    {market&&<OfferInbox productId={product.id} marketId={market.id} query={product.name}/>}
+   {market&&evaluation&&<CompetitorScenarios productId={product.id} rows={observations} inputs={rowsToInputs(evaluation.inputs)} market={market}/>}
+   {market&&!evaluation&&<p><Link href={`/opportunities/${product.id}#add-market`}>დაამატე ამ ბაზრის ფინანსური შეფასება კონკურენტის ფასზე სცენარების სანახავად</Link></p>}
    <section className="card"><h2>Competitor observations</h2><p className="mut">Showing up to 100 observations. Multiple observations may come from the same seller; counts are not a market-wide competition census. Prices are not copied into your selling-price assumptions.</p>
     {!market&&<p>Select a market to record observations or calculate comparable price summaries.</p>}
     {market&&comparisonGroups(observations.filter(o=>o.marketId===market.id)).map(g=><p key={g.basis}>{g.basis}: {g.count} comparable observations · product + shipping range {(g.min/100).toFixed(2)}–{(g.max/100).toFixed(2)} · median {(g.median/100).toFixed(2)}. Other charges may apply.</p>)}
