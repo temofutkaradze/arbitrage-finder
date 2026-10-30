@@ -115,3 +115,14 @@ Reports are part of the private database and its backups, not Git. Deleting a
 product removes its reports. Tests use mocked API responses and disposable DB
 fixtures; a successful paid end-to-end provider call remains to be checked after
 the owner configures access and explicitly runs it.
+
+### Local configuration diagnosis
+
+Each product's AI page now shows independent checks for provider, enabled flag,
+model-ID syntax and presence of the selected provider's key. This does not call
+an API, prove the model exists, verify a key or consume a research attempt.
+`models/` at the start of a Gemini model ID is diagnosed explicitly: remove that
+prefix for this application's configuration. Values with spaces or slashes are
+rejected. A syntactically valid ID is not proof of availability for your account.
+Restart the app after editing the ignored `.env.local` in the running checkout.
+The cloud and laptop have separate environment files and credentials.

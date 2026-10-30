@@ -16,7 +16,7 @@ async function main(){
   process.env.AI_PROVIDER="gemini";
   assert.ok((await runResearch(p.id,packet.hash,fake)).includes("გამორთულია"));assert.equal(calls,0);
   assert.equal((await fetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`,{redirect:"manual"})).status,307);
-  const page=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);assert.equal(page.status,200);assert.ok((await page.text()).includes("AI ჯერ გამორთულია"));
+  const page=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);assert.equal(page.status,200);const html=await page.text();assert.ok(html.includes("AI ჯერ გამორთულია"));assert.ok(html.includes("AI კავშირის შემოწმება"));assert.ok(html.includes("AI_RESEARCH_ENABLED"));assert.ok(!html.includes("mock-only-never-send"));
   process.env.AI_RESEARCH_ENABLED="true";process.env.GEMINI_API_KEY="mock-only-never-send";process.env.AI_RESEARCH_MODEL="mock-model";
   await prisma.aiResearchBudget.deleteMany({where:{id:"owner"}});
   assert.ok((await runResearch(p.id,"wrong hash",fake)).includes("შეიცვალა"));assert.equal(calls,0);

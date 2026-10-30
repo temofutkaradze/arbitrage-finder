@@ -45,3 +45,10 @@ it("rejects blocked, truncated, invented-citation and malformed Gemini output wi
   await expect(generateReport({},["product:1"],{provider:"gemini",key:"dummy",model:"test"},fetcher)).rejects.toThrow();expect(fetcher).toHaveBeenCalledTimes(1);
  }
 });
+it("explains each configuration problem without returning secret values",async()=>{
+ const {aiConfigurationStatus}=await import("./provider");
+ vi.stubEnv("AI_PROVIDER","gemini");vi.stubEnv("AI_RESEARCH_ENABLED","false");vi.stubEnv("AI_RESEARCH_MODEL","models/gemini-test");vi.stubEnv("GEMINI_API_KEY","fixture-private-key");
+ const state=aiConfigurationStatus();expect(state.ready).toBe(false);expect(state.checks.filter(c=>!c.ok).map(c=>c.id)).toEqual(["enabled","model"]);expect(JSON.stringify(state)).not.toContain("fixture-private-key");expect(state.checks.find(c=>c.id==="model")?.help).toContain("models/");
+ vi.stubEnv("AI_RESEARCH_ENABLED","true");vi.stubEnv("AI_RESEARCH_MODEL","gemini-test");expect(aiConfigurationStatus().ready).toBe(true);
+ vi.stubEnv("GEMINI_API_KEY","");expect(aiConfigurationStatus().checks.find(c=>c.id==="key")?.ok).toBe(false);
+});
