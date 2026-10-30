@@ -88,6 +88,7 @@ jobs:
           node --import tsx scripts/check-report-http.ts
           node --import tsx scripts/check-store-draft-http.ts
           node --import tsx scripts/check-market-study-http.ts
+          node --import tsx scripts/check-offer-import.ts
           node --import tsx scripts/check-products-http.ts
           node --import tsx scripts/check-price-scenarios.ts
           node --import tsx scripts/check-ai-research.ts

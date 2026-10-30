@@ -42,7 +42,7 @@ export async function reviewOffer(input:unknown){
   if(offer.state!=="PENDING")throw new Error("Offer already reviewed; refresh before making a new observation.");
   if(offer.expiresAt<=new Date()||offer.destinationCountry!==offer.market.countryCode||offer.currency!==offer.market.currency)throw new Error("Offer expired or the market changed; search again.");
   if(values.decision==="REJECT"){await tx.externalOffer.update({where:{id:offer.id},data:{state:"REJECTED",reviewNote:values.comparison}});return;}
-  const observation=await tx.competitorObservation.create({data:{opportunityId:offer.opportunityId,marketId:offer.marketId,merchant:offer.merchant,url:offer.url,match:values.match,comparison:`[Reviewed eBay offer ${offer.externalId}] ${values.comparison}`,priceMinor:offer.priceMinor,shippingMinor:values.shippingMinor,currency:offer.currency,taxBasis:values.taxBasis,observedAt:offer.observedAt,expiresAt:offer.expiresAt}});
+  const observation=await tx.competitorObservation.create({data:{opportunityId:offer.opportunityId,marketId:offer.marketId,merchant:offer.merchant,url:offer.url,match:values.match,comparison:`[Reviewed ${offer.provider} offer ${offer.externalId}] ${values.comparison}`,priceMinor:offer.priceMinor,shippingMinor:values.shippingMinor,currency:offer.currency,taxBasis:values.taxBasis,observedAt:offer.observedAt,expiresAt:offer.expiresAt}});
   await tx.externalOffer.update({where:{id:offer.id},data:{state:"ACCEPTED",reviewNote:values.comparison,observationId:observation.id}});
  });
 }

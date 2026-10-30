@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { CompetitorScenarios } from "@/components/CompetitorScenarios";
 import { rowsToInputs } from "@/lib/data/queries";
 import {requireOwner} from "@/lib/auth/server";
@@ -10,9 +11,11 @@ import { comparisonGroups, researchLinks } from "@/lib/research/competitors";
 import { ActionForm } from "@/components/ActionForm";
 import { recordCompetitor, resolveEvidence } from "./actions";
 export const dynamic="force-dynamic";
-export default async function Research({searchParams}:{searchParams:Promise<{product?:string;market?:string}>}){
+export default async function Research({searchParams}:{searchParams:Promise<{product?:string;market?:string;offerBefore?:string}>}){
  await requireOwner(false);
  const sp=await searchParams;
+ const offerBefore=sp.offerBefore===undefined?undefined:Number(sp.offerBefore);
+ if(offerBefore!==undefined&&(!/^[1-9]\d*$/.test(sp.offerBefore!)||!Number.isSafeInteger(offerBefore)||offerBefore>2147483647))notFound();
  const [products,markets,rows]=await Promise.all([
   prisma.opportunity.findMany({where:{isSample:false},orderBy:{createdAt:"desc"},take:100}),prisma.market.findMany({orderBy:{code:"asc"}}),getEvalRows(),
  ]);
@@ -32,7 +35,7 @@ export default async function Research({searchParams}:{searchParams:Promise<{pro
   {!products.length&&<p>Select a real candidate for investigation in <Link href="/discovery">Discovery</Link> to begin. Markets remain your choice.</p>}
   {product&&<><h2>{product.name}</h2><p><Link href={`/opportunities/${product.id}`}>Economics and evidence entry</Link></p>
    {links&&<section className="card"><h2>Research sources</h2><div className="bar"><a href={links.ebay} target="_blank" rel="noopener noreferrer">Search comparable listings</a><a href={links.trends} target="_blank" rel="noopener noreferrer">Google Trends</a><a href={links.meta} target="_blank" rel="noopener noreferrer">Meta Ad Library</a><a href={links.tiktok} target="_blank" rel="noopener noreferrer">TikTok Creative Center</a></div><p className="mut">These open official research tools; no data is imported. Set country and date filters in each source. eBay.com results are not automatically scoped to your market. Check access and reuse rights.</p><ol><li>Compare exact model, material, dimensions, pack size, delivery and returns. Explain any mismatch.</li><li>Record the trend period and region; label stable, growing, seasonal or unknown only when the evidence supports it.</li><li>Describe the customer problem and a demonstrable benefit. Record ad examples without inferring spend, CAC or conversion.</li><li>Investigate quality, compliance, IP, shipping and return concerns. Retire superseded records with a reason.</li></ol></section>}
-   {market&&<OfferInbox productId={product.id} marketId={market.id} query={product.name}/>}
+   {market&&<OfferInbox productId={product.id} marketId={market.id} query={product.name} before={offerBefore}/>}
    {market&&evaluation&&<CompetitorScenarios productId={product.id} rows={observations} inputs={rowsToInputs(evaluation.inputs)} market={market}/>}
    {market&&!evaluation&&<p><Link href={`/opportunities/${product.id}#add-market`}>დაამატე ამ ბაზრის ფინანსური შეფასება კონკურენტის ფასზე სცენარების სანახავად</Link></p>}
    <section className="card"><h2>Competitor observations</h2><p className="mut">Showing up to 100 observations. Multiple observations may come from the same seller; counts are not a market-wide competition census. Prices are not copied into your selling-price assumptions.</p>
