@@ -1,0 +1,48 @@
+{
+  "kind": "manual-research-not-app-import",
+  "date": "2026-10-30",
+  "currency": "USD",
+  "cjSnapshotFreshlyRefetched": false,
+  "records": [
+    {
+      "url": "https://www.walmart.com/ip/Lowestbest-5-Tier-Wire-Shelving-Metal-Storage-Shelves-Heavy-Duty-Adjustable-Shelf-Standing-Kitchen-Rack-Silver/1253599314",
+      "observedAt": "2026-10-30T19:26:45.285324+00:00",
+      "priceMinor": 3720,
+      "shippingMinor": 1000,
+      "taxBasis": "UNKNOWN",
+      "comparison": "UNCERTAIN",
+      "note": "Selected silver (5tier); description says black. Model GTJJWQ1402GHS; CJ manufacturer identity unknown.",
+      "sourceHtmlSha256": "308a69e718678e9ab9fbb3c275cfc83a6dee1a8ab2dbe13d7b3fd46c16a65150"
+    },
+    {
+      "url": "https://www.lowes.com/pd/Outopee-Steel-Heavy-Duty-5-Tier-Utility-Shelving-Unit-21-25-in-W-x-11-42-in-D-x-59-06-in-H/5014757333",
+      "observedAt": "2026-10-30T19:28:03.900709+00:00",
+      "priceMinor": null,
+      "shippingMinor": null,
+      "taxBasis": "UNKNOWN",
+      "comparison": "UNCERTAIN",
+      "note": "Winado LO113029637, black; same approximate dimensions; current product price unavailable.",
+      "sourceHtmlSha256": "18bd64e46c6acab5de6303a0b44ec32fc5068d2d60c8784d1721b90d6965bb90"
+    },
+    {
+      "url": "https://www.ikea.com/us/en/p/hyllis-shelf-unit-indoor-outdoor-00278578/",
+      "observedAt": "2026-10-30T19:26:44.122779+00:00",
+      "priceMinor": 2999,
+      "shippingMinor": null,
+      "taxBasis": "UNKNOWN",
+      "comparison": "FUNCTIONAL_SUBSTITUTE",
+      "note": "Different dimensions and construction. No destination-specific delivered price.",
+      "sourceHtmlSha256": "db012a0d9e2544b379ce3954c092e82b52b3af24b4d8244d9ec1b3ff3b7f754d"
+    },
+    {
+      "url": "https://www.ikea.com/us/en/p/omar-shelf-unit-galvanized-00069768/",
+      "observedAt": "2026-10-30T19:28:02.758917+00:00",
+      "priceMinor": 5000,
+      "shippingMinor": null,
+      "taxBasis": "UNKNOWN",
+      "comparison": "FUNCTIONAL_SUBSTITUTE",
+      "note": "Different dimensions and model. No destination-specific delivered price.",
+      "sourceHtmlSha256": "8c275af67e8b5056c76468850b305482edcdb622ef5a1bd234ede34d0fc78493"
+    }
+  ]
+}
