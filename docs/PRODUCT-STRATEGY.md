@@ -1,3 +1,5 @@
+> Current automation scope and access audit (2026-10-31): [source access](automation/SOURCE-ACCESS-2026-10-31.md). Earlier dated sections below are historical; OAuth token renewal has since been implemented, while live eBay approval remains pending.
+
 # Product discovery and profit research: operating plan
 
 Status: 2026-10-28. This is a research workflow, not a prediction of sales or a guaranteed profitable business. No country, category, supplier contract or fulfilment arrangement has been selected.
