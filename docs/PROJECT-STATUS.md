@@ -1,3 +1,5 @@
+> Post-release addition (2026-10-31): [browser-run CJ batch for 1–3 saved candidates](automation/RESEARCH-BATCH.md). eBay/AI orchestration is not included in this first batch stage.
+
 # First local version — acceptance status
 
 Scope: a single-owner product-research and contribution-analysis workspace on the
