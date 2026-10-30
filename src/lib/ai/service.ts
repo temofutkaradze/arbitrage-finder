@@ -1,3 +1,4 @@
+import {AiProviderError, aiFailures} from "./errors";
 import { prisma } from "../db/prisma";
 import { researchPacket } from "./packet";
 import { aiConfig, generateReport } from "./provider";
@@ -20,8 +21,9 @@ export async function runResearch(id:number,expectedHash:string,generate:typeof 
   const report=await generate(packet.snapshot,packet.sources.map(s=>s.id),config);
   await prisma.aiResearchRun.update({where:{id:run.id},data:{state:"SUCCEEDED",report,finishedAt:new Date()}});
   return "AI ანგარიში შენახულია. გადაამოწმე დასკვნები წყაროებთან; მტკიცებულებები და ხარჯები არ შეცვლილა.";
- }catch{
-  await prisma.aiResearchRun.updateMany({where:{id:run.id,state:"PENDING"},data:{state:"FAILED",finishedAt:new Date()}});
-  return "AI ანგარიში ვერ დადასტურდა ან ვერ შეინახა. ავტომატური განმეორება არ ხდება; პროვაიდერს შეიძლება მცდელობის საფასური დაერიცხა. გადახედე მიმდინარე ანგარიშებს ხელახლა გაშვებამდე.";
+ }catch(error){
+  const code=error instanceof AiProviderError?error.code:"unknown";
+  await prisma.aiResearchRun.updateMany({where:{id:run.id,state:"PENDING"},data:{state:"FAILED",report:{failureCode:code},finishedAt:new Date()}});
+  return aiFailures[code]+" AI ანგარიში ვერ დადასტურდა ან ვერ შეინახა. ავტომატური განმეორება არ ხდება; პროვაიდერს შეიძლება მცდელობის საფასური დაერიცხა. გადახედე მიმდინარე ანგარიშებს ხელახლა გაშვებამდე.";
  }
 }

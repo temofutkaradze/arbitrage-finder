@@ -126,3 +126,14 @@ prefix for this application's configuration. Values with spaces or slashes are
 rejected. A syntactically valid ID is not proof of availability for your account.
 Restart the app after editing the ignored `.env.local` in the running checkout.
 The cloud and laptop have separate environment files and credentials.
+
+### Failed attempts
+
+New failures store only a fixed diagnostic code in the existing JSON report field
+and display its safe explanation: authentication, access, model/endpoint not found,
+request rejection, HTTP 429, upstream error, network failure, incomplete or invalid
+output. Raw provider errors, headers, keys and response bodies are never persisted.
+Old FAILED rows have no diagnostic code; their cause cannot be reconstructed.
+A displayed 429 can concern model/project or request-rate quotas even when another
+quota is available. A model ID passing local syntax checks does not prove it exists.
+No automatic retries or database migrations are introduced.

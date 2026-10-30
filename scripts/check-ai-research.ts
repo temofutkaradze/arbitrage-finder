@@ -1,3 +1,4 @@
+import {AiProviderError} from "../src/lib/ai/errors";
 import "./test-auth";
 import assert from "node:assert/strict";
 import { prisma } from "../src/lib/db/prisma";
@@ -26,9 +27,11 @@ async function main(){
   const savedPage=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);
   assert.ok((await savedPage.text()).includes("Missing demand evidence"));
   await prisma.aiResearchBudget.update({where:{id:"owner"},data:{lastStartedAt:new Date(Date.now()-100000)}});
-  const failing:typeof generateReport=async()=>{throw new Error("sensitive provider error must not escape");};
-  const failed=await runResearch(p.id,packet.hash,failing);assert.ok(!failed.includes("sensitive"));
+  const failing:typeof generateReport=async()=>{throw new AiProviderError("model");};
+  const failed=await runResearch(p.id,packet.hash,failing);assert.ok(!failed.includes("sensitive"));assert.ok(failed.includes("404"));
   assert.equal(await prisma.aiResearchRun.count({where:{opportunityId:p.id,state:"FAILED"}}),1);
+  const failedRun=await prisma.aiResearchRun.findFirstOrThrow({where:{opportunityId:p.id,state:"FAILED"}});assert.deepEqual(failedRun.report,{failureCode:"model"});
+  const errorPage=await authenticatedFetch(`http://127.0.0.1:3000/opportunities/${p.id}/ai`);assert.ok((await errorPage.text()).includes("HTTP 404"));
   await prisma.aiResearchBudget.update({where:{id:"owner"},data:{attempts:10,lastStartedAt:new Date(Date.now()-100000)}});
   assert.ok((await runResearch(p.id,packet.hash,fake)).includes("ლიმიტი"));assert.equal(calls,1);
   assert.equal(await prisma.financialChange.count({where:{evaluation:{opportunityId:p.id}}}),0);

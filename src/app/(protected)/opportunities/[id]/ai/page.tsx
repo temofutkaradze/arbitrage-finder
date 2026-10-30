@@ -1,3 +1,4 @@
+import {aiFailures, failureCode} from "@/lib/ai/errors";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireOwner } from "@/lib/auth/server";
@@ -25,7 +26,7 @@ export default async function AiResearch({params}:{params:Promise<{id:string}>})
    <h3>#{run.id} · {run.model}</h3><p>{run.createdAt.toISOString()} UTC · {run.state}</p>
    {run.inputHash!==packet.hash&&<p className="warn">მიმდინარე პაკეტი განსხვავდება — შეიცვალა მონაცემი ან კვლევის თარიღი. ძველი ანგარიში შენახვისდროინდელ პაკეტს ეკუთვნის.</p>}
    {run.state==="PENDING"&&<p>მცდელობა დაიწყო; დასრულება ჯერ არ დადასტურებულა. გვერდის გახსნა ან განახლება ხელახლა არ აგზავნის მოთხოვნას.</p>}
-   {run.state==="FAILED"&&<p>ვერ დასრულდა. ანგარიშის დასკვნა შენახული არ არის; ავტომატური განმეორება არ ხდება.</p>}
+   {run.state==="FAILED"&&<p>{aiFailures[failureCode(run.report && typeof run.report==="object" && !Array.isArray(run.report) ? run.report.failureCode : undefined)]} ანგარიშის დასკვნა შენახული არ არის; ავტომატური განმეორება არ ხდება.</p>}
    {run.state==="SUCCEEDED"&&report.success&&report.data.findings.map((f,i)=><article key={i}><b>{kinds[f.kind]}</b><p style={{whiteSpace:"pre-wrap"}}>{f.text}</p><p className="mut">წყაროები: {f.sourceIds.join(", ")} — იხილე ამ ანგარიშის პაკეტში ქვემოთ.</p></article>)}
    <details><summary>ამ მცდელობის შენახული წყაროები</summary><pre style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{JSON.stringify(run.snapshot,null,2)}</pre></details>
   </section>;})}

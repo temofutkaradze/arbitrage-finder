@@ -52,3 +52,10 @@ it("explains each configuration problem without returning secret values",async()
  vi.stubEnv("AI_RESEARCH_ENABLED","true");vi.stubEnv("AI_RESEARCH_MODEL","gemini-test");expect(aiConfigurationStatus().ready).toBe(true);
  vi.stubEnv("GEMINI_API_KEY","");expect(aiConfigurationStatus().checks.find(c=>c.id==="key")?.ok).toBe(false);
 });
+it("distinguishes model, authentication and quota failures without exposing upstream text",async()=>{
+ for(const [status,code] of [[404,"model"],[401,"auth"],[403,"access"],[429,"quota"],[400,"request"],[503,"upstream"]] as const){
+  const fetcher=vi.fn<typeof fetch>().mockResolvedValue(new Response("private-key-or-provider-detail",{status}));
+  const error=await generateReport({},[],{provider:"gemini",key:"dummy",model:"test"},fetcher).catch(e=>e);
+  expect(error.code).toBe(code);expect(error.message).not.toContain("private-key-or-provider-detail");expect(fetcher).toHaveBeenCalledTimes(1);
+ }
+});

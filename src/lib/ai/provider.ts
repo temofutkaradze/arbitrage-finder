@@ -1,3 +1,4 @@
+import {AiProviderError} from "./errors";
 import { configureProxyFromEnvironment } from "../discovery/network";
 import { generateOpenAiReport } from "./openai";
 import { generateGeminiReport } from "./gemini";
@@ -28,5 +29,6 @@ export function aiConfig():AiConfig|null {
 export async function generateReport(snapshot:unknown,ids:readonly string[],config:AiConfig,fetcher:typeof fetch=fetch) {
  if(fetcher===fetch)configureProxyFromEnvironment();
  const adapter=config.provider==="gemini"?generateGeminiReport:generateOpenAiReport;
- return adapter(snapshot,ids,config,fetcher);
+ try{return await adapter(snapshot,ids,config,fetcher);}
+ catch(error){if(error instanceof AiProviderError)throw error;throw new AiProviderError("output");}
 }
