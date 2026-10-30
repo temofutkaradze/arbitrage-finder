@@ -6,7 +6,8 @@ export const aiFailures={
  request:"პროვაიდერმა მოთხოვნა უარყო (HTTP 400). მოდელის მხარდაჭერა და მოთხოვნის ფორმატი გადასამოწმებელია.",
  upstream:"პროვაიდერის სერვერზე შეფერხებაა (HTTP 5xx). მოგვიანებით სცადე.",
  http:"პროვაიდერმა მოთხოვნა ვერ შეასრულა. API წვდომა გადასამოწმებელია.",
- network:"API-სთან კავშირი ვერ დასრულდა ან დრო ამოიწურა. გადაამოწმე ინტერნეტი და კავშირის პარამეტრები.",
+ network:"API-სთან კავშირი ვერ დასრულდა. გადაამოწმე ინტერნეტი და კავშირის პარამეტრები.",
+ timeout:"AI პასუხის ლოდინის დრო ამოიწურა (120 წამი). ეს კვოტის ამოწურვას არ ნიშნავს. ავტომატური განმეორება არ გაიგზავნა.",
  incomplete:"მოდელმა პასუხი ვერ დაასრულა ან დაბლოკა. ეს ავტომატურად კვოტის ამოწურვას არ ნიშნავს.",
  output:"პასუხის ფორმატი ან წყაროების მითითებები ვერ დადასტურდა. ეს ავტომატურად კვოტის ამოწურვას არ ნიშნავს.",
  unknown:"ზუსტი მიზეზი შენახული არ არის: პასუხი ან შენახვა ვერ დადასტურდა.",
@@ -14,8 +15,15 @@ export const aiFailures={
 export type AiFailureCode=keyof typeof aiFailures;
 export class AiProviderError extends Error {constructor(public readonly code:AiFailureCode){super(aiFailures[code]);}}
 export function failureCode(value:unknown):AiFailureCode{return typeof value==="string"&&Object.hasOwn(aiFailures,value)?value as AiFailureCode:"unknown";}
+export const AI_REQUEST_TIMEOUT_MS=120_000;
+export function transportError(error:unknown,signal?:AbortSignal|null){
+ const reason=signal?.reason;
+ const timedOut=(error instanceof Error && error.name==="TimeoutError")||(signal?.aborted && reason instanceof Error && reason.name==="TimeoutError");
+ return new AiProviderError(timedOut?"timeout":"network");
+}
+export async function aiResponseText(response:Response,signal?:AbortSignal|null){try{return await response.text();}catch(error){throw transportError(error,signal);}}
 export async function aiFetch(fetcher:typeof fetch,url:string,init:RequestInit){
- let response:Response;try{response=await fetcher(url,init);}catch{throw new AiProviderError("network");}
+ let response:Response;try{response=await fetcher(url,init);}catch(error){throw transportError(error,init.signal);}
  if(!response.ok){const code:AiFailureCode=response.status===401?"auth":response.status===403?"access":response.status===404?"model":response.status===429?"quota":response.status===400?"request":response.status>=500?"upstream":"http";throw new AiProviderError(code);}
  return response;
 }

@@ -90,7 +90,7 @@ settings.
 ## Bounds and interpretation
 
 One request per explicit action; no automatic retries, tool calls or browsing.
-Hardcoded 60-second timeout, 2400 output-token cap and 100 KB input packet cap.
+Hardcoded 120-second timeout, 2400 output-token cap and 100 KB input packet cap.
 Maximum 10 attempts per UTC day across this single-owner database, with 90 seconds
 between all attempts, atomically enforced by an advisory transaction lock. Failures
 and interrupted requests count. These are request limits, not a currency budget.
@@ -137,3 +137,8 @@ Old FAILED rows have no diagnostic code; their cause cannot be reconstructed.
 A displayed 429 can concern model/project or request-rate quotas even when another
 quota is available. A model ID passing local syntax checks does not prove it exists.
 No automatic retries or database migrations are introduced.
+
+The request deadline is 120 seconds, including response-body reading. Timeout
+failures are distinguished from other connection failures and saved as a safe
+`timeout` code. This does not guarantee a provider response or trigger a retry.
+The 2400-token cap and ten-attempt daily limit remain unchanged.
