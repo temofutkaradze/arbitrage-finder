@@ -1,0 +1,137 @@
+{
+  "checkedAtUtc": "2026-10-30T08:36:56.853Z",
+  "productId": "1876836104507744257",
+  "variantId": "1876836104574853122",
+  "sku": "CJCF226441701AZ",
+  "priceMinor": 3160,
+  "priceSource": "CJ product/query read in same session on 2026-10-30",
+  "currency": "USD",
+  "inventoryObservedAt": "2026-10-30T08:36:25.864Z",
+  "inventory": [
+    {
+      "vid": "1876836104574853122",
+      "inventory": [
+        {
+          "countryCode": "US",
+          "totalInventory": 620,
+          "cjInventory": 620,
+          "factoryInventory": 0
+        }
+      ]
+    }
+  ],
+  "route": {
+    "origin": "US",
+    "destination": "US",
+    "postalCode": "95829",
+    "quantity": 1
+  },
+  "freight": [
+    {
+      "method": "USPS US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "Fedex US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "UPS US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "USPS US to US #41",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "UPS US to US #51",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "Fedex US to US #48",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "GOFO US to US #15",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    }
+  ],
+  "retailObservations": [
+    {
+      "merchant": "Walmart / SanTu",
+      "observedAtUtc": "2026-10-30T08:35:48.690263+00:00",
+      "url": "https://www.walmart.com/ip/Lowestbest-5-Tier-Wire-Shelving-Metal-Storage-Shelves-Heavy-Duty-Adjustable-Shelf-Standing-Kitchen-Rack-Silver/1253599314",
+      "externalId": "1253599314",
+      "title": "Lowestbest 5 Tier Wire Shelving, Metal Storage Shelves, Heavy Duty Adjustable Shelf Standing Kitchen Rack, Silver",
+      "currency": "USD",
+      "priceMinor": 3720,
+      "shippingMinor": 1000,
+      "postalCode": "95829",
+      "taxBasis": "UNKNOWN",
+      "comparison": "NEAR_MATCH_UNCONFIRMED",
+      "sourceType": "Public product page embedded product data; exact usItemId verified, recommendation prices excluded",
+      "limitations": "Brand/manufacturer identity and quality versus CJ not confirmed. Public displayed shipping is not a final checkout quote. Not eligible for exact-match price scenarios."
+    },
+    {
+      "merchant": "IKEA US",
+      "observedAtUtc": "2026-10-30T08:35:49.786282+00:00",
+      "url": "https://www.ikea.com/us/en/p/hyllis-shelf-unit-indoor-outdoor-00278578/",
+      "externalId": "00278578",
+      "currency": "USD",
+      "priceMinor": 2999,
+      "shippingMinor": null,
+      "taxBasis": "UNKNOWN",
+      "comparison": "FUNCTIONAL_SUBSTITUTE",
+      "sourceType": "Public product page product data",
+      "limitations": "Different product construction/model; no exact match asserted. Delivery and taxes unconfirmed; excluded from comparable scenarios."
+    }
+  ],
+  "localRecordStatus": "Cloud database contains no non-sample saved products. Earlier project snapshot identified this CJ variant; laptop record identity remains to be confirmed by owner.",
+  "financialReview": {
+    "currency": "USD",
+    "supplierPlusProviderShippingMinor": 3160,
+    "illustrativeCustomerTotalMinor": 4720,
+    "differenceBeforeOtherCostsMinor": 1560,
+    "freeShippingAtProductPriceDifferenceMinor": 560,
+    "netProfit": null,
+    "missing": [
+      "exact product equivalence",
+      "seller channel and its fees",
+      "payment acceptance and fees",
+      "FX and settlement costs if applicable",
+      "sales tax/import tax applicability",
+      "refund and return allowances",
+      "advertising CAC",
+      "fixed overhead and business tax"
+    ],
+    "notForecast": true
+  }
+}
