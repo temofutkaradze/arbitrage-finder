@@ -35,6 +35,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
       <h1>{opp.name}{opp.isSample && <span className="sample"> SAMPLE</span>}</h1>
       <p className="mut">{[opp.category, opp.sourceName].filter(Boolean).join(" · ")}
         {opp.sourceUrl && <> · <a href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">Source listing</a></>}</p>
+      <p><a href={`/opportunities/${opp.id}/report?format=json`} download>ჩამოტვირთე კვლევის სრული პაკეტი (.json)</a> · შენახული ვარიანტები, მარაგი, მიწოდება, კონკურენტები და შეფასებები. გაზიარებამდე გადაამოწმე პირადი შენიშვნები; ეს ბაზის backup ან ავტომატური სინქრონიზაცია არ არის.</p>
       <p><a href={`/opportunities/${opp.id}/report`} download>Download research report (.txt)</a> · <span className="mut">Current inputs, calculations, sources and evidence. Review private notes before sharing.</span></p>
       <p><Link href="/products">← ჩემი პროდუქტები</Link> · <Link href={`/research?product=${opp.id}`}>კონკურენტები და კვლევის წყაროები</Link></p>
       <p><Link href={`/opportunities/${opp.id}/prepare`}>Prepare a store draft</Link></p>
