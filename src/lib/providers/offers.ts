@@ -1,3 +1,4 @@
+import {assertMerchantAllowed} from "../ebay-notifications/deletion";
 import {ebayConnectionMode} from "./ebay-auth";
 import { z } from "zod";
 import { prisma } from "../db/prisma";
@@ -10,6 +11,7 @@ export async function saveExternalOffers(opportunityId:number,marketId:number,co
   if(market.countryCode!==country||offers.some(o=>o.currency!==market.currency))throw new Error("eBay market changed while fetching; request again.");
   const observedAt=new Date(),expiresAt=new Date(observedAt.getTime()+86400000);
   for(const offer of offers){
+   await assertMerchantAllowed(tx,offer.merchant);
    const key={opportunityId,marketId,provider:offer.provider,externalId:offer.externalId};
    const old=await tx.externalOffer.findUnique({where:{opportunityId_marketId_provider_externalId:key}});
    if(old?.observationId)await tx.competitorObservation.update({where:{id:old.observationId},data:{expiresAt:observedAt}});

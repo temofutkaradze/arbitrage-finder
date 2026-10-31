@@ -1,3 +1,5 @@
+import {isEbayUrl} from "../ebay-notifications/protocol";
+import {assertMerchantAllowed} from "../ebay-notifications/deletion";
 import { createHash } from "node:crypto";
 import { prisma } from "../db/prisma";
 import { parseOfferImport } from "./import-schema";
@@ -11,6 +13,7 @@ export async function importPendingOffers(productId:number,marketId:number,versi
   if(!product||market.version!==version||market.countryCode!==batch.destinationCountry||market.currency!==batch.currency)throw new Error("Import context changed; refresh the page and check country/currency.");
   let created=0,updated=0,unchanged=0;
   for(const o of batch.offers){
+   if(isEbayUrl(o.url))await assertMerchantAllowed(tx,o.merchant);
    const externalId=createHash("sha256").update(o.url).digest("hex");
    const key={opportunityId:productId,marketId,provider:"manual-json",externalId};
    const old=await tx.externalOffer.findUnique({where:{opportunityId_marketId_provider_externalId:key}});

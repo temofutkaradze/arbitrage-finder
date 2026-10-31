@@ -1,4 +1,6 @@
 "use server";
+import {isEbayUrl} from "@/lib/ebay-notifications/protocol";
+import {assertMerchantAllowed} from "@/lib/ebay-notifications/deletion";
 import {requireOwner} from "@/lib/auth/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -10,6 +12,8 @@ export async function recordCompetitor(_:string,form:FormData){
  if(!result.success)return "Check the fields: integer minor-unit prices, source URL, comparison notes and valid UTC dates are required. Unknown shipping must be blank.";
  try {
   await prisma.$transaction(async tx=>{
+   await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+   if(isEbayUrl(result.data.url))await assertMerchantAllowed(tx,result.data.merchant);
    const market=await tx.market.findUniqueOrThrow({where:{id:result.data.marketId}});
    if(market.currency!==result.data.currency)throw new Error("Currency mismatch");
    await tx.competitorObservation.create({data:result.data});

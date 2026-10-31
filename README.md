@@ -263,6 +263,26 @@ See the [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.htm
 
 For CJ, set `CJ_ACCESS_TOKEN` to your access token or supported API Key. Keep every key server-side; never use `NEXT_PUBLIC_` for secrets.
 
+### Marketplace account deletion receiver
+
+The public route `/api/ebay/account-deletion` implements the SHA-256 endpoint challenge and signed notification verification against eBay's production public-key service. Signature handling follows the official [eBay reference SDK](https://github.com/eBay/event-notification-nodejs-sdk) (EC/SHA-1 over JSON serialization); the SHA-256 challenge is a separate protocol. Public keys are cached for an hour with bounded cache misses. Unsigned notifications cannot delete data; database failures return non-success for retry.
+
+Before enabling, approve and apply migration `20261101000100_ebay_deletion`. It adds only `EbayDeletion`, containing HMAC suppression identifiers and timestamps, without raw account IDs or notification bodies. Existing tables are not changed. Then configure securely:
+
+```dotenv
+EBAY_DELETION_ENDPOINT=https://YOUR_PUBLIC_HOST/api/ebay/account-deletion
+EBAY_DELETION_VERIFICATION_TOKEN=YOUR_RANDOM_32_TO_80_CHARACTER_TOKEN
+EBAY_DELETION_HASH_SECRET=YOUR_SEPARATE_STABLE_RANDOM_SECRET
+```
+
+Use a token containing only letters, numbers, underscores or hyphens. Keep the separate hash secret stable: changing it invalidates matching against suppression records. Existing production App ID and Cert ID authenticate eBay public-key retrieval. Do not send secrets in chat or commit them.
+
+The endpoint must stay reachable through public HTTPS and access the **same PostgreSQL database** used by research collection. A separate empty hosted database does not delete records on a laptop. Loopback URLs do not work. This code alone neither deploys a public service nor activates a disabled eBay keyset.
+
+After verified delivery, the transaction removes matching seller observations/offers whose source URL identifies eBay, and conservatively removes saved AI reports for affected products, including packets that still reference the removed seller. Product records and financial inputs remain. HMAC suppression records prevent matching identities being reimported through API, JSON or manual competitor entry while this integration remains configured. Identity matching uses the notified username/immutable user ID against stored merchant values; historical aliases without a supplied identifier cannot be inferred. Free-text evidence, exported files, external AI-provider copies and backups require a separate retention/deletion procedure; do not claim automatic deletion of those copies. After restoring a backup, deletion records must be reapplied before serving or collecting data.
+
+Run `node --import tsx scripts/check-ebay-deletion.ts` only after the approved migration on a controlled test database. It creates temporary fixtures and sends no provider requests. Validate challenge, signed delivery and actual removal on the final public deployment before treating the integration as operational. Register the exact configured URL and verification token in eBay's Marketplace Account Deletion settings; do not request the no-persistence exemption.
+
 ## Data formats
 
 | Operation | Format and limit |

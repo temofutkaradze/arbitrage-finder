@@ -372,3 +372,10 @@ model ResearchJob {
   finishedAt DateTime?
   @@index([state, nextRunAt])
 }
+
+// HMAC identifiers prevent reimport; never retain notification bodies or raw user IDs.
+model EbayDeletion {
+ id String @id
+ identityHash String @unique
+ createdAt DateTime @default(now())
+}

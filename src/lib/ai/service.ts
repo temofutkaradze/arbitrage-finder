@@ -9,6 +9,10 @@ export async function runResearch(id:number,expectedHash:string,generate:typeof 
  const now=new Date();
  const run=await prisma.$transaction(async tx=>{
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340924)`;
+  if(process.env.EBAY_DELETION_ENDPOINT){
+   await tx.$executeRaw`SELECT pg_advisory_xact_lock(71340923)`;
+   const current=await researchPacket(id);if(!current||current.hash!==packet.hash)return null;
+  }
   const day=now.toISOString().slice(0,10);
   const budget=await tx.aiResearchBudget.findUnique({where:{id:"owner"}});
   const attempts=budget?.day===day?budget.attempts:0;
