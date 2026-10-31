@@ -4,6 +4,10 @@ import {deleteAccount} from "@/lib/ebay-notifications/deletion";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"no-store"};
+function failure(status:number,stage:string){
+ console.warn(`eBay notification failed: ${stage}`);
+ return Response.json({error:stage},{status,headers});
+}
 export async function GET(request:Request){
  try{
   const c=notificationConfig(),query=new URL(request.url).searchParams;
@@ -12,8 +16,9 @@ export async function GET(request:Request){
  }catch{return new Response(null,{status:503,headers});}
 }
 export async function POST(request:Request){
- try{notificationConfig();}catch{return new Response(null,{status:503,headers});}
+ try{notificationConfig();}catch{return failure(503,"configuration");}
  let payload:unknown;
+ let stage="payload";
  try{
   if(!request.headers.get("content-type")?.toLowerCase().startsWith("application/json"))return new Response(null,{status:415,headers});
   const reader=request.body?.getReader();if(!reader)return new Response(null,{status:400,headers});
@@ -23,9 +28,11 @@ export async function POST(request:Request){
   deletionSchema.parse(payload);
   const signature=request.headers.get("x-ebay-signature")??"";
   let kid:string;try{kid=signatureHeader(signature).kid;}catch{return new Response(null,{status:412,headers});}
+  stage="public_key_lookup";
   const key=await notificationKey(kid);
+  stage="signature_verification";
   if(!verifyNotification(payload,signature,key))return new Response(null,{status:412,headers});
- }catch{return new Response(null,{status:503,headers});}
+ }catch{return failure(stage==="payload"?400:503,stage);}
  try{await deleteAccount(payload);return new Response(null,{status:204,headers});}
- catch{return new Response(null,{status:503,headers});}
+ catch{return failure(503,"database_deletion");}
 }

@@ -32,3 +32,10 @@ it("processes only a valid signature and returns failure when deletion cannot co
  mocks.remove.mockRejectedValueOnce(new Error("database unavailable"));expect((await POST(request())).status).toBe(503);
  payload.notification.data.userId="tampered";expect((await POST(request())).status).toBe(412);expect(mocks.remove).toHaveBeenCalledTimes(2);
 });
+
+it("identifies key-service failures without logging credentials or acknowledging deletion",async()=>{
+ const signature=Buffer.from(JSON.stringify({kid:"key1",signature:"YWJj"})).toString("base64");
+ mocks.key.mockRejectedValueOnce(new Error("private upstream response"));
+ const response=await POST(new Request("http://localhost/api/ebay/account-deletion",{method:"POST",headers:{"content-type":"application/json","x-ebay-signature":signature},body:JSON.stringify({metadata:{topic:"MARKETPLACE_ACCOUNT_DELETION",schemaVersion:"1.0"},notification:{notificationId:"test",data:{userId:"user"}}})}));
+ expect(response.status).toBe(503);expect(await response.json()).toEqual({error:"public_key_lookup"});expect(mocks.remove).not.toHaveBeenCalled();
+});
