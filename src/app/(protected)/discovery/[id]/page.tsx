@@ -16,6 +16,7 @@ const usd = (value: number | null) => value === null ? "Unknown" : formatMoney(v
 export default async function Sourcing({ params }: { params: Promise<{ id: string }> }) {
  await requireOwner(false);
   const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) > 2147483647) notFound();
   const listing = /^\d+$/.test(id) ? await prisma.sourceListing.findUnique({ where: { id: Number(id) }, include: {
     variants: { where: { active: true }, orderBy: { id: "asc" }, take: 100 },
     opportunity: { include: { evaluations: { include: { market: true } } } },

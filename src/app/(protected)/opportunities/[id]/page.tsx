@@ -26,6 +26,7 @@ const label = (k: InputKey) => INPUT_DEFS.find((d) => d.key === k)!.label;
 export default async function Detail({ params }: { params: Promise<{ id: string }> }) {
  await requireOwner(false);
   const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) > 2147483647) notFound();
   const opp = /^\d+$/.test(id) ? await getOpportunity(Number(id)) : null;
   if (!opp) notFound();
   const markets = await getMarkets();

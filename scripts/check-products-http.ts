@@ -7,6 +7,15 @@ let supplierMarketId: number | undefined;
 async function main() {
   const base = "http://127.0.0.1:3000";
   assert.equal((await fetch(`${base}/products`, { redirect: "manual" })).status, 307);
+  for (const route of ["opportunities", "discovery"]) {
+    for (const invalid of ["0", "-1", "2147483648", "99999999999999999999999999999999999", "abc"]) {
+      const response = await authenticatedFetch(`${base}/${route}/${invalid}`);
+      const body = await response.text();
+      assert.ok(response.status === 404 || response.status === 200); // Streamed not-found responses may retain 200.
+      assert.ok(body.includes("გვერდი ვერ მოიძებნა"));
+      assert.ok(!body.includes("PrismaClientValidationError"));
+    }
+  }
   const name = `workspace-check-${crypto.randomUUID()}`;
   for (let i = 0; i < 102; i++) {
     const p = await prisma.opportunity.create({ data: { name: `${name}-${i}`, isSample: i === 101 } });
