@@ -1,3 +1,4 @@
+import {BusinessPlanning} from "@/components/BusinessPlanning";
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {requireOwner} from "@/lib/auth/server";
@@ -41,6 +42,7 @@ export default async function BatchReview({searchParams}:{searchParams:Promise<{
    const inputs=rowsToInputs(e.inputs),result=calculate(inputs,{pricesIncludeTax:e.market.pricesIncludeTax}),research=researchReadiness(p.evidence,e.marketId,now);
    return <section key={e.id} aria-label={`${e.market.code} ეკონომიკა`}><h3>{e.market.code} · {e.market.currency}</h3><p>კვლევა: {research.label}. {research.missing.length?`მტკიცებულება აკლია: ${research.missing.join(', ')}`:research.next}</p>
    {!result.complete?<p className="warn">სრული გამოთვლა ვერ სრულდება. აუცილებელი უცნობები: {result.missing.map(key=>INPUT_DEFS.find(d=>d.key===key)!.label).join('; ')}.</p>:<><div className="cards"><div><span className="mut">კონტრიბუცია რეკლამის შემდეგ / შეკვეთა</span><b className={result.netProfit>0?"pos":"neg"}>{formatMoney(result.netProfit,e.market.currency)}</b></div><div><span className="mut">მაქსიმალური CAC მოდელის მიხედვით</span><b>{formatMoney(result.maxAffordableCac,e.market.currency)}</b></div></div><p className="mut">{result.quality==="estimated"?"შეიცავს შეფასებით მონაცემებს":"მომხმარებლის მიერ დადასტურებულად მონიშნული მონაცემებია"}. დამატებითი უცნობი ხარჯები ნულადაა ჩათვლილი: {result.assumedZero.length}. დადებითი გამოთვლა გაყიდვების ან მოგების გარანტია არაა.</p></>}
+   <BusinessPlanning inputs={inputs} currency={e.market.currency} pricesIncludeTax={e.market.pricesIncludeTax}/>
    <CompetitorScenarios productId={id} rows={p.competitors} inputs={inputs} market={e.market}/>
    </section>;
   })}

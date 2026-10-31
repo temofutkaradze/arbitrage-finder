@@ -1,3 +1,4 @@
+import {BusinessPlanning} from "@/components/BusinessPlanning";
 import { CompetitorScenarios } from "@/components/CompetitorScenarios";
 import { SupplierProgress } from "@/components/SupplierProgress";
 import { loadSupplierProgress } from "@/lib/sourcing/progress";
@@ -83,6 +84,7 @@ export default async function Detail({ params }: { params: Promise<{ id: string 
                 <p className="mut">Simplifications: import VAT is not modeled separately; duty is charged on supplier price + shipping; “unrecovered cost per return” should include everything lost per return.</p>
               </>
             )}
+            <BusinessPlanning inputs={e.inputs} currency={cur} pricesIncludeTax={e.market.pricesIncludeTax}/>
             <CompetitorScenarios productId={opp.id} rows={opp.competitors} inputs={e.inputs} market={e.market}/>
             <details open={!c.complete}>
               <summary>Edit inputs</summary>
