@@ -357,3 +357,18 @@ model AiResearchBudget {
  attempts Int
  lastStartedAt DateTime
 }
+
+// Durable owner-requested research. No foreign keys: history survives product deletion.
+model ResearchJob {
+  id String @id
+  state String @default("QUEUED")
+  steps Json
+  cursor Int @default(0)
+  stopRequested Boolean @default(false)
+  leaseToken String?
+  leaseUntil DateTime?
+  nextRunAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  finishedAt DateTime?
+  @@index([state, nextRunAt])
+}

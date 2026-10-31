@@ -11,7 +11,8 @@
     "seed:sample": "tsx prisma/seed-sample.ts",
     "discovery:worker": "tsx scripts/discovery-worker.ts",
     "auth:init": "tsx scripts/init-owner.ts",
-    "db:backup": "node --import tsx scripts/backup-local-db.ts"
+    "db:backup": "node --import tsx scripts/backup-local-db.ts",
+    "research:worker": "tsx scripts/research-worker.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

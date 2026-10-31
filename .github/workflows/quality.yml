@@ -57,6 +57,7 @@ jobs:
           node --import tsx scripts/check-sourcing.ts
           node --import tsx scripts/check-offers.ts
           node --import tsx scripts/check-matching.ts
+          node --import tsx scripts/check-research-jobs.ts
       - name: Install browser for form regression checks
         run: npx playwright install --with-deps chromium
       - name: Production HTTP checks

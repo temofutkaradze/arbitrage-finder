@@ -163,6 +163,23 @@ The combined review shows current saved data for up to three products: up to 20 
 
 A financial market filter does not filter the AI packet: other markets for that product may be included. Preview the full packet before consent. Pending offers are excluded.
 
+### Background research
+
+The optional `/automation/jobs` queue stores up to three selected candidates and their saved route steps in PostgreSQL. It supports one active job, explicit cancellation, and the latest 20 job histories. Unlike the browser batch, it survives closing a tab.
+
+**Installation requires the reviewed `20261031120000_durable_research_jobs` migration.** It adds only `ResearchJob` and its index, without changing existing records. Obtain approval before applying it. Then set `RESEARCH_JOBS_ENABLED=true` in `.env.local`, restart the app, and run the worker separately:
+
+```sh
+npm run research:worker -- --dry-run
+npm run research:worker
+```
+
+Keep the worker machine awake. `--once` processes at most one eligible step. Steps are spaced at least 61 seconds apart; the existing provider cooldowns still apply. Prices are never automatically applied to evaluations, and AI is not called by the worker.
+
+Completed steps are checkpointed. Restarting a worker continues queued steps. An in-flight step whose ten-minute lease expires becomes INTERRUPTED instead of being replayed: inspect saved provider results before creating another job. A provider failure stops this queue, including remaining CJ steps after an eBay failure. Stop prevents subsequent steps; an in-flight request may still save its result. Histories survive deletion of a source product and may then contain unavailable links. The page updates when refreshed; it is not live streaming.
+
+The feature is disabled by default and must remain disabled until the migration and database integration checks have passed. Existing browser batches remain available.
+
 ### Scheduled discovery
 
 Schedules start paused. Up to five may be enabled, with intervals of 6–168 hours. Run the worker in a separate terminal:
