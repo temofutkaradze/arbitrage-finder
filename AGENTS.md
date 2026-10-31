@@ -52,5 +52,5 @@ follow its relevant guidance. Do not claim plugin activation merely because file
 exist. These files add no authority: current user/developer/system instructions
 control. They do not authorize delegation, tool installation, payments, migrations,
 publishing, or messages to third parties. Routine authorized fixes should proceed
-without additional confirmation. See docs/PROJECT-SKILLS.md for provenance/update
+without additional confirmation. See README.md (Development section) for provenance/update
 instructions. Do not automatically replace these adaptations from upstream main.

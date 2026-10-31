@@ -1,327 +1,359 @@
 # Arbitrage Finder
 
-Private product discovery and contribution research app. For laptop setup, use
-[Windows / local PostgreSQL instructions](docs/LOCAL-SETUP.md). The app requires
-owner sign-in; keep local development on `127.0.0.1`.
+პირადი პროდუქტის კვლევის სივრცე: მომწოდებლის კანდიდატები, მიწოდების შეფასებები,
+კონკურენტები, ხარჯების კალკულაცია და შენახულ წყაროებზე AI ანალიზი.
+პროექტი განკუთვნილია ერთი მფლობელისთვის; SaaS, ავტომატური მაღაზია ან მოგების
+გარანტირებული პროდუქტის ამრჩევი სისტემა არ არის.
 
-## First local version
+**მთავარი საქაღალდე:** `C:\arbitrage-finder` · **ვერსია:** `0.1.0` ·
+**ტექნოლოგიები:** Next.js 16, React 19, TypeScript, Prisma 7, PostgreSQL, Node.js 24.
 
-Start with the [local release and operating guide](docs/LOCAL-RELEASE.md) and
-[current implementation status](docs/PROJECT-STATUS.md). The release scope is
-a private research workspace; AI analyzes saved sources and does not browse.
+## Navigation
 
-For consolidating the old and working laptop copies, see
-[main-folder instructions](docs/MAIN-FOLDER.md).
+[გაშვება](#run) · [განახლება](#update) · [კვლევა](#research) ·
+[ჯგუფური პროცესი](#automation) · [AI](#ai) · [eBay](#ebay) ·
+[იმპორტი/ექსპორტი](#data-formats) · [Backup](#backup) ·
+[პრობლემები](#troubleshooting) · [ტესტები](#development) · [სტრუქტურა](#structure)
 
-## Product research workflow
+## Run
 
-See [business model, source research and phased roadmap](docs/PRODUCT-STRATEGY.md).
-The first implementation adds `/discovery`, price observations and source-backed
-research records while reusing existing product-market evaluations.
+### არსებული პროექტი — Windows CMD
 
-From the checkout, with the existing safe `DATABASE_URL` (`arbitrage`) and
-`SHADOW_DATABASE_URL` (`arbitrage_shadow`) configured:
+```cmd
+cd /d C:\arbitrage-finder
+npm run dev -- --hostname 127.0.0.1
+```
+
+გახსენი **http://127.0.0.1:3000**. ტერმინალი ჩართული დატოვე; `Ctrl+C` აპს აჩერებს.
+PostgreSQL სერვისი გაშვებული უნდა იყოს; pgAdmin-ის გახსნა საჭირო არ არის.
+
+```cmd
+powershell -NoProfile -Command "Get-Service *postgres* | Select-Object Name,Status"
+```
+
+საიტის პაროლი თავდაპირველი დაყენებისას შეიქმნა. მიმდინარე ლეპტოპზე მისი ფაილია
+`C:\Users\temof\.cloud-setup\owner-access.txt`, `Password:` ხაზზე. პროექტის
+საქაღალდის გადატანას ეს გარე ფაილი არ გადაუტანია. პაროლი ჩატში არ გამოაგზავნო.
+
+### ახალი კომპიუტერი
+
+საჭიროა Git, Node.js 24+ და გაშვებული PostgreSQL. დააკლონე საკუთარი რეპოზიტორია,
+შემდეგ გამოიყენე `scripts/setup-local.ps1` მხოლოდ საწყისი დაყენებისთვის.
+**ეს სკრიპტი ბაზის მომზადებასა და მიგრაციებს ასრულებს** — ჯერ გადაამოწმე სამიზნე
+ბაზა, დაგეგმილი ცვლილებები და backup. არსებულ გამართულ ინსტალაციაზე მას ხელახლა
+ნუ გაუშვებ უბრალოდ საიტის ჩასართავად. `npm ci` პაკეტებს lockfile-ის მიხედვით აყენებს;
+`npx prisma generate` კლიენტს ქმნის და მონაცემებს არ ცვლის.
+
+## Update
+
+გაჩერებულ აპზე:
+
+```cmd
+cd /d C:\arbitrage-finder
+git pull --ff-only origin master
+npm run dev -- --hostname 127.0.0.1
+```
+
+თუ სამუშაო branch-ზე მუშაობ, pull-ის წყაროდ მისი სახელი გამოიყენე. საქაღალდის
+სახელი და Git branch დამოუკიდებელია. კონფლიქტისას გაჩერდი; არ გამოიყენო force/reset
+ან ფაილების ბრმად გადაწერა. თუ `package-lock.json` შეიცვალა, გაშვებამდე `npm ci`
+შეასრულე. მიგრაცია ცალკე უნდა აიხსნას და დამტკიცდეს; ჩვეულებრივი pull მას არ ასრულებს.
+
+GitHub კოდს ინახავს, PostgreSQL — პროდუქტებსა და კვლევებს. `.env`/`.env.local`,
+პაროლები და ბაზის ჩანაწერები pull-ით არ სინქრონდება. Cloud და ლეპტოპი ცალკე გარემოებია.
+
+### ძველი და ახალი საქაღალდე
+
+თუ პროექტი ჯერ `arbitrage-finder-local`-შია, არსებული
+`scripts/move-to-main-folder.ps1` მთელი სამუშაო clone-ის `C:\arbitrage-finder`-ში
+გადატანას ემსახურება. ძველ დანიშნულებას უნიკალურ backup სახელზე ინარჩუნებს.
+გააჩერე აპი/worker, დახურე რედაქტორი და გაუშვი გარედან, მაგალითად `C:\Users\temof`-დან.
+ჯერ `-WhatIf` გამოიყენე; პარამეტრის გარეშე რეალურად გადააადგილებს საქაღალდეებს.
+სკრიპტი ბაზას არ ცვლის და ძველ `.env`-ს ახალთან არ აერთიანებს. უკვე წარმატებით
+გადატანილ პროექტზე ხელახლა ნუ გაუშვებ. ძველი backup საჭიროების დადგენამდე შეინარჩუნე.
+
+## Research
+
+| გვერდი | დანიშნულება |
+|---|---|
+| მიმოხილვა `/` | შენახული პროდუქტები, შეფასებები და შემდეგი ნაბიჯი |
+| Discovery `/discovery` | CJ-ის ერთი გვერდი, მაქსიმუმ 20 კანდიდატი; ნებადართული JSON იმპორტი |
+| ჩემი პროდუქტები `/products` | შენახული პროდუქტები, კვლევის პროგრესი და მომწოდებლის ჩანაწერები |
+| შეფასებები `/opportunities` | ხარჯები, კონტრიბუცია და სცენარები თითო პროდუქტსა და ბაზარზე |
+| Research `/research` | კონკურენტები, წყაროები, pending შეთავაზებების გადახედვა |
+| Matching `/matching` | GTIN ან brand/MPN-ით ვარიანტის/pack-ის შემოწმება, reviewed link და undo |
+| Markets `/markets` | ქვეყანა, ვალუტა და გადასახადის ინტერპრეტაცია |
+| Automation `/automation` | ჯგუფური პროცესი და არჩევითი დაგეგმილი CJ ძიება |
+| History `/history` | ფინანსური ცვლილებების ძველი/ახალი მონაცემები |
+| Payments `/payments` | გადახდის საკომისიოების საცნობარო სცენარი |
+| Market study `/market-study` | დათარიღებული საწყისი კვლევა; არა ცოცხალი მონიტორინგი |
+
+ჩვეულებრივი გზა: **კანდიდატი → Investigate this candidate → ბაზარი → ზუსტი
+ვარიანტი/მიწოდება → კონკურენტები/წყაროები → ხარჯები → AI → ანგარიშის ჩამოტვირთვა**.
+ქვეყანა/კატეგორია/ფასი მომხმარებლის ნაცვლად არ ირჩევა. კოდი ქვეყანაში ბაზრის
+საჩვენებელ კოდს ავტომატურად არ გარდაქმნის.
+
+### ფინანსური მონაცემების მნიშვნელობა
+
+- `UNKNOWN`: უცნობია; აუცილებელი უცნობი ხარჯი სრულ შედეგს ბლოკავს.
+- `ESTIMATED`: ვარაუდი ან პროვაიდერის შეფასება.
+- `VERIFIED`: მომხმარებლის მონიშვნაა, არა დამოუკიდებელი სერტიფიცირება.
+- დამატებითი არააუცილებელი უცნობები შეიძლება ნულად ჩაითვალოს; შედეგთან ეს ჩანს.
+- კონტრიბუცია მოიცავს შეყვანილ ხარჯებსა და რეკლამას, მაგრამ გამორიცხავს ფიქსირებულ
+  ბიზნესხარჯებსა და საშემოსავლო გადასახადს. სრული საბუღალტრო წმინდა მოგება არაა.
+
+CJ quote-ის გამოყენება ცალკე დასტურდება: იცვლება estimated product/shipping,
+ხოლო duty/handling გასადამოწმებლად იწმინდება. სხვა ვალუტისთვის საჭიროა შესაბამისი
+FX მიმართულება, თარიღი და წყარო. 24-საათიანი freshness აპის წესია, არა ფასის გარანტია.
+მარაგის ანგარიში დაჯავშნას, აქტიური განცხადება კი რეალურ გაყიდვებს არ ადასტურებს.
+კონკურენტის EXACT/EQUIVALENT შედარება მოითხოვს ფერის, ზომის, pack-ის, მდგომარეობის,
+მიწოდებისა და tax basis-ის გადახედვას. სხვადასხვა ვალუტა არ ჯამდება.
+
+ფორმები შეცდომისას შეყვანილ მნიშვნელობებს ინარჩუნებს. მოძველებული პარალელური
+შენახვა იბლოკება; გახსენი ბოლო ვერსია და შეადარე. ფინანსური ისტორია ცვლილებასთან
+ერთ ტრანზაქციაში ინახება; ეს დამოუკიდებელი აუდიტი ან აღდგენის ღილაკი არაა.
+პროდუქტის/ბაზრის წაშლას შესაბამისი ისტორიის წაშლაც შეუძლია — გრძელვადიანი შენახვისთვის backup გამოიყენე.
+
+## Automation
+
+აირჩიე 1–3 განსხვავებული **შენახული CJ კანდიდატი**. მაქსიმუმ ბოლო 100 ჩანაწერია
+ასარჩევი. თითოეულზე სრულდება ვარიანტების/მარაგის განახლება და ბოლო 100 quote-დან
+მაქსიმუმ 3 განსხვავებული შენახული მარშრუტის შემოწმება. CJ ოპერაციებს შორის 31 წამია;
+ერთი ოპერაცია რამდენიმე endpoint-ს/auth მოთხოვნას შეიძლება მოიცავდეს.
+მარშრუტის არქონა `blocked` მდგომარეობაა — ქვეყანა/ZIP არ გამოიგონება.
+
+არჩევითი eBay ეტაპისთვის აშკარად აირჩიე ბაზარი; პროდუქტს ამ ბაზრის შეფასება
+უნდა ჰქონდეს. ძიება იყენებს კატალოგის სახელს, მაქსიმუმ 20 შედეგს და ცალკე 61-წამიან
+ინტერვალს. წვდომის არქონა/შეუსაბამობა მოთხოვნას ბლოკავს. eBay-ის შეცდომის შემდეგ
+მისი დარჩენილი ძიება გამოტოვდება, CJ კი გაგრძელდება. ხელახლა მიღებული შეთავაზება
+ძველ მიღებულ დაკვირვებას აძველებს და ხელახალ გადახედვას საჭიროებს.
+
+Stop/დახურვა აჩერებს მომდევნო ნაბიჯებს; მიმდინარე მოთხოვნამ შეიძლება შედეგი
+შეინახოს. ლოგი მიმდინარე გვერდზეა; მუდმივი background job/resume არ არის.
+ხელახალი გაშვება ახალი მოთხოვნებია. ხარჯებში ახალი ფასები ავტომატურად არ გამოიყენება.
+
+ბოლოს გახსენი **ერთიანი მიმოხილვა და AI**: მაქსიმუმ 3 პროდუქტი, თითოეულზე
+მაქსიმუმ 20 შეფასება, ბოლო 30 evidence და 100 კონკურენტის დაკვირვება. ეს მიმდინარე
+შენახული მონაცემებია, არა გაშვების უცვლელი ჟურნალი ან სრული ბაზრის აღწერა.
+ფინანსური ბაზრის ფილტრი AI პაკეტს არ ფილტრავს — პროდუქტის სხვა ბაზრებიც შეიძლება
+შედიოდეს; სრული preview თანხმობამდე ჩანს. Pending შეთავაზებები AI პაკეტში არ შედის.
+
+დაგეგმილი CJ ძიება სხვა ფუნქციაა: paused-first schedule, მაქსიმუმ 5 ჩართული,
+ინტერვალი 6–168 საათი. worker ცალკე ტერმინალში მუშაობს:
+
+```cmd
+npm run discovery:worker -- --dry-run
+npm run discovery:worker
+```
+
+მხოლოდ ვებსერვერის გაშვება schedule-ებს არ ასრულებს. რეალური მოთხოვნები ანგარიშის
+პირობებს/კვოტას ექვემდებარება; ჩართვამდე გვერდზე ნაჩვენები ლიმიტები გადაამოწმე.
+
+## AI
+
+პარამეტრები ჩაწერე **მხოლოდ ლოკალურ `.env.local`-ში**, არსებული auth/DB პარამეტრების
+შენარჩუნებით; ცვლილების შემდეგ აპი ხელახლა გაუშვი.
+
+```dotenv
+AI_PROVIDER=gemini
+AI_RESEARCH_ENABLED=true
+AI_RESEARCH_MODEL=YOUR_AVAILABLE_MODEL_ID
+GEMINI_API_KEY=YOUR_PRIVATE_KEY
+```
+
+მოდელის ზუსტი ID აიღე საკუთარი [AI Studio](https://aistudio.google.com/)-დან,
+`models/` პრეფიქსის გარეშე. ID-ის ფორმატის შემოწმება მოდელის ხელმისაწვდომობას
+არ ამტკიცებს. წაიკითხე [Google-ის პირობები](https://ai.google.dev/gemini-api/terms)
+და [ფასები](https://ai.google.dev/gemini-api/docs/pricing); უფასო გამოყენება გარანტირებული არაა.
+
+OpenAI-ზე კოდის შეცვლის გარეშე გადასასვლელად დააყენე `AI_PROVIDER=openai`,
+`AI_RESEARCH_MODEL` და `OPENAI_API_KEY`. გამოიყენება Responses/structured-output
+თავსებადი ხელმისაწვდომი მოდელი. ორივე გასაღების არსებობისას მხოლოდ არჩეული
+პროვაიდერი გამოიყენება. სხვა პროვაიდერისთვის ცალკე adapter არის საჭირო.
+გათიშვა: `AI_RESEARCH_ENABLED=false`. ძველი provider-specific პარამეტრები
+შესაბამის fallback წესებს ინარჩუნებს; გაურკვევლობისას გამოიყენე ზემოთ მოცემული საერთო პარამეტრები.
+
+AI ინტერნეტში არ ეძებს: მხოლოდ შენახულ წყაროებს აანალიზებს. ჯერ ნახე პაკეტი და
+მონიშნე **თითო პროდუქტის ცალკე თანხმობა** შესაძლო ხარჯით. ზოგადი product notes
+და account secrets პაკეტში არ შედის; ხარჯის/წყაროს შენიშვნები შეიძლება პირადი იყოს.
+ზღვარი: 100 KB input packet, 2400 output tokens, 120 წამი, საერთო 10 მცდელობა
+UTC დღეში და მინიმუმ 90 წამი მცდელობებს შორის. ეს თანხობრივი ბიუჯეტი არაა.
+არ არის ავტომატური retry ან სხვა პროვაიდერზე გადართვა. არასწორი/stale პაკეტი,
+ფორმატი ან წყაროს ID უარყოფილია; ვალიდური ციტირება დასკვნის სისწორეს არ ამტკიცებს.
+ანგარიში მონახაზია და ხარჯებს/evidence-ს ავტომატურად არ ცვლის.
+
+## eBay
+
+[Production Application Keys](https://developer.ebay.com/my/keys)-დან აიღე
+App ID და Cert ID; შეინახე `.env.local`-ში:
+
+```dotenv
+EBAY_CLIENT_ID=YOUR_PRODUCTION_APP_ID
+EBAY_CLIENT_SECRET=YOUR_PRODUCTION_CERT_ID
+```
+
+API production approval/eligibility და კვოტა eBay-მ უნდა დაადასტუროს. Sandbox გასაღებები
+ამ adapter-ში არ მუშაობს. აპი application token-ს სერვერის მეხსიერებაში ინახავს,
+ვადის გასვლამდე 60 წამით ადრე განაახლებს და ერთდროულ mint მოთხოვნებს აერთიანებს.
+ძველი `EBAY_ACCESS_TOKEN` მხარდაჭერილია; ორივე client credential-ის არსებობისას OAuth
+უპირატესია. უარყოფილი token-ის შემდეგ ავტომატური search retry არ ხდება.
+
+მხარდაჭერილია US/USD, GB/GBP, DE/FR/IT/ES/EUR, CA/CAD, AU/AUD. ქვეყანა აშკარაა.
+შეთავაზებები pending რიგში შედის; მიღება/უარყოფა ხელითაა. ფასები, მიწოდება და
+გადასახადი გადასამოწმებელია. აქტიური შეთავაზებები მოთხოვნის მტკიცებულება არაა.
+წყარო: [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html).
+
+CJ-ისთვის `.env.local`-ში გამოიყენე `CJ_ACCESS_TOKEN` (არსებული access token ან API Key).
+ყველა გასაღები სერვერზე რჩება. `NEXT_PUBLIC_` პრეფიქსი საიდუმლოებისთვის არ გამოიყენო.
+
+## Data formats
+
+| ოპერაცია | ფორმატი და ზღვარი |
+|---|---|
+| Catalogue import | JSON array; მაქსიმუმ 100 ჩანაწერი / 250 KB |
+| Offer import | `{destinationCountry,currency,offers}`; მაქსიმუმ 50 / 200 KB; preview/თანხმობა |
+| Research export | პირადი JSON/TXT; სრული snapshot, არა importer ან database backup |
+| Store draft | გასაზიარებლად გადასახედი offline DRAFT JSON; მაღაზიაში არ იტვირთება |
+
+Catalogue row: `provider`, `externalId`, არჩევითი `variantId`, `name`, `url`,
+`currency`, `priceMinor` (მთელი minor units ან null), `observedAt` (ნამდვილი წარსული
+ISO UTC/offset თარიღი). მაგალითად 1234 = 12.34. მხარდაჭერილია USD/EUR/GBP/CAD/AUD/GEL.
+კონფლიქტური/ძველი დაკვირვება და დუბლიკატი უარყოფილია; ნაწილობრივი import არ ხდება.
+
+Offer row-ს სჭირდება source URL, title, merchant, minor-unit price, observedAt,
+expiresAt. ვადა ჯერ მიმდინარე და დაკვირვებიდან მაქსიმუმ 24 საათი უნდა იყოს.
+Shipping/tax/accepted სტატუსი არ შემოიტანება; გადახედვისას ცალკე დგინდება.
+ახალი დაკვირვება pending-ად ბრუნდება, წინა მიღებულს აძველებს. იგივე source/time
+კონფლიქტური მონაცემებით უარყოფილია. CSV-ის ძველი browser-preview ფორმატი ამ import-ებს არ შეესაბამება.
+
+კვლევის ექსპორტი შეიცავს პირად notes-საც — გაზიარებამდე გადაამოწმე. ზღვარია
+100 შეფასება, 2000 evidence, 500 listing, 2000 competitor, 500 variant, 2000 quote
+და 5 MB. გადაჭარბება იწვევს 413-ს და არა ჩუმ ნაწილობრივ export-ს. AI ანგარიშები,
+pending inbox და audit history კვლევის snapshot-ში არ შედის; JSON იმპორტით
+მეორე ინსტალაციაში ავტომატურად არ აღდგება.
+
+## Backup
+
+```cmd
+cd /d C:\arbitrage-finder
+npm run db:backup
+```
+
+PostgreSQL-ის `pg_dump`/`pg_restore` tools უნდა იყოს ხელმისაწვდომი. თუ PATH-ში არაა,
+შენი რეალური PostgreSQL ვერსიის `bin` მიუთითე (მაგალითი — 17):
+
+```cmd
+npm run db:backup -- --pg-bin "C:\Program Files\PostgreSQL\17\bin" --output-dir "C:\Users\temof\arbitrage-finder-backups"
+```
+
+ფაილი ინახება checkout-ის გარეთ, უნიკალურ საქაღალდეში: `database.dump` და
+`manifest.json` (SHA-256). ნაგულისხმევი ადგილი პროექტის მშობელი საქაღალდეა;
+გადატანილი პროექტისთვის ძველი ადგილის შესანარჩუნებლად ზემოთ explicit output-dir გამოიყენე.
+ინახება სქემა/ბიზნესმონაცემები/მიგრაციები; session/login-throttle მონაცემები,
+როლების პაროლები, `.env` და სხვა პროექტის ბაზები არ შედის.
+
+არქივის ინდექსის შემოწმება სრული აღდგენის ტესტი არაა. შეინახე დაცული ასლი ცალკე
+დისკზეც, კონფიგურაცია/მფლობელის პაროლი — ცალკე უსაფრთხოდ. ეს helper backup-ს არ შიფრავს.
+აღდგენის პრაქტიკა გააკეთე **ახალ ცალკე სატესტო ბაზაში**, სანდო საკუთარ dump-ზე,
+pgAdmin Restore-ით ან შესაბამისი `pg_restore --no-owner --no-privileges`-ით.
+მოქმედ `arbitrage`-ზე აღდგენა ცალკე დაგეგმვასა და მიმდინარე backup-ს მოითხოვს;
+helper მას ავტომატურად არ ასრულებს. არასოდეს გამოიყენო `prisma migrate reset`.
+
+## Troubleshooting
+
+| სიმპტომი | შემოწმება |
+|---|---|
+| საიტი არ იხსნება | app ტერმინალი, პორტი 3000, სწორი საქაღალდე |
+| ბაზა მიუწვდომელია | PostgreSQL `Running`, მოქმედი ლოკალური კონფიგურაცია; ბაზა არ გადააყენო |
+| პაროლი ვერ მოიძებნა | ზემოთ მითითებული owner-access.txt; .env/პაროლი არ ატვირთო |
+| AI გამორთულია | პროდუქტის AI გვერდის 4 შემოწმება; მოდელს `models/` მოაშორე; restart |
+| 401 / 403 | გასაღები / ანგარიშის უფლება გადასამოწმებელია |
+| 404 | მოდელის ზუსტი ID და endpoint მხარდაჭერა გადასამოწმებელია |
+| 429 | კონკრეტული მოდელის/პროექტის სიხშირე ან კვოტა; სხვა დარჩენილი ლიმიტი ამას არ გამორიცხავს |
+| 5xx | პროვაიდერის სერვერის შეცდომა; მიზეზს მარტო კოდი ვერ ადგენს |
+| Timeout | 120-წამიანი deadline; ინტერნეტის/კვოტის ბრალი ავტომატურად არაა |
+| batch blocked | წვდომა, არჩეული შეფასება, ქვეყანა/ვალუტა ან შენახული მარშრუტი აკლია |
+| stale edit | გახსენი შენახული ახალი ვერსია და შეადარე; ძველი მონაცემი არ გადაწერო |
+| Environment Publish ვერ სრულდება | Cloud-ის ცალკე საკითხია; GitHub pull-ს არ უდრის |
+
+API/ბანკის პასუხი ან ინსტრუქციის screenshot დამოუკიდებლად merchant approval-ს,
+მწარმოებლის იდენტურობას, უსაფრთხო დატვირთვას ან რეალურ მოგებას არ ადასტურებს.
+
+## Development
 
 ```sh
 npm ci
 npx prisma generate
-npx prisma migrate deploy
 npm test
 npm run lint
-npx tsc --noEmit
-npx tsx scripts/check-discovery.ts
 npm run build
-npm run dev -- --hostname 127.0.0.1
 ```
 
-The integration check uses temporary uniquely identified fixtures and cleans them
-up; it never resets the database. Do not run `prisma migrate reset`.
-
-Discovery accepts authorised JSON arrays (up to 100 records / 250 KB). Fields:
-`provider`, `externalId`, optional `variantId`, `name`, `url`, `currency`,
-`priceMinor` (integer minor units or null), and `observedAt` (past ISO timestamp
-with timezone). Supported currencies are USD/EUR/GBP/CAD/AUD/GEL. Observation
-identity is provider + externalId + variantId; keep variant IDs stable. Imported
-prices are catalogue indications, not verified quotes. Importing the same
-observation is idempotent; conflicting timestamps or stale updates reject the
-whole batch. Only select candidates for further research after checking them.
-
-Use the prepared Node.js 24 runtime for managed-proxy support (native
-`setGlobalProxyFromEnv`); TLS verification remains enabled.
-
-CJ discovery uses the documented `product/listV2` endpoint, at most 20 candidates
-per search. Set `CJ_ACCESS_TOKEN` securely in the server environment (accepts a CJ access token or API Key); never enter
-it in chat, catalogue JSON or source URLs. API Keys are exchanged through CJ’s official authentication endpoint after an
-authentication rejection. The derived access token is cached in process memory
-for at most one hour (or until shortly before its expiry); it is never written
-to disk, logs, the database or the browser. No orders are placed. A missing/expired token yields a clear status.
-Authentication/quotas/terms must be checked with the actual supplier account.
-
-This remains a private single-operator application with owner sign-in; bind locally.
-Public hosting also requires the deployment checks in docs/DEPLOYMENT.md. No Shopify connection, publication,
-paid advertising or supplier order is performed by this implementation.
-
-With the production server running locally, verify form submissions end to end:
+ტესტებისთვის გამოიყენე საკუთარი კონტროლირებადი development გარემო, არა production.
+`scripts/check-*.ts` სხვადასხვა რეალურ failure/transaction/browser სცენარს ამოწმებს;
+ისინი duplicate აპის ფაილები არაა. ბაზის სკრიპტები ქმნის/ასუფთავებს დროებით fixtures-ს.
+ბრაუზერისთვის საჭიროა Playwright Chromium ან `CHROMIUM_PATH` ადგილობრივი executable-ით.
+ძირითადი ნაკადის მაგალითები, გაშვებული აპის გვერდით:
 
 ```sh
-npx tsx scripts/check-discovery-http.ts
+node --import tsx scripts/check-batch-review.ts
+node --import tsx scripts/check-ai-research.ts
+node --import tsx scripts/check-batch-offers.ts
+node --import tsx scripts/check-batch-browser.ts
 ```
 
-This creates and removes temporary catalogue/evidence fixtures through the real
-forms. It is a local verification tool, not a supplier discovery run.
+GitHub Actions `.github/workflows/quality.yml` იყენებს ცალკე PostgreSQL-ს,
+fixtures/mocked providers-ს, build/unit/HTTP/browser შემოწმებებს; არ deploy-ავს.
+ლოკალური წარმატება hosted CI-ის წარმატებას არ ამტკიცებს. live API ცდები ჩვეულებრივ
+suite-ში არ ჩართო. Windows-ის რეალური სკრიპტების შესრულება Linux-ის build-ით არ მოწმდება.
 
+`AGENTS.md` განსაზღვრავს მუშაობის წესებს; `.agents/skills/` შეიცავს სამ მცირე
+ინსტრუქციას debugging, code/security review და AI evaluation-სთვის. ეს developer
+ინსტრუქციებია და საიტის ფუნქციები ან გარე plugins არაა. საწყისი წყაროების
+რევიზიები/ჰეშები: [sources.json](docs/skill-sources/sources.json),
+[Matt license](docs/skill-sources/matt-LICENSE.txt), [ECC license](docs/skill-sources/ecc-LICENSE.txt).
+Design კვლევაში გამოყენებულია Taste Skill (`12af471f627f866411b4bd785b19646d3672784c`)
+და UI UX Pro Max (`28b3b8dee8c976df4fa3e94aed4e092ad43fcb03`);
+ლიცენზიები [docs/design](docs/design)-შია. ქართული შრიფტის ლიცენზია [public/fonts](public/fonts)-შია.
+არ გამოიყენო upstream installer/auto-update ან ახალი გადასახადი მფლობელის მითითების გარეშე.
 
-## Exact variants and shipping estimates
+## Deployment
 
-From a directly received CJ candidate, open **Variant prices & shipping estimates**.
-Refresh variants, then configure a destination country in **Markets** when you
-choose a market. Market display codes are not automatically treated as countries.
-Select a positive-stock reported origin, market and representative postal code.
-The quote is for one unit; no order or customer address is needed. Shipping
-estimates can omit additional costs and are not guaranteed delivery dates.
+ამჟამინდელი სამუშაო გარემო ლეპტოპია. Public deployment ცალკე ამოცანაა: ჰოსტინგი,
+კონტროლირებადი `arbitrage` PostgreSQL, backups, HTTPS და canonical `APP_ORIGIN`.
+საჭიროა server-side `APP_PASSWORD_HASH`, `DATABASE_URL`, `SHADOW_DATABASE_URL`
+(ცალკე `arbitrage_shadow`), შესაბამისი TLS/როლების უფლებები. Auth იყენებს salted
+scrypt-ს, HttpOnly/SameSite cookies-ს, session expiry/revocation-სა და login throttling-ს.
+Actions ამოწმებს owner-სა და Origin-ს; მხოლოდ გვერდის დამალვა უსაფრთხოება არაა.
 
-Product and shipping timestamps are retained separately. Quotes expire under a
-24-hour application freshness policy. Applying one requires confirmation and a
-matching product/market. It fills only estimated product and shipping costs and
-clears duty/handling inputs for review. For non-USD markets, supply a recent FX
-rate (target units per USD), source and date; it is an assumption, not a live feed.
-Changing destination invalidates previously applied CJ route estimates.
+`Dockerfile` Node 24-ზე აშენებს non-root runtime-ს; runtime secrets image/build args-ში
+არ ჩადო. Managed cloud proxy/CA-სთვის გამოიყენე გარემოს runtime skill, TLS არ გამორთო.
+ვებპროცესი და არჩევითი discovery worker ცალ-ცალკეა. მიგრაციამდე ზუსტად განიხილე
+ცვლილება და მოიპოვე დასტური. ბაზის safety guard არ შეასუსტო და `other_project` არ შეეხო.
+ჰოსტინგის/მოდელის/მონაცემების API-ზე უფასო წვდომა წინასწარ არ ივარაუდო.
 
-```sh
-npx tsx scripts/check-sourcing.ts
-# With the production app running locally:
-npx tsx scripts/check-sourcing-http.ts
+## Structure
+
+```text
+src/app/                 გვერდები, server actions და დაცული route group
+src/components/          გამოსაყენებელი UI კომპონენტები
+src/lib/                 profit, sourcing, providers, AI, auth და სხვა დომენები
+prisma/                  სქემა და migration ისტორია — არ წაშალო/გააერთიანო
+scripts/                 setup, backup, move, worker და მიზნობრივი შემოწმებები
+public/fonts/            ლოკალური შრიფტი და ლიცენზია
+.github/workflows/       CI
+.agents/skills/          developer ინსტრუქციები
+AGENTS.md                ასისტენტის მუშაობის წესები
+README.md                ერთადერთი მიმდინარე მომხმარებლის/დეველოპერის სახელმძღვანელო
+docs/research/            დათარიღებული მონაცემები და ერთიანი კვლევის არქივი
+docs/automation/pilots/   ცალკეული პილოტის JSON შედეგები
+docs/design/             design metadata და ლიცენზიები
+docs/skill-sources/       skill provenance და ლიცენზიები
 ```
 
-These checks use temporary, clearly labelled fixtures and clean them up. Optional
-`--live-freight` on the HTTP check makes one real, read-only CJ request using an
-already refreshed real variant. It creates a temporary technical destination,
-then deletes that destination and its estimates. It requires configured CJ access
-and respects the shared 30-second CJ cooldown. It does not select a business
-market. Do not run live checks repeatedly as part of an ordinary unit test suite.
-
-## Competitors, demand review and shortlist
-
-Open **Research** after selecting candidates for investigation in Discovery.
-Choose a market only when ready. Record comparable competitor offers with source,
-match explanation, integer minor-unit prices, shipping (blank means unknown),
-tax basis and UTC dates. Price summaries separate currency/tax basis and use the
-latest source observation. Displayed offers do not prove sales, and no selling
-price is copied automatically. Research links open official tools; no automated
-competitor or demand feed is connected. Record sourced demand/advertising/risk
-claims on the product detail page, then review/retire them in Research with a
-reason. Retired records remain visible and no longer affect readiness.
-
-With the production server running locally:
-
-```sh
-npx tsx scripts/check-research-http.ts
-```
-
-The check creates/removes only its own temporary products, markets and research.
-
-## Bounded recurring CJ discovery
-
-Open **Automation** and create a product-phrase schedule. It is paused by default;
-explicit confirmation is required to enable recurring external requests. No
-schedule, category or destination is selected on your behalf.
-
-```sh
-npm run discovery:worker -- --dry-run  # Read-only due-job inspection
-npm run discovery:worker -- --once     # At most one due attempt
-npm run discovery:worker               # Poll every 30 seconds, until stopped
-```
-
-Run the worker separately from the web server, using the same prepared Node 24,
-proxy, database and credential environment. Publication/restoration does not
-preserve processes; restart the worker in future runtimes. A last-check timestamp
-on Automation is evidence of a tick, not a guarantee a process is still alive.
-Keep development bound to loopback; public/multi-user deployment needs auth.
-
-Limits: at most five enabled schedules, every 6–168 hours, one page of up to 20
-newest matching products per attempt, at most 20 scheduled attempts per UTC day.
-Failures/cancellations/interrupted attempts count toward that limit; cooldown-only
-deferrals do not. Manual searches have separate controls. Auth may add two HTTP
-requests per attempt. These application limits do not establish provider fees or
-account entitlement. New products beyond the first page can be missed; this is
-not an exhaustive catalogue crawl. No shipping or demand enrichment runs in the
-background.
-
-Workers claim a two-minute database lease; imports and execution completion are
-atomic and fenced by that lease. A paused schedule invalidates an in-flight
-result. Expired workers are recovered with delayed retry. Network/validation
-errors back off from 15 minutes up to 24 hours; rate limits wait at least an hour.
-Authentication errors pause immediately; five consecutive other failures pause
-until explicit re-enabling. Provider response bodies and credentials are not
-stored in execution logs. Provider account costs are not calculated by this worker; confirm current CJ
-fees and credits before enabling a schedule. Shutdown signals finish an active
-attempt gracefully; use Pause to prevent an in-flight result from importing.
-
-```sh
-npx tsx scripts/check-automation.ts
-# Web server running, worker stopped:
-npx tsx scripts/check-automation-http.ts
-```
-
-The database check refuses to run with enabled operator schedules, uses mocked
-provider data and cleans its jobs/candidates/audit fixtures. The HTTP check
-briefly enables a temporary test schedule, so workers must be stopped. Neither
-check calls CJ. Keep the ordinary unit suite independent from live credentials.
-
-## Official reference currency rates
-
-In **Markets**, use **Fetch current official rates**. The app requests the National
-Bank of Georgia's date-scoped public JSON feed for the current Georgian calendar
-date. No new API key or paid provider is needed for the verified request. One
-refresh attempt is allowed per ten minutes; failed refreshes preserve existing
-snapshots. There is no background FX polling and no HTTP fetch inside the quote
-application transaction.
-
-The feed expresses GEL per currency quantity. The app honours each quantity and
-derives target-currency units per USD using exact decimal arithmetic, rounded to
-eight decimal places. Supported targets are USD/EUR/GBP/CAD/AUD/GEL. This choice
-of rate source does not select Georgia, or any country, as a business market.
-Future-effective, stale, inconsistent or incomplete feeds are rejected; future
-published rates are not treated as effective today. Rates are reference estimates,
-not executable bank prices; add payment conversion fees/spread separately.
-
-When applying a non-USD sourcing quote, select a saved official reference, or
-complete the manual rate/source/date fields. Snapshot currency, provider and
-seven-day effective-date window are checked server-side. The input notes preserve
-the snapshot identifier, rate, effective date and official URL. Existing
-calculations do not change automatically when new rates arrive. Manual FX remains
-available when the source is unavailable. No financial inputs become VERIFIED
-merely by using an official reference.
-
-```sh
-# Production server running; requires already saved current reference snapshots:
-npx tsx scripts/check-fx-http.ts
-# Optional ONE live public feed request plus cooldown check:
-npx tsx scripts/check-fx-http.ts --refresh
-```
-
-The FX HTTP check removes its own temporary products/quotes/market, retaining
-only real official rate snapshots. The existing sourcing integration check also
-covers wrong-currency and stale snapshot rejection and manual fallback.
-
-## Optional eBay competitor offers
-
-Research can fetch one page of up to 20 fixed-price offers from the production
-Browse API for an explicitly selected destination. Supported country/currency
-pairs: US/USD, GB/GBP, DE/FR/IT/ES/EUR, CA/CAD, AU/AUD. No default country is used.
-This optional provider requires production account eligibility and an application
-access token with `https://api.ebay.com/oauth/api_scope`; configure it securely as
-`EBAY_ACCESS_TOKEN`, scoped to `api.ebay.com`. It is not a CJ credential. No token
-is currently configured and no real eBay offer fetch has been validated. Tokens
-can expire; automatic OAuth token minting/renewal is not implemented.
-
-Official requirements and approved data-use/retention/display conditions must be
-checked for the actual application before enabling live collection. Current fees
-and quota were not independently established. The connector makes no scheduled
-requests and has a one-minute cooldown. It never stores upstream error bodies or
-credentials. Existing manual competitor entry and CJ functions remain available.
-
-Offers arrive pending and cannot affect comparable-price summaries until explicit
-human review. Check exact model, dimensions, pack size, condition and delivery.
-Shipping/tax values are deliberately unknown unless confirmed. An accepted offer
-is a displayed-price observation, not sales or demand evidence, and never fills
-selling-price assumptions automatically. Re-fetching expires the previous accepted
-observation and requires review again. Changing destination expires prior market
-comparisons and invalidates the offer inbox. The 24-hour review window is an app
-freshness rule, not a provider retention licence or availability guarantee.
-
-```sh
-npx tsx scripts/check-offers.ts
-# With the production server running:
-npx tsx scripts/check-offers-http.ts
-```
-
-These checks use clearly labelled fixtures, remove them afterward and do not call
-eBay. See docs/ENVIRONMENT-HANDOFF.md if the environment draft is uneditable.
-
-## Owner sign-in and deployment
-
-Private pages and mutations now require an owner session. Run `npm run auth:init`
-once for local setup; it preserves existing files and writes the generated
-credential only to the private file path reported by the command. Do not commit
-.env.local or copy the local origin into a public deployment. There is no default
-password and no unauthenticated development bypass.
-
-Use [the deployment runbook](docs/DEPLOYMENT.md) for required environment settings,
-Docker build/release/web/worker commands and validation. /api/health reports
-readiness without exposing configuration. Public hosting/account/production DB
-configuration remains an external prerequisite; the app is not publicly deployed.
-
-`npx tsx scripts/check-auth-http.ts` verifies the local sign-in flow. Existing HTTP
-regression scripts now authenticate with temporary test sessions and remove them;
-they do not bypass authorization in application code.
-
-## Run on your own laptop
-
-Start with [LOCAL-SETUP.md](docs/LOCAL-SETUP.md). It includes Windows PowerShell
-setup, safe local database creation and portable owner-password file paths.
-No online hosting is necessary. The latest complete code lives on branch
-`feature/product-research-automation`. Preserve any existing local project/database
-before updating, and never reset your database to resolve setup errors.
-
-## Reviewed supplier matching
-
-`/matching` compares sourced GTIN or brand/MPN, checks pack and variant, and links
-one unlinked supplier listing to existing research only after owner review.
-Conflicts, incomplete specifications and duplicate research targets block linking.
-History and an explicit undo are available; costs, prices and evidence stay intact.
-See [workflow, limits, laptop update and validation](docs/MATCHING.md). No new
-credential or provider call is needed.
-
-## Downloadable research snapshot
-
-Each Opportunity has **Download research report (.txt)** for current market
-calculations, stored inputs, sources, evidence and competitor observations.
-Unknowns, expiry/retirement and input assumptions remain explicit. No provider
-call or database write is made. See [usage, limits and laptop update](docs/RESEARCH-REPORT.md).
-
-## Local database backup
-
-Run `npm run db:backup` from the checkout to create a private PostgreSQL custom
-archive outside the project, with a SHA-256 manifest and archive-index check.
-Use `-- --pg-bin "path/to/PostgreSQL/bin"` when tools are not on PATH. Local
-credentials come from the app settings, never CLI arguments. Read
-[Windows commands, included data and restore rehearsal](docs/LOCAL-BACKUP.md).
-Code and local settings must also be preserved separately.
-
-## Offline store draft preparation
-
-Each Opportunity now links to **Prepare a store draft** for owner-reviewed
-customer text and a JSON review file. No Shopify account is contacted.
-See [workflow, limitations and verification](docs/STORE-DRAFT.md).
-
-## Georgia / US feasibility study
-
-`/market-study` shows the owner a dated 2026-10-29 comparison using two real
-CJ variants and representative GE/US postcodes, with unknown tax, payments and
-profit left explicit. It does not perform live requests on page view. See
-[findings, sources and next commercial checks](docs/research/GE-US-2026-10-29.md).
-
-Follow-up research adds [verified retail price references and local sourcing leads](docs/research/GE-US-SHORTLIST-2026-10-29.md), with match differences and unknown wholesale/payment terms kept explicit.
-
-## Automated quality checks
-
-GitHub Actions validates pull requests and working-branch pushes using a fresh
-PostgreSQL database, unit/build checks and protected HTTP workflows. It requires
-no production secrets and performs no deployment. See [checks and limits](docs/CI.md).
-
-Shared business forms now preserve entered values through validation/network
-failures and prevent simultaneous duplicate clicks. Product/evaluation creation
-is atomic. See [behavior and browser regression checks](docs/FORMS.md).
-
-Finance inputs, market settings and quote application now reject older edit
-versions instead of overwriting newer saves. See [concurrent edit behavior and
-laptop migration instructions](docs/EDIT-CONFLICTS.md).
-
-## Financial history
-
-Owner-only `/history` records before/after inputs, statuses, notes, saved
-calculations and manual/quote/market-change provenance in the same transaction
-as each write. See [coverage, retention and laptop migration](docs/FINANCIAL-HISTORY.md).
-
-For existing laptop clones, follow the [one-time profile/branch update](docs/GIT-PROFILE-UPDATE.md) before the next pull.
+ისტორიული კვლევა: [ერთიანი ჩანაწერები](docs/research/RESEARCH-NOTES.txt).
+დათარიღებული JSON-ები და release acceptance წარსულ დაკვირვებას ასახავს — მიმდინარე
+ფასის ან მუდმივი წარმატების გარანტია არაა. ძველი ინსტრუქციები და საწყისი
+პროექტის კონტექსტი Git-ის ისტორიაშია შენარჩუნებული, მაგალითად
+[დალაგებამდე არსებული ვერსია](https://github.com/temofutkaradze/arbitrage-finder/tree/b29132f).
+დღეს მოქმედი წესები ზემოთ წერია; ძველ `PHASE3` ZIP/migration ინსტრუქციებს აღარ მიჰყვე.
