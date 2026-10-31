@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { configureProxyFromEnvironment } from "../discovery/network";
-const schema = z.object({access_token:z.string().min(1).max(20000),token_type:z.string().regex(/^Bearer$/i),expires_in:z.number().int().min(61).max(86400)});
+const schema = z.object({access_token:z.string().min(1).max(20000),token_type:z.string().regex(/^(Bearer|Application Access Token)$/i),expires_in:z.number().int().min(61).max(86400)});
 export function ebayConnectionMode() {
  if(process.env.EBAY_CLIENT_ID && process.env.EBAY_CLIENT_SECRET) return "oauth";
  if(process.env.EBAY_ACCESS_TOKEN) return "manual";
