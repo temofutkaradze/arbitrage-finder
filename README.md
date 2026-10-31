@@ -10,6 +10,9 @@ Start with the [local release and operating guide](docs/LOCAL-RELEASE.md) and
 [current implementation status](docs/PROJECT-STATUS.md). The release scope is
 a private research workspace; AI analyzes saved sources and does not browse.
 
+For consolidating the old and working laptop copies, see
+[main-folder instructions](docs/MAIN-FOLDER.md).
+
 ## Product research workflow
 
 See [business model, source research and phased roadmap](docs/PRODUCT-STRATEGY.md).
