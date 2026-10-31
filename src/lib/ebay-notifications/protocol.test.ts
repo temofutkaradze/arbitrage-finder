@@ -12,6 +12,7 @@ it("verifies an authentic EC SHA1 notification and rejects altered content and s
  const header=Buffer.from(JSON.stringify({kid:"key1",signature})).toString("base64");
  const key=publicKey.export({type:"spki",format:"pem"}).toString();
  expect(verifyNotification(payload,header,key)).toBe(true);
+ expect(verifyNotification(payload,header,key.replace(/\n/g,""))).toBe(true);
  expect(verifyNotification({notification:{value:"changed"}},header,key)).toBe(false);
  expect(()=>signatureHeader("https://evil.example/key")).toThrow();
 });

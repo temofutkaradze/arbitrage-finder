@@ -20,7 +20,7 @@ export function signatureHeader(value:string){
  return z.object({kid:z.string().regex(/^[a-zA-Z0-9_-]{1,200}$/),signature:z.string().min(1).max(1024)}).parse(JSON.parse(Buffer.from(value,"base64").toString("utf8")));
 }
 export function verifyNotification(payload:unknown,signature:string,key:string){
- const header=signatureHeader(signature),publicKey=createPublicKey(key);
+ const header=signatureHeader(signature),publicKey=createPublicKey(key.replace(/-----BEGIN PUBLIC KEY-----\s*/,"-----BEGIN PUBLIC KEY-----\n").replace(/\s*-----END PUBLIC KEY-----/,"\n-----END PUBLIC KEY-----"));
  // eBay's official event-notification-nodejs-sdk uses SHA-1 with an EC public key
  // over JSON.stringify(message), not the SHA-256 challenge protocol.
  if(publicKey.asymmetricKeyType!=="ec")return false;
