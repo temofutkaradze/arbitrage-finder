@@ -1,3 +1,5 @@
+> Batch review increment (2026-10-31): [combined economics and per-product AI preview/consent](automation/RESEARCH-BATCH.md) now connect the collected data to the existing calculator and AI workflow. This is browser-run collection followed by explicit review, not autonomous web demand verification.
+
 > Next batch increment (2026-10-31): optional eBay collection and explicit blocked states are implemented; real entitlement remains unverified. AI orchestration is still pending.
 
 > Post-release addition (2026-10-31): [browser-run CJ batch for 1–3 saved candidates](automation/RESEARCH-BATCH.md). eBay/AI orchestration is not included in this first batch stage.
