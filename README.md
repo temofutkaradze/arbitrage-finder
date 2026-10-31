@@ -283,6 +283,14 @@ After verified delivery, the transaction removes matching seller observations/of
 
 Run `node --import tsx scripts/check-ebay-deletion.ts` only after the approved migration on a controlled test database. It creates temporary fixtures and sends no provider requests. Validate challenge, signed delivery and actual removal on the final public deployment before treating the integration as operational. Register the exact configured URL and verification token in eBay's Marketplace Account Deletion settings; do not request the no-persistence exemption.
 
+### Laptop HTTPS connection for testing
+
+If no hosting is available, an ngrok account can provide a stable assigned development HTTPS domain under its current [free-plan limits](https://ngrok.com/docs/pricing-limits/free-plan-limits). Install its official Windows agent and configure the account token securely using its dashboard instructions; never paste that token into chat.
+
+With the app running on port 3000, run `npm run ebay:relay` in a separate terminal, then `ngrok http 3001` in another. The loopback relay exposes only GET/POST `/api/ebay/account-deletion`, not login, research pages or other APIs. Use the displayed assigned HTTPS domain plus this exact path as `EBAY_DELETION_ENDPOINT`. Configure both notification secrets locally, restart the app, and register the URL/token in eBay. Verify eBay's challenge and signed test delivery before considering activation successful.
+
+This connection reaches the laptop's actual database. Keep the laptop awake and all three processes running. This is a development arrangement, not uninterrupted hosting: offline periods and quota exhaustion prevent delivery. Do not register a random URL or an endpoint that acknowledges notifications without processing them. Public hosting with continuous availability remains the long-term option.
+
 ## Data formats
 
 | Operation | Format and limit |
