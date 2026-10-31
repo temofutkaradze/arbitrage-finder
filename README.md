@@ -15,6 +15,12 @@ npm run dev -- --hostname 127.0.0.1
 
 Open **http://127.0.0.1:3000**, sign in, and open **Discovery** to find a candidate or **My products** to continue saved research. The path above is an example; use your checkout folder. Keep the terminal open; `Ctrl+C` stops the app.
 
+### Start with a double-click on Windows
+
+After initial setup, double-click **`start-local.bat`** in the checkout. It checks Node, local authentication, port 3000 and PostgreSQL, starts the site in one CMD window, waits for readiness, starts the research worker in another window when `RESEARCH_JOBS_ENABLED=true`, and opens the browser.
+
+Keep both CMD windows open. Use Ctrl+C in each to stop them. A second launch refuses to start while port 3000 is occupied. The launcher does not install packages, apply migrations or change environment files. PostgreSQL must already be running; it reports a failed connection rather than choosing or starting an unrelated Windows service. Scheduled discovery remains a separate opt-in worker.
+
 ## What the app does
 
 - Searches the CJ catalogue and saves candidates for investigation.
