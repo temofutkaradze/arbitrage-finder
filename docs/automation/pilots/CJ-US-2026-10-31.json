@@ -1,0 +1,122 @@
+{
+  "startedAtUtc": "2026-10-31T06:53:40.021Z",
+  "kind": "live-cj-source-pilot-not-complete-browser-pilot",
+  "productId": "1876836104507744257",
+  "variantId": "1876836104574853122",
+  "route": {
+    "origin": "US",
+    "destination": "US",
+    "postalCode": "95829",
+    "quantity": 1
+  },
+  "steps": [
+    {
+      "step": "supplier",
+      "state": "received"
+    },
+    {
+      "step": "shipping",
+      "state": "received"
+    },
+    {
+      "step": "ebay",
+      "state": "blocked-no-credentials"
+    },
+    {
+      "step": "ai",
+      "state": "not-sent-review-and-consent-required"
+    }
+  ],
+  "liveAiCalls": 0,
+  "databaseBusinessRecordsChanged": false,
+  "variant": {
+    "externalId": "1876836104574853122",
+    "name": "CJCF226441701AZ",
+    "sku": "CJCF226441701AZ",
+    "priceMinor": 3160,
+    "origins": [
+      {
+        "countryCode": "US",
+        "totalInventory": 782,
+        "cjInventory": 782,
+        "factoryInventory": 0
+      }
+    ]
+  },
+  "variantObservedAtUtc": "2026-10-31T06:53:43.310Z",
+  "quotes": [
+    {
+      "method": "USPS US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "Fedex US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "UPS US to US",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "USPS US to US #41",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "UPS US to US #51",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "Fedex US to US #48",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    },
+    {
+      "method": "GOFO US to US #15",
+      "shippingMinor": 0,
+      "deliveryEstimate": "3-7",
+      "taxesMinor": 0,
+      "clearanceMinor": 0,
+      "totalPostageMinor": 0
+    }
+  ],
+  "shippingObservedAtUtc": "2026-10-31T06:54:14.863Z",
+  "calculation": {
+    "complete": false,
+    "missing": [
+      "sellingPrice",
+      "importDutyPct",
+      "taxRate",
+      "paymentFeePct",
+      "paymentFeeFixed",
+      "returnRatePct",
+      "returnCostPerReturn",
+      "cac"
+    ],
+    "quality": "incomplete"
+  },
+  "ebayConfigured": false,
+  "completedAtUtc": "2026-10-31T06:54:14.864Z"
+}
