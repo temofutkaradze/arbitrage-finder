@@ -1,205 +1,184 @@
 # Arbitrage Finder
 
-პირადი პროდუქტის კვლევის სივრცე: მომწოდებლის კანდიდატები, მიწოდების შეფასებები,
-კონკურენტები, ხარჯების კალკულაცია და შენახულ წყაროებზე AI ანალიზი.
-პროექტი განკუთვნილია ერთი მფლობელისთვის; SaaS, ავტომატური მაღაზია ან მოგების
-გარანტირებული პროდუქტის ამრჩევი სისტემა არ არის.
+A private product-research workspace for comparing supplier offers, competitor prices and the economics of selling a product in a specific market. It helps a single owner decide **what needs more research and which opportunities may justify a limited sales test**.
 
-**მთავარი საქაღალდე:** `C:\arbitrage-finder` · **ვერსია:** `0.1.0` ·
-**ტექნოლოგიები:** Next.js 16, React 19, TypeScript, Prisma 7, PostgreSQL, Node.js 24.
+Start with a supplier candidate, check its exact variant and delivery route, collect dated evidence, calculate costs, and optionally ask AI to summarize the saved research. Keep assumptions visible before committing money.
 
-## Navigation
+## Quick start
 
-[გაშვება](#run) · [განახლება](#update) · [კვლევა](#research) ·
-[ჯგუფური პროცესი](#automation) · [AI](#ai) · [eBay](#ebay) ·
-[იმპორტი/ექსპორტი](#data-formats) · [Backup](#backup) ·
-[პრობლემები](#troubleshooting) · [ტესტები](#development) · [სტრუქტურა](#structure)
-
-## Run
-
-### არსებული პროექტი — Windows CMD
+For an existing, configured installation with PostgreSQL running:
 
 ```cmd
 cd /d C:\arbitrage-finder
 npm run dev -- --hostname 127.0.0.1
 ```
 
-გახსენი **http://127.0.0.1:3000**. ტერმინალი ჩართული დატოვე; `Ctrl+C` აპს აჩერებს.
-PostgreSQL სერვისი გაშვებული უნდა იყოს; pgAdmin-ის გახსნა საჭირო არ არის.
+Open **http://127.0.0.1:3000**, sign in, and open **Discovery** to find a candidate or **My products** to continue saved research. The path above is an example; use your checkout folder. Keep the terminal open; `Ctrl+C` stops the app.
+
+## What the app does
+
+- Searches the CJ catalogue and saves candidates for investigation.
+- Retrieves provider-reported variants, inventory and route estimates.
+- Organizes competitor observations, source dates and product-match decisions.
+- Calculates per-order contribution, break-even figures, target acquisition cost and business scenarios.
+- Runs small refresh batches and optional scheduled CJ searches.
+- Produces optional AI drafts from saved evidence and downloadable research snapshots.
+
+It does not independently browse the whole internet, prove demand, certify product identity or guarantee profit. It does not place orders, publish store listings or launch advertising. Active listings and catalogue inventory are not evidence of completed sales. The interface includes Georgian and English labels; this guide is in English.
+
+## Contents
+
+[Setup](#run) · [Updates](#update) · [Research](#research) · [Automation](#automation) · [AI](#ai) · [eBay](#ebay) · [Data formats](#data-formats) · [Backup](#backup) · [Troubleshooting](#troubleshooting) · [Development](#development) · [Deployment](#deployment) · [Structure](#structure) · [Credits](#credits-and-provenance)
+
+## Run
+
+### Existing installation
+
+Use the quick-start commands. PostgreSQL must be running; pgAdmin does not need to be open. Check Windows services with:
 
 ```cmd
 powershell -NoProfile -Command "Get-Service *postgres* | Select-Object Name,Status"
 ```
 
-საიტის პაროლი თავდაპირველი დაყენებისას შეიქმნა. მიმდინარე ლეპტოპზე მისი ფაილია
-`C:\Users\temof\.cloud-setup\owner-access.txt`, `Password:` ხაზზე. პროექტის
-საქაღალდის გადატანას ეს გარე ფაილი არ გადაუტანია. პაროლი ჩატში არ გამოაგზავნო.
+The initial setup creates the owner password. For installations using the setup helper, look for `owner-access.txt` in `%USERPROFILE%\.cloud-setup`. Moving the checkout does not move this external file. Never upload passwords or environment files.
 
-### ახალი კომპიუტერი
+### New computer
 
-საჭიროა Git, Node.js 24+ და გაშვებული PostgreSQL. დააკლონე საკუთარი რეპოზიტორია,
-შემდეგ გამოიყენე `scripts/setup-local.ps1` მხოლოდ საწყისი დაყენებისთვის.
-**ეს სკრიპტი ბაზის მომზადებასა და მიგრაციებს ასრულებს** — ჯერ გადაამოწმე სამიზნე
-ბაზა, დაგეგმილი ცვლილებები და backup. არსებულ გამართულ ინსტალაციაზე მას ხელახლა
-ნუ გაუშვებ უბრალოდ საიტის ჩასართავად. `npm ci` პაკეტებს lockfile-ის მიხედვით აყენებს;
-`npx prisma generate` კლიენტს ქმნის და მონაცემებს არ ცვლის.
+Requirements: Git, Node.js 24+, PostgreSQL and access to your repository.
+
+1. Clone the repository into your chosen folder.
+2. Review `scripts/setup-local.ps1`, the target database and planned changes.
+3. Back up existing data before running setup. **The setup script prepares databases and applies migrations.** It is not the everyday startup command.
+4. Configure local credentials securely and start the application.
+
+`npm ci` installs locked dependencies. `npx prisma generate` generates the client without changing database records. Review and approve database migrations separately before executing them.
 
 ## Update
 
-გაჩერებულ აპზე:
+Stop the app, then run in your checkout:
 
 ```cmd
-cd /d C:\arbitrage-finder
 git pull --ff-only origin master
 npm run dev -- --hostname 127.0.0.1
 ```
 
-თუ სამუშაო branch-ზე მუშაობ, pull-ის წყაროდ მისი სახელი გამოიყენე. საქაღალდის
-სახელი და Git branch დამოუკიდებელია. კონფლიქტისას გაჩერდი; არ გამოიყენო force/reset
-ან ფაილების ბრმად გადაწერა. თუ `package-lock.json` შეიცვალა, გაშვებამდე `npm ci`
-შეასრულე. მიგრაცია ცალკე უნდა აიხსნას და დამტკიცდეს; ჩვეულებრივი pull მას არ ასრულებს.
+- Use your working branch instead of `master` when appropriate.
+- If `package-lock.json` changed, run `npm ci` before restarting.
+- Stop on conflicts; do not force-reset or blindly overwrite files.
+- A pull does not apply database migrations. Review those separately.
+- GitHub synchronizes code, not database records, `.env.local` or passwords. Cloud and laptop databases are separate.
 
-GitHub კოდს ინახავს, PostgreSQL — პროდუქტებსა და კვლევებს. `.env`/`.env.local`,
-პაროლები და ბაზის ჩანაწერები pull-ით არ სინქრონდება. Cloud და ლეპტოპი ცალკე გარემოებია.
+### Moving an older checkout
 
-### ძველი და ახალი საქაღალდე
-
-თუ პროექტი ჯერ `arbitrage-finder-local`-შია, არსებული
-`scripts/move-to-main-folder.ps1` მთელი სამუშაო clone-ის `C:\arbitrage-finder`-ში
-გადატანას ემსახურება. ძველ დანიშნულებას უნიკალურ backup სახელზე ინარჩუნებს.
-გააჩერე აპი/worker, დახურე რედაქტორი და გაუშვი გარედან, მაგალითად `C:\Users\temof`-დან.
-ჯერ `-WhatIf` გამოიყენე; პარამეტრის გარეშე რეალურად გადააადგილებს საქაღალდეებს.
-სკრიპტი ბაზას არ ცვლის და ძველ `.env`-ს ახალთან არ აერთიანებს. უკვე წარმატებით
-გადატანილ პროექტზე ხელახლა ნუ გაუშვებ. ძველი backup საჭიროების დადგენამდე შეინარჩუნე.
+`scripts/move-to-main-folder.ps1` moves a complete working clone and preserves an existing destination under a unique backup name. Stop the app and worker, close editors, and run it from outside both folders. Preview with `-WhatIf` first. It does not change the database or merge environment files. Do not rerun after a successful move; keep the backup until you have verified the result.
 
 ## Research
 
-| გვერდი | დანიშნულება |
+### Pages
+
+| Page | Purpose |
 |---|---|
-| მიმოხილვა `/` | შენახული პროდუქტები, შეფასებები და შემდეგი ნაბიჯი |
-| Discovery `/discovery` | CJ-ის ერთი გვერდი, მაქსიმუმ 20 კანდიდატი; ნებადართული JSON იმპორტი |
-| ჩემი პროდუქტები `/products` | შენახული პროდუქტები, კვლევის პროგრესი და მომწოდებლის ჩანაწერები |
-| შეფასებები `/opportunities` | ხარჯები, კონტრიბუცია და სცენარები თითო პროდუქტსა და ბაზარზე |
-| Research `/research` | კონკურენტები, წყაროები, pending შეთავაზებების გადახედვა |
-| Matching `/matching` | GTIN ან brand/MPN-ით ვარიანტის/pack-ის შემოწმება, reviewed link და undo |
-| Markets `/markets` | ქვეყანა, ვალუტა და გადასახადის ინტერპრეტაცია |
-| Automation `/automation` | ჯგუფური პროცესი და არჩევითი დაგეგმილი CJ ძიება |
-| History `/history` | ფინანსური ცვლილებების ძველი/ახალი მონაცემები |
-| Payments `/payments` | გადახდის საკომისიოების საცნობარო სცენარი |
-| Market study `/market-study` | დათარიღებული საწყისი კვლევა; არა ცოცხალი მონიტორინგი |
+| Overview `/` | Saved products, evaluations and next steps |
+| Discovery `/discovery` | One CJ search page, up to 20 candidates; catalogue JSON import |
+| My products `/products` | Saved products, progress and supplier records |
+| Evaluations `/opportunities` | Product-and-market costs, contribution and scenarios |
+| Research `/research` | Competitors, evidence and pending offers |
+| Matching `/matching` | GTIN or brand/MPN checks, reviewed variant/pack links and undo |
+| Markets `/markets` | Destination country, currency and tax interpretation |
+| Automation `/automation` | Small refresh batches and optional CJ schedules |
+| History `/history` | Previous and new financial values |
+| Payments `/payments` | Reference payment-fee scenarios |
+| Market study `/market-study` | Dated initial research, not live market monitoring |
 
-ჩვეულებრივი გზა: **კანდიდატი → Investigate this candidate → ბაზარი → ზუსტი
-ვარიანტი/მიწოდება → კონკურენტები/წყაროები → ხარჯები → AI → ანგარიშის ჩამოტვირთვა**.
-ქვეყანა/კატეგორია/ფასი მომხმარებლის ნაცვლად არ ირჩევა. კოდი ქვეყანაში ბაზრის
-საჩვენებელ კოდს ავტომატურად არ გარდაქმნის.
+### Typical workflow
 
-### ფინანსური მონაცემების მნიშვნელობა
+1. Find a candidate and choose **Investigate this candidate**.
+2. Choose a market and confirm the exact variant, pack and shipping route.
+3. Collect competitor observations and dated evidence.
+4. Enter costs and review unknowns, contribution and business scenarios.
+5. Optionally preview the saved evidence packet and request an AI draft.
+6. Download the research for review.
 
-- `UNKNOWN`: უცნობია; აუცილებელი უცნობი ხარჯი სრულ შედეგს ბლოკავს.
-- `ESTIMATED`: ვარაუდი ან პროვაიდერის შეფასება.
-- `VERIFIED`: მომხმარებლის მონიშვნაა, არა დამოუკიდებელი სერტიფიცირება.
-- დამატებითი არააუცილებელი უცნობები შეიძლება ნულად ჩაითვალოს; შედეგთან ეს ჩანს.
-- კონტრიბუცია მოიცავს შეყვანილ ხარჯებსა და რეკლამას, მაგრამ გამორიცხავს ფიქსირებულ
-  ბიზნესხარჯებსა და საშემოსავლო გადასახადს. სრული საბუღალტრო წმინდა მოგება არაა.
+The app does not choose a country, category or selling price for you. A market display code is not automatically treated as a destination country code.
 
-CJ quote-ის გამოყენება ცალკე დასტურდება: იცვლება estimated product/shipping,
-ხოლო duty/handling გასადამოწმებლად იწმინდება. სხვა ვალუტისთვის საჭიროა შესაბამისი
-FX მიმართულება, თარიღი და წყარო. 24-საათიანი freshness აპის წესია, არა ფასის გარანტია.
-მარაგის ანგარიში დაჯავშნას, აქტიური განცხადება კი რეალურ გაყიდვებს არ ადასტურებს.
-კონკურენტის EXACT/EQUIVALENT შედარება მოითხოვს ფერის, ზომის, pack-ის, მდგომარეობის,
-მიწოდებისა და tax basis-ის გადახედვას. სხვადასხვა ვალუტა არ ჯამდება.
+### Financial status and evidence
 
-ფორმები შეცდომისას შეყვანილ მნიშვნელობებს ინარჩუნებს. მოძველებული პარალელური
-შენახვა იბლოკება; გახსენი ბოლო ვერსია და შეადარე. ფინანსური ისტორია ცვლილებასთან
-ერთ ტრანზაქციაში ინახება; ეს დამოუკიდებელი აუდიტი ან აღდგენის ღილაკი არაა.
-პროდუქტის/ბაზრის წაშლას შესაბამისი ისტორიის წაშლაც შეუძლია — გრძელვადიანი შენახვისთვის backup გამოიყენე.
+- `UNKNOWN`: missing information; essential unknowns block a complete calculation.
+- `ESTIMATED`: an assumption or provider estimate.
+- `VERIFIED`: a user-assigned status, not independent certification.
+- Optional unknown costs may be treated as zero; the result identifies these assumptions.
+- Per-order contribution includes entered variable costs and advertising, but excludes fixed overhead and income tax. It is not full accounting net profit.
 
-### ბიზნესის გადაწყვეტილების წესი
+Applying a CJ quote requires confirmation. It replaces estimated product/shipping inputs and clears duty/handling for review. Currency conversion requires an explicit FX direction, date and source. The 24-hour freshness rule is an app review policy, not a supplier price guarantee; inventory reports do not reserve stock.
 
-მიზანი პირადი, დაბალბიუჯეტიანი კვლევაა: რეალურ თანხას მხოლოდ დასაბუთებულ და
-შეზღუდულ გამოცდაში ვრისკავთ. კატალოგის ჩანაწერი, კონკურენტის ფასი და AI-ის
-დადებითი ტექსტი გაყიდვებს ან მოგებას არ ამტკიცებს.
+For EXACT/EQUIVALENT competitor comparisons, check colour, size, pack, condition, shipping and tax basis. Different currencies are not added together.
 
-1. **შემოწმებადი პროდუქტი:** ზუსტი variant/pack, სრული მიწოდების ღირებულება,
-   ვადა, დაბრუნების პირობები და ბაზარზე გაყიდვის/გადახდის მიღების შესაძლებლობა.
-   დაუდასტურებელი იდენტურობა რჩება UNCERTAIN; ალტერნატივა ცალკე პროდუქტად შეადარე.
-2. **გათვლილი ეკონომიკა:** შეავსე აუცილებელი უცნობები; გადაამოწმე დამატებითი
-   ნულად მიჩნეული ხარჯებიც. კონკურენტის ფასი გამოიყენე ფასის სცენარად და არა შენი
-   მისაღები გასაყიდი ფასის მტკიცებულებად. გადასახადები/საკომისიოები კონკრეტულ
-   ქვეყანას, იურიდიულ სტატუსსა და პროვაიდერის შეთანხმებას უნდა ეყრდნობოდეს.
-3. **მიზანი და ფული:** შეფასების გვერდსა და ჯგუფურ გადახედვაში გახსენი
-   **„ბიზნესგეგმა — მიზნობრივი მოგება, სტრესი და კაპიტალი“**. ყველა დამატებითი
-   ველი თავდაპირველად ცარიელია; შეყვანილი დაშვებები დროებითია და არ ინახება.
-   თვიური/დღიური რაოდენობა სცენარია, არა მოთხოვნის პროგნოზი.
-4. **შეზღუდული გამოცდა:** დადებითი სცენარიც მხოლოდ შემოწმების კანდიდატია.
-   წინასწარ განსაზღვრე მაქსიმალური დანაკარგი, ხანგრძლივობა და გასაზომი შედეგი:
-   რეალური CAC, შესრულებული შეკვეთები, დაბრუნებები და მიღებული ფული. დანახარჯიანი
-   გამოცდის დაწყება შენს ცალკე თანხმობას მოითხოვს; აპი ამას არ ააქტიურებს.
-   ზრდა დაეყრდნოს რეალურ შედეგს და ფულადი ნაკადის შესაძლებლობას.
+Forms retain entered values on errors. Stale concurrent saves are blocked: load the latest version and compare. Financial changes and their history are saved transactionally. Deleting a product or market can delete its associated history; use database backups for long-term retention.
 
-**მიზნობრივი CAC** = კონტრიბუცია რეკლამამდე − ფიქსირებული ხარჯის წილი −
-ერთეულის ბუფერი − მიზნობრივი მოგება. მიზნობრივი მოგება გამოითვლება გადასახადის
-გარეშე შემოსავლის მარჟით. ჩვეულებრივი break-even CAC მიზნობრივ მოგებასა და
-ფიქსირებულ ხარჯს არ ფარავს. უარყოფითი მიზნობრივი CAC ნიშნავს, რომ ამ მიზანს
-ნულოვანი სარეკლამო ხარჯიც ვერ აღწევს. შედეგი საშემოსავლო გადასახადამდეა.
+### Business decision rules
 
-მოდული ერთად ამოწმებს ფასის −5%, მომწოდებლისა და მიწოდების +10%, CAC-ის +25%
-და დაბრუნებების +2 პროცენტული პუნქტის სცენარს. ეს გამჭვირვალე საცდელი დაშვებებია,
-არა უნივერსალური ნორმა ან ალბათობა. ფიქსირებული ხარჯის წილი ცენტამდე მაღლა
-მრგვალდება; თვიური შედეგი ამ კონსერვატიულ ერთეულის შედეგს ეყრდნობა.
+1. **Verify feasibility:** exact product identity, delivered cost, delivery time, returns, selling restrictions and payment eligibility. Unconfirmed identity stays UNCERTAIN; compare alternatives as separate products.
+2. **Model the economics:** fill essential unknowns and review optional zero assumptions. Competitor prices are scenarios, not proof of an achievable selling price. Taxes and fees must match the country, legal status and provider agreement.
+3. **Check profit and cash:** open the business-planning panel on an evaluation or batch review. Planning fields start blank and are temporary; they are not saved. Daily/monthly order counts are scenarios, not demand forecasts.
+4. **Test within a limit:** agree a maximum loss, duration and measurable outcome before spending. Measure actual acquisition cost, fulfilled orders, returns and received cash. Spending requires separate owner approval; the app does not activate a sales test. Scale only with supporting results and sufficient cash.
 
-ლიკვიდობის ილუსტრაცია წინასწარ აფინანსებს დაგვიანების დღეების მოდელირებულ
-ცვლად ხარჯებს, სრული თვის ფიქსირებულ ხარჯსა და დამატებით რეზერვს. ეს რეალური
-პიკური cash-flow პროგნოზი არ არის: ბანკის rolling reserve, გადასახადის გადარიცხვის
-დრო, payout გრაფიკი და თანხის შესაძლო დაბლოკვა ცალკე გაითვალისწინე.
-რეზერვი დაბლოკილი ფულია და არა ავტომატურად ზარალი/საკომისიო.
+### Planning formulas
 
-ერთი ხარჯი ორჯერ არ დათვალო: თვიური მინიმალური საკომისიოდან დაამატე მხოლოდ
-უკვე დათვლილი პროცენტული საკომისიოს ზემოთ დარჩენილი ნაწილი; ფიქსირებულში არ
-გაიმეორო ერთეულის ხარჯები. დაბრუნების დანაკარგი მოიცავდეს refund-სა და
-დამატებით დაუბრუნებელ ხარჯს, აღდგენილი ღირებულების გამოკლებით; მომწოდებელი და
-თავდაპირველი მიწოდება მოდელში უკვე გადახდილია. Return/chargeback/damage ერთი
-შემთხვევის განმეორებითი დათვლა არ უნდა იყოს.
+**Target CAC** = contribution before advertising − allocated fixed overhead − per-order uncertainty buffer − target profit.
+
+- CAC means customer acquisition cost per order.
+- Target profit uses revenue excluding sales tax and the selected target margin.
+- Ordinary break-even CAC excludes the target profit and fixed overhead.
+- A negative target CAC means even zero advertising cost cannot meet that target.
+- Results exclude income tax. Allocated overhead rounds upward to the smallest currency unit; monthly scenarios use that conservative allocation.
+
+The joint stress scenario applies selling price −5%, supplier and shipping +10%, CAC +25%, and returns +2 percentage points, capped at 100%. These are hypothetical sensitivity assumptions, not probabilities or universal business thresholds. Zero CAC remains zero under a percentage increase.
+
+The liquidity illustration prefunds modeled variable costs during payout delay, a full month of fixed overhead and an additional reserve. It is not an actual peak cash-flow forecast. Review rolling reserves, tax payment timing, payout schedules, blocked funds and refund timing separately. Reserved cash is not automatically an expense.
+
+Avoid double counting:
+
+- Add only the monthly minimum fee shortfall above fees already modeled.
+- Do not repeat per-order costs in fixed overhead.
+- Return losses should reflect refunds and additional nonrecoverable costs, less recoveries; the original supplier and shipping costs are already counted.
+- Return, chargeback and damage assumptions must not count the same loss repeatedly.
 
 ## Automation
 
-აირჩიე 1–3 განსხვავებული **შენახული CJ კანდიდატი**. მაქსიმუმ ბოლო 100 ჩანაწერია
-ასარჩევი. თითოეულზე სრულდება ვარიანტების/მარაგის განახლება და ბოლო 100 quote-დან
-მაქსიმუმ 3 განსხვავებული შენახული მარშრუტის შემოწმება. CJ ოპერაციებს შორის 31 წამია;
-ერთი ოპერაცია რამდენიმე endpoint-ს/auth მოთხოვნას შეიძლება მოიცავდეს.
-მარშრუტის არქონა `blocked` მდგომარეობაა — ქვეყანა/ZIP არ გამოიგონება.
+### Refresh batches
 
-არჩევითი eBay ეტაპისთვის აშკარად აირჩიე ბაზარი; პროდუქტს ამ ბაზრის შეფასება
-უნდა ჰქონდეს. ძიება იყენებს კატალოგის სახელს, მაქსიმუმ 20 შედეგს და ცალკე 61-წამიან
-ინტერვალს. წვდომის არქონა/შეუსაბამობა მოთხოვნას ბლოკავს. eBay-ის შეცდომის შემდეგ
-მისი დარჩენილი ძიება გამოტოვდება, CJ კი გაგრძელდება. ხელახლა მიღებული შეთავაზება
-ძველ მიღებულ დაკვირვებას აძველებს და ხელახალ გადახედვას საჭიროებს.
+- Select 1–3 distinct saved CJ candidates from the latest 100 records.
+- Refresh variants/inventory and up to three distinct saved routes from the latest 100 quotes per candidate.
+- CJ operations are spaced 31 seconds apart; one operation may use several endpoint/auth requests.
+- Missing routes are blocked; destinations and ZIP codes are not invented.
+- New prices are not automatically applied to financial inputs.
 
-Stop/დახურვა აჩერებს მომდევნო ნაბიჯებს; მიმდინარე მოთხოვნამ შეიძლება შედეგი
-შეინახოს. ლოგი მიმდინარე გვერდზეა; მუდმივი background job/resume არ არის.
-ხელახალი გაშვება ახალი მოთხოვნებია. ხარჯებში ახალი ფასები ავტომატურად არ გამოიყენება.
+An optional eBay stage requires an explicit marketplace and an existing product evaluation for it. It searches by catalogue name, returns up to 20 results and uses a separate 61-second interval. Missing access or incompatible markets block requests. After an eBay error, remaining eBay searches are skipped while CJ work continues. Refreshed offers require renewed review.
 
-ბოლოს გახსენი **ერთიანი მიმოხილვა და AI**: მაქსიმუმ 3 პროდუქტი, თითოეულზე
-მაქსიმუმ 20 შეფასება, ბოლო 30 evidence და 100 კონკურენტის დაკვირვება. ეს მიმდინარე
-შენახული მონაცემებია, არა გაშვების უცვლელი ჟურნალი ან სრული ბაზრის აღწერა.
-ფინანსური ბაზრის ფილტრი AI პაკეტს არ ფილტრავს — პროდუქტის სხვა ბაზრებიც შეიძლება
-შედიოდეს; სრული preview თანხმობამდე ჩანს. Pending შეთავაზებები AI პაკეტში არ შედის.
+**Stop** or closing the page prevents subsequent steps; an in-flight request may still save its result. The log belongs to the current page, with no durable background resume. Restarting makes new requests.
 
-დაგეგმილი CJ ძიება სხვა ფუნქციაა: paused-first schedule, მაქსიმუმ 5 ჩართული,
-ინტერვალი 6–168 საათი. worker ცალკე ტერმინალში მუშაობს:
+### Combined review and AI
+
+The combined review shows current saved data for up to three products: up to 20 evaluations, the latest 30 evidence records and 100 competitor observations per product. It is not an immutable run log or a complete market survey.
+
+A financial market filter does not filter the AI packet: other markets for that product may be included. Preview the full packet before consent. Pending offers are excluded.
+
+### Scheduled discovery
+
+Schedules start paused. Up to five may be enabled, with intervals of 6–168 hours. Run the worker in a separate terminal:
 
 ```cmd
 npm run discovery:worker -- --dry-run
 npm run discovery:worker
 ```
 
-მხოლოდ ვებსერვერის გაშვება schedule-ებს არ ასრულებს. რეალური მოთხოვნები ანგარიშის
-პირობებს/კვოტას ექვემდებარება; ჩართვამდე გვერდზე ნაჩვენები ლიმიტები გადაამოწმე.
+The web server alone does not execute schedules. Review displayed limits and provider account terms before enabling live requests.
 
 ## AI
 
-პარამეტრები ჩაწერე **მხოლოდ ლოკალურ `.env.local`-ში**, არსებული auth/DB პარამეტრების
-შენარჩუნებით; ცვლილების შემდეგ აპი ხელახლა გაუშვი.
+### Configure a provider
+
+Add settings only to local `.env.local`, preserving existing authentication/database settings. Restart after changes.
 
 ```dotenv
 AI_PROVIDER=gemini
@@ -208,123 +187,124 @@ AI_RESEARCH_MODEL=YOUR_AVAILABLE_MODEL_ID
 GEMINI_API_KEY=YOUR_PRIVATE_KEY
 ```
 
-მოდელის ზუსტი ID აიღე საკუთარი [AI Studio](https://aistudio.google.com/)-დან,
-`models/` პრეფიქსის გარეშე. ID-ის ფორმატის შემოწმება მოდელის ხელმისაწვდომობას
-არ ამტკიცებს. წაიკითხე [Google-ის პირობები](https://ai.google.dev/gemini-api/terms)
-და [ფასები](https://ai.google.dev/gemini-api/docs/pricing); უფასო გამოყენება გარანტირებული არაა.
+Use the exact available model ID from [AI Studio](https://aistudio.google.com/), without the `models/` prefix. Local format checks do not prove API access. Review [Google's terms](https://ai.google.dev/gemini-api/terms) and [pricing](https://ai.google.dev/gemini-api/docs/pricing); free access is not guaranteed.
 
-OpenAI-ზე კოდის შეცვლის გარეშე გადასასვლელად დააყენე `AI_PROVIDER=openai`,
-`AI_RESEARCH_MODEL` და `OPENAI_API_KEY`. გამოიყენება Responses/structured-output
-თავსებადი ხელმისაწვდომი მოდელი. ორივე გასაღების არსებობისას მხოლოდ არჩეული
-პროვაიდერი გამოიყენება. სხვა პროვაიდერისთვის ცალკე adapter არის საჭირო.
-გათიშვა: `AI_RESEARCH_ENABLED=false`. ძველი provider-specific პარამეტრები
-შესაბამის fallback წესებს ინარჩუნებს; გაურკვევლობისას გამოიყენე ზემოთ მოცემული საერთო პარამეტრები.
+To switch to OpenAI without code changes:
 
-AI ინტერნეტში არ ეძებს: მხოლოდ შენახულ წყაროებს აანალიზებს. ჯერ ნახე პაკეტი და
-მონიშნე **თითო პროდუქტის ცალკე თანხმობა** შესაძლო ხარჯით. ზოგადი product notes
-და account secrets პაკეტში არ შედის; ხარჯის/წყაროს შენიშვნები შეიძლება პირადი იყოს.
-ზღვარი: 100 KB input packet, 2400 output tokens, 120 წამი, საერთო 10 მცდელობა
-UTC დღეში და მინიმუმ 90 წამი მცდელობებს შორის. ეს თანხობრივი ბიუჯეტი არაა.
-არ არის ავტომატური retry ან სხვა პროვაიდერზე გადართვა. არასწორი/stale პაკეტი,
-ფორმატი ან წყაროს ID უარყოფილია; ვალიდური ციტირება დასკვნის სისწორეს არ ამტკიცებს.
-ანგარიში მონახაზია და ხარჯებს/evidence-ს ავტომატურად არ ცვლის.
+```dotenv
+AI_PROVIDER=openai
+AI_RESEARCH_ENABLED=true
+AI_RESEARCH_MODEL=YOUR_AVAILABLE_MODEL_ID
+OPENAI_API_KEY=YOUR_PRIVATE_KEY
+```
+
+Choose an accessible Responses/structured-output-compatible model. Only the selected provider is used, even if both keys exist. Other providers require an adapter. Set `AI_RESEARCH_ENABLED=false` to disable research. Legacy provider-specific settings retain their fallback rules; prefer the shared settings above.
+
+### Request and review a report
+
+- AI analyzes saved evidence; it does not search the internet.
+- Preview the packet and give separate consent for each product, including possible charges.
+- General product notes and account secrets are excluded; cost/evidence notes may contain private information.
+- Reports are drafts and do not automatically change costs or evidence.
+- Invalid/stale packets, malformed output and unsupported source IDs are rejected. Valid citations do not establish that a conclusion is correct.
+
+### Limits and failures
+
+| Limit | Value |
+|---|---|
+| Input packet | 100 KB |
+| Output | 2,400 tokens |
+| Request deadline | 120 seconds |
+| Attempts | 10 per UTC day across research requests |
+| Minimum interval | 90 seconds |
+
+These are request limits, not a monetary budget. There is no automatic retry or paid fallback to another provider. A failed attempt may still incur provider charges.
 
 ## eBay
 
-[Production Application Keys](https://developer.ebay.com/my/keys)-დან აიღე
-App ID და Cert ID; შეინახე `.env.local`-ში:
+Obtain production App ID and Cert ID from [Application Keys](https://developer.ebay.com/my/keys), then configure `.env.local`:
 
 ```dotenv
 EBAY_CLIENT_ID=YOUR_PRODUCTION_APP_ID
 EBAY_CLIENT_SECRET=YOUR_PRODUCTION_CERT_ID
 ```
 
-API production approval/eligibility და კვოტა eBay-მ უნდა დაადასტუროს. Sandbox გასაღებები
-ამ adapter-ში არ მუშაობს. აპი application token-ს სერვერის მეხსიერებაში ინახავს,
-ვადის გასვლამდე 60 წამით ადრე განაახლებს და ერთდროულ mint მოთხოვნებს აერთიანებს.
-ძველი `EBAY_ACCESS_TOKEN` მხარდაჭერილია; ორივე client credential-ის არსებობისას OAuth
-უპირატესია. უარყოფილი token-ის შემდეგ ავტომატური search retry არ ხდება.
+- eBay must grant production eligibility and quota. Sandbox keys do not work with this adapter.
+- Application tokens stay in server memory, refresh 60 seconds before expiry, and concurrent token requests are combined.
+- Legacy `EBAY_ACCESS_TOKEN` is supported; a complete client credential pair takes precedence.
+- Rejected tokens do not trigger an automatic search retry.
+- Supported markets: US/USD, GB/GBP, DE/FR/IT/ES/EUR, CA/CAD and AU/AUD.
+- Offers enter a pending queue for manual acceptance or rejection. Review price, shipping and tax; active offers do not prove demand.
 
-მხარდაჭერილია US/USD, GB/GBP, DE/FR/IT/ES/EUR, CA/CAD, AU/AUD. ქვეყანა აშკარაა.
-შეთავაზებები pending რიგში შედის; მიღება/უარყოფა ხელითაა. ფასები, მიწოდება და
-გადასახადი გადასამოწმებელია. აქტიური შეთავაზებები მოთხოვნის მტკიცებულება არაა.
-წყარო: [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html).
+See the [Browse API](https://developer.ebay.com/api-docs/buy/browse/overview.html).
 
-CJ-ისთვის `.env.local`-ში გამოიყენე `CJ_ACCESS_TOKEN` (არსებული access token ან API Key).
-ყველა გასაღები სერვერზე რჩება. `NEXT_PUBLIC_` პრეფიქსი საიდუმლოებისთვის არ გამოიყენო.
+For CJ, set `CJ_ACCESS_TOKEN` to your access token or supported API Key. Keep every key server-side; never use `NEXT_PUBLIC_` for secrets.
 
 ## Data formats
 
-| ოპერაცია | ფორმატი და ზღვარი |
+| Operation | Format and limit |
 |---|---|
-| Catalogue import | JSON array; მაქსიმუმ 100 ჩანაწერი / 250 KB |
-| Offer import | `{destinationCountry,currency,offers}`; მაქსიმუმ 50 / 200 KB; preview/თანხმობა |
-| Research export | პირადი JSON/TXT; სრული snapshot, არა importer ან database backup |
-| Store draft | გასაზიარებლად გადასახედი offline DRAFT JSON; მაღაზიაში არ იტვირთება |
+| Catalogue import | JSON array; up to 100 records / 250 KB |
+| Offer import | `{destinationCountry,currency,offers}`; up to 50 / 200 KB; preview and confirmation |
+| Research export | Private JSON/TXT snapshot; not an importer or database backup |
+| Store draft | Offline DRAFT JSON for review; does not publish to a store |
 
-Catalogue row: `provider`, `externalId`, არჩევითი `variantId`, `name`, `url`,
-`currency`, `priceMinor` (მთელი minor units ან null), `observedAt` (ნამდვილი წარსული
-ISO UTC/offset თარიღი). მაგალითად 1234 = 12.34. მხარდაჭერილია USD/EUR/GBP/CAD/AUD/GEL.
-კონფლიქტური/ძველი დაკვირვება და დუბლიკატი უარყოფილია; ნაწილობრივი import არ ხდება.
+### Catalogue records
 
-Offer row-ს სჭირდება source URL, title, merchant, minor-unit price, observedAt,
-expiresAt. ვადა ჯერ მიმდინარე და დაკვირვებიდან მაქსიმუმ 24 საათი უნდა იყოს.
-Shipping/tax/accepted სტატუსი არ შემოიტანება; გადახედვისას ცალკე დგინდება.
-ახალი დაკვირვება pending-ად ბრუნდება, წინა მიღებულს აძველებს. იგივე source/time
-კონფლიქტური მონაცემებით უარყოფილია. CSV-ის ძველი browser-preview ფორმატი ამ import-ებს არ შეესაბამება.
+Fields: `provider`, `externalId`, optional `variantId`, `name`, `url`, `currency`, `priceMinor` (integer minor units or null), and `observedAt` (a genuine past ISO timestamp with UTC/offset). For example, 1234 means 12.34. Supported currencies: USD/EUR/GBP/CAD/AUD/GEL.
 
-კვლევის ექსპორტი შეიცავს პირად notes-საც — გაზიარებამდე გადაამოწმე. ზღვარია
-100 შეფასება, 2000 evidence, 500 listing, 2000 competitor, 500 variant, 2000 quote
-და 5 MB. გადაჭარბება იწვევს 413-ს და არა ჩუმ ნაწილობრივ export-ს. AI ანგარიშები,
-pending inbox და audit history კვლევის snapshot-ში არ შედის; JSON იმპორტით
-მეორე ინსტალაციაში ავტომატურად არ აღდგება.
+Conflicting/older observations and duplicates are rejected. Imports are atomic, not partial.
+
+### Offer records
+
+Each offer requires a source URL, title, merchant, minor-unit price, `observedAt` and `expiresAt`. Expiry must still be current and no more than 24 hours after observation. Shipping, tax and acceptance status are determined during review rather than imported. Updated observations return to pending and supersede previous accepted data. Conflicting data at the same source/time is rejected. Older CSV browser-preview files do not match these import formats.
+
+### Research exports
+
+Exports may include private notes: review before sharing. Limits are 100 evaluations, 2,000 evidence records, 500 listings, 2,000 competitor records, 500 variants, 2,000 quotes and 5 MB. Exceeding limits returns HTTP 413 instead of a silent partial export.
+
+AI reports, pending inbox items and audit history are excluded from the snapshot. The JSON does not automatically restore another installation.
 
 ## Backup
 
+From your checkout:
+
 ```cmd
-cd /d C:\arbitrage-finder
 npm run db:backup
 ```
 
-PostgreSQL-ის `pg_dump`/`pg_restore` tools უნდა იყოს ხელმისაწვდომი. თუ PATH-ში არაა,
-შენი რეალური PostgreSQL ვერსიის `bin` მიუთითე (მაგალითი — 17):
+`pg_dump` and `pg_restore` must be available. If necessary, specify your actual PostgreSQL tools directory and an external destination; these are example paths:
 
 ```cmd
-npm run db:backup -- --pg-bin "C:\Program Files\PostgreSQL\17\bin" --output-dir "C:\Users\temof\arbitrage-finder-backups"
+npm run db:backup -- --pg-bin "C:\Program Files\PostgreSQL\17\bin" --output-dir "%USERPROFILE%\arbitrage-finder-backups"
 ```
 
-ფაილი ინახება checkout-ის გარეთ, უნიკალურ საქაღალდეში: `database.dump` და
-`manifest.json` (SHA-256). ნაგულისხმევი ადგილი პროექტის მშობელი საქაღალდეა;
-გადატანილი პროექტისთვის ძველი ადგილის შესანარჩუნებლად ზემოთ explicit output-dir გამოიყენე.
-ინახება სქემა/ბიზნესმონაცემები/მიგრაციები; session/login-throttle მონაცემები,
-როლების პაროლები, `.env` და სხვა პროექტის ბაზები არ შედის.
+- Each unique external backup folder contains `database.dump` and a SHA-256 `manifest.json`.
+- The default destination is beside the checkout in its parent directory.
+- Schema, business records and migrations are included.
+- Sessions/login throttles, role passwords, environment files and other databases are excluded.
+- Backups are not encrypted by the helper. Keep a protected copy on a separate disk and credentials separately.
 
-არქივის ინდექსის შემოწმება სრული აღდგენის ტესტი არაა. შეინახე დაცული ასლი ცალკე
-დისკზეც, კონფიგურაცია/მფლობელის პაროლი — ცალკე უსაფრთხოდ. ეს helper backup-ს არ შიფრავს.
-აღდგენის პრაქტიკა გააკეთე **ახალ ცალკე სატესტო ბაზაში**, სანდო საკუთარ dump-ზე,
-pgAdmin Restore-ით ან შესაბამისი `pg_restore --no-owner --no-privileges`-ით.
-მოქმედ `arbitrage`-ზე აღდგენა ცალკე დაგეგმვასა და მიმდინარე backup-ს მოითხოვს;
-helper მას ავტომატურად არ ასრულებს. არასოდეს გამოიყენო `prisma migrate reset`.
+An archive-index check is not a full restore test. Practice restoring a trusted dump into a **new, separate test database**, using pgAdmin Restore or suitable `pg_restore --no-owner --no-privileges` options. Restoring over the working database needs a separate plan and current backup. Never use `prisma migrate reset`.
 
 ## Troubleshooting
 
-| სიმპტომი | შემოწმება |
+| Symptom | Check |
 |---|---|
-| საიტი არ იხსნება | app ტერმინალი, პორტი 3000, სწორი საქაღალდე |
-| ბაზა მიუწვდომელია | PostgreSQL `Running`, მოქმედი ლოკალური კონფიგურაცია; ბაზა არ გადააყენო |
-| პაროლი ვერ მოიძებნა | ზემოთ მითითებული owner-access.txt; .env/პაროლი არ ატვირთო |
-| AI გამორთულია | პროდუქტის AI გვერდის 4 შემოწმება; მოდელს `models/` მოაშორე; restart |
-| 401 / 403 | გასაღები / ანგარიშის უფლება გადასამოწმებელია |
-| 404 | მოდელის ზუსტი ID და endpoint მხარდაჭერა გადასამოწმებელია |
-| 429 | კონკრეტული მოდელის/პროექტის სიხშირე ან კვოტა; სხვა დარჩენილი ლიმიტი ამას არ გამორიცხავს |
-| 5xx | პროვაიდერის სერვერის შეცდომა; მიზეზს მარტო კოდი ვერ ადგენს |
-| Timeout | 120-წამიანი deadline; ინტერნეტის/კვოტის ბრალი ავტომატურად არაა |
-| batch blocked | წვდომა, არჩეული შეფასება, ქვეყანა/ვალუტა ან შენახული მარშრუტი აკლია |
-| stale edit | გახსენი შენახული ახალი ვერსია და შეადარე; ძველი მონაცემი არ გადაწერო |
-| Environment Publish ვერ სრულდება | Cloud-ის ცალკე საკითხია; GitHub pull-ს არ უდრის |
+| Site does not open | App terminal, port 3000 and checkout folder |
+| Database unavailable | PostgreSQL service, local connection settings; do not reinstall/reset the database |
+| Lost owner password | Setup-generated `owner-access.txt` outside the checkout; never upload it |
+| AI disabled | Four configuration checks on the product AI page; remove `models/` from model ID; restart |
+| HTTP 401 / 403 | Credentials and account permissions |
+| HTTP 404 | Exact model ID and endpoint support |
+| HTTP 429 | Model/project quota and rate limits; another available quota does not rule this out |
+| HTTP 5xx | Provider server error; status alone does not identify the cause |
+| Timeout | 120-second deadline; not automatically an internet or quota problem |
+| Batch blocked | Access, evaluation, country/currency or saved route missing |
+| Stale edit | Open the latest saved version and compare before saving |
+| Environment Publish fails | Separate cloud configuration issue; not equivalent to GitHub pull |
 
-API/ბანკის პასუხი ან ინსტრუქციის screenshot დამოუკიდებლად merchant approval-ს,
-მწარმოებლის იდენტურობას, უსაფრთხო დატვირთვას ან რეალურ მოგებას არ ადასტურებს.
+A support message, screenshot or API response does not independently establish merchant approval, manufacturer identity, safe product use or actual profit.
 
 ## Development
 
@@ -336,71 +316,60 @@ npm run lint
 npm run build
 ```
 
-ტესტებისთვის გამოიყენე საკუთარი კონტროლირებადი development გარემო, არა production.
-`scripts/check-*.ts` სხვადასხვა რეალურ failure/transaction/browser სცენარს ამოწმებს;
-ისინი duplicate აპის ფაილები არაა. ბაზის სკრიპტები ქმნის/ასუფთავებს დროებით fixtures-ს.
-ბრაუზერისთვის საჭიროა Playwright Chromium ან `CHROMIUM_PATH` ადგილობრივი executable-ით.
-ძირითადი ნაკადის მაგალითები, გაშვებული აპის გვერდით:
+Use a controlled development database. Integration checks create and clean temporary fixtures; do not run them against production. Browser checks require Playwright Chromium or a local executable selected by `CHROMIUM_PATH`.
+
+Examples, alongside a running local app:
 
 ```sh
 node --import tsx scripts/check-batch-review.ts
 node --import tsx scripts/check-ai-research.ts
 node --import tsx scripts/check-batch-offers.ts
 node --import tsx scripts/check-batch-browser.ts
+node --import tsx scripts/check-business-plan-browser.ts
 ```
 
-GitHub Actions `.github/workflows/quality.yml` იყენებს ცალკე PostgreSQL-ს,
-fixtures/mocked providers-ს, build/unit/HTTP/browser შემოწმებებს; არ deploy-ავს.
-ლოკალური წარმატება hosted CI-ის წარმატებას არ ამტკიცებს. live API ცდები ჩვეულებრივ
-suite-ში არ ჩართო. Windows-ის რეალური სკრიპტების შესრულება Linux-ის build-ით არ მოწმდება.
+`.github/workflows/quality.yml` uses isolated PostgreSQL, fixtures/mocked providers, unit tests, lint, build and HTTP/browser checks. It does not deploy. Local success does not establish hosted CI success or live API quality. Keep paid/live calls out of the ordinary suite. Linux checks do not validate execution of Windows setup scripts.
 
-`AGENTS.md` განსაზღვრავს მუშაობის წესებს; `.agents/skills/` შეიცავს სამ მცირე
-ინსტრუქციას debugging, code/security review და AI evaluation-სთვის. ეს developer
-ინსტრუქციებია და საიტის ფუნქციები ან გარე plugins არაა. საწყისი წყაროების
-რევიზიები/ჰეშები: [sources.json](docs/skill-sources/sources.json),
-[Matt license](docs/skill-sources/matt-LICENSE.txt), [ECC license](docs/skill-sources/ecc-LICENSE.txt).
-Design კვლევაში გამოყენებულია Taste Skill (`12af471f627f866411b4bd785b19646d3672784c`)
-და UI UX Pro Max (`28b3b8dee8c976df4fa3e94aed4e092ad43fcb03`);
-ლიცენზიები [docs/design](docs/design)-შია. ქართული შრიფტის ლიცენზია [public/fonts](public/fonts)-შია.
-არ გამოიყენო upstream installer/auto-update ან ახალი გადასახადი მფლობელის მითითების გარეშე.
+`AGENTS.md` defines contributor/assistant rules. `.agents/skills/` contains project-specific debugging, code/security review and AI evaluation instructions. These are developer instructions, not product features or activated plugins. See the credits below for provenance; do not automatically replace them with upstream installers or updates.
 
 ## Deployment
 
-ამჟამინდელი სამუშაო გარემო ლეპტოპია. Public deployment ცალკე ამოცანაა: ჰოსტინგი,
-კონტროლირებადი `arbitrage` PostgreSQL, backups, HTTPS და canonical `APP_ORIGIN`.
-საჭიროა server-side `APP_PASSWORD_HASH`, `DATABASE_URL`, `SHADOW_DATABASE_URL`
-(ცალკე `arbitrage_shadow`), შესაბამისი TLS/როლების უფლებები. Auth იყენებს salted
-scrypt-ს, HttpOnly/SameSite cookies-ს, session expiry/revocation-სა და login throttling-ს.
-Actions ამოწმებს owner-სა და Origin-ს; მხოლოდ გვერდის დამალვა უსაფრთხოება არაა.
+Public hosting is a separate operational task. Prepare:
 
-`Dockerfile` Node 24-ზე აშენებს non-root runtime-ს; runtime secrets image/build args-ში
-არ ჩადო. Managed cloud proxy/CA-სთვის გამოიყენე გარემოს runtime skill, TLS არ გამორთო.
-ვებპროცესი და არჩევითი discovery worker ცალ-ცალკეა. მიგრაციამდე ზუსტად განიხილე
-ცვლილება და მოიპოვე დასტური. ბაზის safety guard არ შეასუსტო და `other_project` არ შეეხო.
-ჰოსტინგის/მოდელის/მონაცემების API-ზე უფასო წვდომა წინასწარ არ ივარაუდო.
+- Hosting, a controlled PostgreSQL database, backups and HTTPS.
+- Canonical `APP_ORIGIN`, server-side `APP_PASSWORD_HASH` and `DATABASE_URL`.
+- A separate shadow database configured through `SHADOW_DATABASE_URL`, appropriate TLS and database roles.
+- A reviewed migration plan before applying schema changes.
+
+Authentication uses salted scrypt hashes, HttpOnly/SameSite cookies, expiring/revocable sessions and login throttling. Actions validate the owner and request origin.
+
+The Dockerfile builds a Node 24 non-root runtime. Never put secrets in images or build arguments. Follow managed-environment proxy/CA instructions and keep TLS verification enabled. The web process and optional discovery worker run separately. Preserve database safety guards and never access unrelated databases. Provider, hosting and API access are not assumed free.
 
 ## Structure
 
 ```text
-src/app/                 გვერდები, server actions და დაცული route group
-src/components/          გამოსაყენებელი UI კომპონენტები
-src/lib/                 profit, sourcing, providers, AI, auth და სხვა დომენები
-prisma/                  სქემა და migration ისტორია — არ წაშალო/გააერთიანო
-scripts/                 setup, backup, move, worker და მიზნობრივი შემოწმებები
-public/fonts/            ლოკალური შრიფტი და ლიცენზია
+src/app/                 Pages, server actions and protected routes
+src/components/          Reusable UI
+src/lib/                 Profit, sourcing, providers, AI, auth and other domains
+prisma/                  Schema and migration history; preserve existing migrations
+scripts/                 Setup, backup, relocation, worker and focused checks
+public/fonts/            Local fonts and license
 .github/workflows/       CI
-.agents/skills/          developer ინსტრუქციები
-AGENTS.md                ასისტენტის მუშაობის წესები
-README.md                ერთადერთი მიმდინარე მომხმარებლის/დეველოპერის სახელმძღვანელო
-docs/research/            დათარიღებული მონაცემები და ერთიანი კვლევის არქივი
-docs/automation/pilots/   ცალკეული პილოტის JSON შედეგები
-docs/design/             design metadata და ლიცენზიები
-docs/skill-sources/       skill provenance და ლიცენზიები
+.agents/skills/          Developer instructions
+AGENTS.md                Assistant/contributor rules
+README.md                Current user and developer guide
+docs/research/           Dated data and consolidated research notes
+docs/automation/pilots/   Individual pilot JSON results
+docs/design/             Design metadata and licenses
+docs/skill-sources/       Skill provenance and licenses
 ```
 
-ისტორიული კვლევა: [ერთიანი ჩანაწერები](docs/research/RESEARCH-NOTES.txt).
-დათარიღებული JSON-ები და release acceptance წარსულ დაკვირვებას ასახავს — მიმდინარე
-ფასის ან მუდმივი წარმატების გარანტია არაა. ძველი ინსტრუქციები და საწყისი
-პროექტის კონტექსტი Git-ის ისტორიაშია შენარჩუნებული, მაგალითად
-[დალაგებამდე არსებული ვერსია](https://github.com/temofutkaradze/arbitrage-finder/tree/b29132f).
-დღეს მოქმედი წესები ზემოთ წერია; ძველ `PHASE3` ZIP/migration ინსტრუქციებს აღარ მიჰყვე.
+Historical research is retained in [RESEARCH-NOTES.txt](docs/research/RESEARCH-NOTES.txt). Dated JSON records and acceptance notes describe past observations, not current prices or permanent guarantees. Older instructions remain in Git history; use this guide for current operation rather than old PHASE3 ZIP/migration instructions.
+
+## Credits and provenance
+
+- Project-local skill sources: [revisions and hashes](docs/skill-sources/sources.json), [Matt Pocock license](docs/skill-sources/matt-LICENSE.txt), [ECC license](docs/skill-sources/ecc-LICENSE.txt).
+- Design research: Taste Skill revision `12af471f627f866411b4bd785b19646d3672784c` and UI UX Pro Max revision `28b3b8dee8c976df4fa3e94aed4e092ad43fcb03`. Metadata/licenses are in [docs/design](docs/design).
+- Local Georgian font license: [public/fonts](public/fonts).
+
+Stack: Next.js 16, React 19, TypeScript, Prisma 7, PostgreSQL and Node.js 24. Application version: 0.1.0.
