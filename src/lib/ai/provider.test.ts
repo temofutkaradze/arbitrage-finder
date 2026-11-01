@@ -59,3 +59,15 @@ it("distinguishes model, authentication and quota failures without exposing upst
   expect(error.code).toBe(code);expect(error.message).not.toContain("private-key-or-provider-detail");expect(fetcher).toHaveBeenCalledTimes(1);
  }
 });
+
+it("distinguishes Gemini output-token exhaustion from blocked or unfinished generation",async()=>{
+ for(const [value,code] of [
+  [{candidates:[{finishReason:"MAX_TOKENS"}]},"token_limit"],
+  [{promptFeedback:{blockReason:"SAFETY"}},"blocked"],
+  [{candidates:[{finishReason:"SAFETY"}]},"blocked"],
+  [{candidates:[]},"incomplete"],
+ ] as const){
+  const fetcher=vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(value)));
+  await expect(generateReport({},[],{provider:"gemini",key:"dummy",model:"test"},fetcher)).rejects.toMatchObject({code});expect(fetcher).toHaveBeenCalledTimes(1);
+ }
+});
