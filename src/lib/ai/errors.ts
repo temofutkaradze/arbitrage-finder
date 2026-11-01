@@ -7,7 +7,7 @@ export const aiFailures={
  upstream:"პროვაიდერის სერვერზე შეფერხებაა (HTTP 5xx). მოგვიანებით სცადე.",
  http:"პროვაიდერმა მოთხოვნა ვერ შეასრულა. API წვდომა გადასამოწმებელია.",
  network:"API-სთან კავშირი ვერ დასრულდა. გადაამოწმე ინტერნეტი და კავშირის პარამეტრები.",
- timeout:"AI პასუხის ლოდინის დრო ამოიწურა (120 წამი). ეს კვოტის ამოწურვას არ ნიშნავს. ავტომატური განმეორება არ გაიგზავნა.",
+ timeout:"AI პასუხისთვის განსაზღვრული ლოდინის დრო ამოიწურა. ეს კვოტის ამოწურვას არ ნიშნავს. ავტომატური განმეორება არ გაიგზავნა.",
  incomplete:"მოდელმა პასუხი ვერ დაასრულა ან დაბლოკა. ეს ავტომატურად კვოტის ამოწურვას არ ნიშნავს.",
  output:"პასუხის ფორმატი ან წყაროების მითითებები ვერ დადასტურდა. ეს ავტომატურად კვოტის ამოწურვას არ ნიშნავს.",
  unknown:"ზუსტი მიზეზი შენახული არ არის: პასუხი ან შენახვა ვერ დადასტურდა.",
@@ -16,6 +16,12 @@ export type AiFailureCode=keyof typeof aiFailures;
 export class AiProviderError extends Error {constructor(public readonly code:AiFailureCode){super(aiFailures[code]);}}
 export function failureCode(value:unknown):AiFailureCode{return typeof value==="string"&&Object.hasOwn(aiFailures,value)?value as AiFailureCode:"unknown";}
 export const AI_REQUEST_TIMEOUT_MS=120_000;
+export function aiRequestTimeoutMs(){
+ const raw=process.env.AI_REQUEST_TIMEOUT_SECONDS;
+ if(!raw||!/^\d+$/.test(raw))return AI_REQUEST_TIMEOUT_MS;
+ const seconds=Number(raw);
+ return seconds>=120&&seconds<=300?seconds*1000:AI_REQUEST_TIMEOUT_MS;
+}
 export function transportError(error:unknown,signal?:AbortSignal|null){
  const reason=signal?.reason;
  const timedOut=(error instanceof Error && error.name==="TimeoutError")||(signal?.aborted && reason instanceof Error && reason.name==="TimeoutError");

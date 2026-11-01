@@ -1,8 +1,8 @@
-import {aiFetch, aiResponseText, AI_REQUEST_TIMEOUT_MS, AiProviderError} from "./errors";
+import {aiFetch, aiResponseText, aiRequestTimeoutMs, AiProviderError} from "./errors";
 import { z } from "zod";
 import { instructions, outputSchema, validateReport } from "./shared";
 export async function generateOpenAiReport(snapshot:unknown,ids:readonly string[],config:{key:string;model:string},fetcher:typeof fetch=fetch) {
- const signal=AbortSignal.timeout(AI_REQUEST_TIMEOUT_MS);
+ const signal=AbortSignal.timeout(aiRequestTimeoutMs());
  const response=await aiFetch(fetcher,"https://api.openai.com/v1/responses",{
   method:"POST",redirect:"error",cache:"no-store",headers:{"Content-Type":"application/json",Authorization:`Bearer ${config.key}`},signal,
   body:JSON.stringify({model:config.model,store:false,max_output_tokens:2400,

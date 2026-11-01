@@ -237,9 +237,11 @@ Choose an accessible Responses/structured-output-compatible model. Only the sele
 |---|---|
 | Input packet | 100 KB |
 | Output | 2,400 tokens |
-| Request deadline | 120 seconds |
+| Request deadline | 120 seconds by default; `AI_REQUEST_TIMEOUT_SECONDS=300` allows five minutes (range 120–300) |
 | Attempts | 10 per UTC day across research requests |
 | Minimum interval | 90 seconds |
+
+Restart the app after changing `AI_REQUEST_TIMEOUT_SECONDS` in `.env.local`. This increases the wait, not the output-token limit or retry count. Hosting/proxy limits may end a request earlier.
 
 These are request limits, not a monetary budget. There is no automatic retry or paid fallback to another provider. A failed attempt may still incur provider charges.
 
@@ -350,7 +352,7 @@ An archive-index check is not a full restore test. Practice restoring a trusted 
 | HTTP 404 | Exact model ID and endpoint support |
 | HTTP 429 | Model/project quota and rate limits; another available quota does not rule this out |
 | HTTP 5xx | Provider server error; status alone does not identify the cause |
-| Timeout | 120-second deadline; not automatically an internet or quota problem |
+| Timeout | Configured 120–300 second deadline; not automatically an internet or quota problem |
 | Batch blocked | Access, evaluation, country/currency or saved route missing |
 | Stale edit | Open the latest saved version and compare before saving |
 | Environment Publish fails | Separate cloud configuration issue; not equivalent to GitHub pull |

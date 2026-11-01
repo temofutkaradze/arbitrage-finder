@@ -1,8 +1,8 @@
-import {aiFetch, aiResponseText, AI_REQUEST_TIMEOUT_MS, AiProviderError} from "./errors";
+import {aiFetch, aiResponseText, aiRequestTimeoutMs, AiProviderError} from "./errors";
 import { z } from "zod";
 import { instructions, outputSchema, validateReport } from "./shared";
 export async function generateGeminiReport(snapshot:unknown,ids:readonly string[],config:{key:string;model:string},fetcher:typeof fetch) {
- const signal=AbortSignal.timeout(AI_REQUEST_TIMEOUT_MS);
+ const signal=AbortSignal.timeout(aiRequestTimeoutMs());
  const response=await aiFetch(fetcher,`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`,{
   method:"POST",redirect:"error",cache:"no-store",signal,
   headers:{"Content-Type":"application/json","x-goog-api-key":config.key},
